@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIO } from 'socket.io';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -38,10 +38,19 @@ app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(requestLogger);
 
-// Protege páginas HTML quando acesso externo (não local)
+// Protege páginas HTML — licença + acesso externo
 app.use((req, res, next) => {
   // Só protege páginas HTML (não API, não assets)
   if (!req.path.endsWith('.html') && req.path !== '/' && req.path !== '/index.html') return next();
+
+  // license.html — sempre acessível (é a página de ativação)
+  if (req.path === '/license.html') return next();
+
+  // Página de login — sempre acessível
+  if (req.path === '/login') return next();
+
+  // Todas as outras páginas HTML exigem licença ativa
+  if (!isLicensed()) return res.redirect('/license.html');
 
   // Local: libera direto
   const ip = req.ip || req.connection?.remoteAddress || '';
@@ -51,9 +60,6 @@ app.use((req, res, next) => {
   // Verifica cookie de autenticação
   const cookies = Object.fromEntries((req.headers.cookie||'').split(';').map(c=>{const [k,...v]=c.trim().split('=');return [k,v.join('=')];}));
   if (cookies.api_token === API_TOKEN) return next();
-
-  // Página de login
-  if (req.path === '/login') return next();
 
   // Redireciona pra login
   res.send(`<!DOCTYPE html>
@@ -109,13 +115,15 @@ function isSetupNeeded() {
 }
 
 app.get('/', (req, res, next) => {
-  if (isSetupNeeded() && !req.path.includes('setup')) {
-    return res.redirect('/setup.html');
-  }
+  // 1. Sem licença → página de licença
+  if (!isLicensed()) return res.redirect('/license.html');
+  // 2. Sem setup → setup wizard
+  if (isSetupNeeded()) return res.redirect('/setup.html');
   next();
 });
 
 app.get('/index.html', (req, res) => {
+  if (!isLicensed()) return res.redirect('/license.html');
   if (isSetupNeeded()) return res.redirect('/setup.html');
   res.sendFile(join(__dirname, 'public', 'index.html'));
 });
@@ -124,14 +132,15 @@ app.use(express.static(join(__dirname, 'public')));
 
 // Serve arquivos gerados (slides, vídeos, etc) de /tmp/
 app.get('/files/*', (req, res) => {
-  const filePath = '/tmp/' + req.params[0];
+  const safePath = resolve('/tmp', req.params[0]);
+  if (!safePath.startsWith('/tmp/')) return res.status(403).send('Acesso negado');
   const { existsSync } = require('fs');
   const { extname } = require('path');
-  if (!existsSync(filePath)) return res.status(404).send('Arquivo não encontrado');
+  if (!existsSync(safePath)) return res.status(404).send('Arquivo não encontrado');
   const mimes = {'.html':'text/html','.pdf':'application/pdf','.pptx':'application/vnd.openxmlformats-officedocument.presentationml.presentation','.mp4':'video/mp4','.mp3':'audio/mpeg','.jpg':'image/jpeg','.png':'image/png'};
-  const ext = extname(filePath).toLowerCase();
+  const ext = extname(safePath).toLowerCase();
   res.set('Content-Type', mimes[ext] || 'application/octet-stream');
-  res.sendFile(filePath);
+  res.sendFile(safePath);
 });
 
 // ================================================================
@@ -185,9 +194,21 @@ import calendarRoutes from './src/routes/calendar.js';
 
 import twilioVoiceRoutes from './src/routes/twilio-voice.js';
 import setupRoutes from './src/routes/setup.js';
+import licenseRoutes from './src/routes/license.js';
+import { isLicensed } from './src/services/license.js';
 
-// Setup routes (sem auth para funcionar na primeira vez)
+// License + Setup routes (sem auth para funcionar na primeira vez)
+app.use('/api/license', licenseRoutes);
 app.use('/api/setup', setupRoutes);
+
+// License guard — bloqueia TODOS os /api/* (exceto license e setup) sem licença ativa
+function licenseGuard(req, res, next) {
+  if (!isLicensed()) {
+    return res.status(401).json({ error: 'Licenca nao ativada' });
+  }
+  next();
+}
+app.use('/api', licenseGuard);
 
 app.use('/api/chat', chatLimiter);
 app.use('/api/vision', chatLimiter);

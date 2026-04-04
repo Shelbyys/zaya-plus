@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaya Plus — Ativar Licenca</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0f;
+            --card: #12121a;
+            --card-hover: #1a1a28;
+            --accent: #6c5ce7;
+            --accent-glow: rgba(108, 92, 231, 0.4);
+            --accent-dim: rgba(108, 92, 231, 0.15);
+            --green: #00e676;
+            --green-dim: rgba(0, 230, 118, 0.15);
+            --red: #ff5252;
+            --red-dim: rgba(255, 82, 82, 0.15);
+            --text: #eeeeee;
+            --text-dim: #888899;
+            --border: #1e1e2e;
+            --radius: 14px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            padding: 40px 20px;
+        }
+
+        /* ───── Background Glow ───── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(108, 92, 231, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ───── Logo ───── */
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo-text {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-sub {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* ───── Card ───── */
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 460px;
+            position: relative;
+            z-index: 1;
+            transition: border-color 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(108, 92, 231, 0.2);
+        }
+
+        .card-title {
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .card-subtitle {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-align: center;
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        /* ───── Input ───── */
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .token-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 16px;
+            letter-spacing: 1.5px;
+            text-align: center;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .token-input::placeholder {
+            color: #444455;
+            letter-spacing: 2px;
+        }
+
+        .token-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim), 0 0 20px rgba(108, 92, 231, 0.15);
+        }
+
+        .token-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .token-input.error {
+            border-color: var(--red);
+            box-shadow: 0 0 0 3px var(--red-dim);
+        }
+
+        .token-input.success {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px var(--green-dim);
+        }
+
+        /* ───── Button ───── */
+        .btn-activate {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-height: 52px;
+        }
+
+        .btn-activate:hover:not(:disabled) {
+            background: #7c6ef7;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 30px rgba(108, 92, 231, 0.35);
+        }
+
+        .btn-activate:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn-activate:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Pulse on hover */
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0.5); }
+            70% { box-shadow: 0 0 0 12px rgba(108, 92, 231, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0); }
+        }
+
+        .btn-activate:hover:not(:disabled) {
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        /* ───── Spinner ───── */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-activate.loading .spinner {
+            display: block;
+        }
+
+        .btn-activate.loading .btn-text {
+            display: none;
+        }
+
+        /* ───── Error Message ───── */
+        .error-msg {
+            text-align: center;
+            color: var(--red);
+            font-size: 13px;
+            font-weight: 500;
+            margin-top: 16px;
+            opacity: 0;
+            transform: translateY(-6px);
+            transition: all 0.3s ease;
+            min-height: 20px;
+        }
+
+        .error-msg.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ───── Success State ───── */
+        .success-state {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding: 20px 0;
+        }
+
+        .success-state.visible {
+            display: flex;
+        }
+
+        .form-state.hidden {
+            display: none;
+        }
+
+        .checkmark-circle {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: var(--green-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounce-in {
+            0% { transform: scale(0); opacity: 0; }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .checkmark-circle svg {
+            width: 36px;
+            height: 36px;
+            stroke: var(--green);
+            stroke-width: 2.5;
+            fill: none;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .checkmark-circle svg .check-path {
+            stroke-dasharray: 40;
+            stroke-dashoffset: 40;
+            animation: draw-check 0.4s ease 0.3s forwards;
+        }
+
+        @keyframes draw-check {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .success-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--green);
+        }
+
+        .success-plan {
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+
+        .success-redirect {
+            font-size: 12px;
+            color: var(--text-dim);
+            opacity: 0.6;
+        }
+
+        /* ───── Buy Link ───── */
+        .buy-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .buy-link a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .buy-link a:hover {
+            color: #a29bfe;
+            text-decoration: underline;
+        }
+
+        /* ───── Fingerprint ───── */
+        .fingerprint {
+            margin-top: 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .fingerprint-label {
+            font-size: 10px;
+            color: var(--text-dim);
+            opacity: 0.5;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 4px;
+        }
+
+        .fingerprint-value {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            opacity: 0.4;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 4px 10px;
+            border-radius: 6px;
+            user-select: none;
+        }
+
+        .fingerprint-value:hover {
+            opacity: 0.7;
+            background: rgba(108, 92, 231, 0.1);
+        }
+
+        .fingerprint-value.copied {
+            opacity: 0.8;
+            color: var(--accent);
+        }
+
+        /* ───── Toast ───── */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 13px;
+            color: var(--text-dim);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        .toast.visible {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ───── Responsive ───── */
+        @media (max-width: 520px) {
+            .card {
+                padding: 36px 24px;
+            }
+
+            .logo-text {
+                font-size: 26px;
+            }
+
+            .token-input {
+                font-size: 14px;
+                padding: 14px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Logo -->
+    <div class="logo">
+        <div class="logo-text">Zaya Plus</div>
+        <div class="logo-sub">Premium Assistant</div>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+        <!-- Form State (default) -->
+        <div class="form-state" id="formState">
+            <h1 class="card-title">Ativar Zaya Plus</h1>
+            <p class="card-subtitle">Cole seu token de licenca para comecar</p>
+
+            <div class="input-wrapper">
+                <input
+                    type="text"
+                    class="token-input"
+                    id="tokenInput"
+                    placeholder="XXXX-XXXX-XXXX-XXXX"
+                    autocomplete="off"
+                    spellcheck="false"
+                >
+            </div>
+
+            <button class="btn-activate" id="btnActivate" onclick="activate()">
+                <span class="btn-text">Ativar</span>
+                <div class="spinner"></div>
+            </button>
+
+            <div class="error-msg" id="errorMsg"></div>
+
+            <div class="buy-link">
+                Nao tem um token? <a href="https://zayaplus.com" target="_blank" rel="noopener">Compre em zayaplus.com</a>
+            </div>
+        </div>
+
+        <!-- Success State -->
+        <div class="success-state" id="successState">
+            <div class="checkmark-circle">
+                <svg viewBox="0 0 24 24">
+                    <path class="check-path" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <div class="success-title">Licenca ativada!</div>
+            <div class="success-plan" id="successPlan">Plano: Pro</div>
+            <div class="success-redirect">Redirecionando para o setup...</div>
+        </div>
+    </div>
+
+    <!-- Fingerprint -->
+    <div class="fingerprint">
+        <div class="fingerprint-label">Machine ID</div>
+        <div class="fingerprint-value" id="fingerprint" onclick="copyFingerprint()">carregando...</div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">Copiado!</div>
+
+    <script>
+        const tokenInput = document.getElementById('tokenInput');
+        const btnActivate = document.getElementById('btnActivate');
+        const errorMsg = document.getElementById('errorMsg');
+        const formState = document.getElementById('formState');
+        const successState = document.getElementById('successState');
+        const successPlan = document.getElementById('successPlan');
+        const fingerprintEl = document.getElementById('fingerprint');
+        const toast = document.getElementById('toast');
+
+        // ── On load: check license status ──
+        (async function checkStatus() {
+            try {
+                const res = await fetch('/api/license/status');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.licensed || data.active) {
+                        window.location.href = data.setupComplete ? '/' : '/setup.html';
+                        return;
+                    }
+                }
+            } catch (e) {
+                // Not licensed, stay on this page
+            }
+
+            // Fetch fingerprint
+            try {
+                const res = await fetch('/api/license/fingerprint');
+                if (res.ok) {
+                    const data = await res.json();
+                    fingerprintEl.textContent = data.fingerprint || data.id || '—';
+                } else {
+                    fingerprintEl.textContent = '—';
+                }
+            } catch (e) {
+                fingerprintEl.textContent = '—';
+            }
+        })();
+
+        // ── Enter key to activate ──
+        tokenInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') activate();
+        });
+
+        // ── Clear error on typing ──
+        tokenInput.addEventListener('input', () => {
+            hideError();
+            tokenInput.classList.remove('error');
+        });
+
+        // ── Activate ──
+        async function activate() {
+            const token = tokenInput.value.trim();
+            if (!token) {
+                showError('Digite o token de licenca');
+                tokenInput.classList.add('error');
+                tokenInput.focus();
+                return;
+            }
+
+            setLoading(true);
+            hideError();
+            tokenInput.classList.remove('error');
+
+            try {
+                const res = await fetch('/api/license/activate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && (data.success || data.activated)) {
+                    showSuccess(data.plan || data.planName || 'Pro');
+                } else {
+                    setLoading(false);
+                    const errMap = {
+                        'invalid_token': 'Token invalido',
+                        'already_activated': 'Token ja ativado em outro computador',
+                        'expired': 'Licenca expirada',
+                        'network_error': 'Erro de conexao — verifique sua internet'
+                    };
+                    const msg = errMap[data.error] || data.message || data.error || 'Token invalido';
+                    showError(msg);
+                    tokenInput.classList.add('error');
+                }
+            } catch (e) {
+                setLoading(false);
+                showError('Erro de conexao — verifique sua internet');
+                tokenInput.classList.add('error');
+            }
+        }
+
+        function setLoading(loading) {
+            if (loading) {
+                btnActivate.classList.add('loading');
+                btnActivate.disabled = true;
+                tokenInput.disabled = true;
+            } else {
+                btnActivate.classList.remove('loading');
+                btnActivate.disabled = false;
+                tokenInput.disabled = false;
+            }
+        }
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.add('visible');
+        }
+
+        function hideError() {
+            errorMsg.classList.remove('visible');
+        }
+
+        function showSuccess(plan) {
+            tokenInput.classList.add('success');
+            successPlan.textContent = 'Plano: ' + plan;
+
+            setTimeout(() => {
+                formState.classList.add('hidden');
+                successState.classList.add('visible');
+            }, 300);
+
+            setTimeout(() => {
+                window.location.href = '/setup.html';
+            }, 2000);
+        }
+
+        // ── Copy fingerprint ──
+        function copyFingerprint() {
+            const text = fingerprintEl.textContent;
+            if (!text || text === '—' || text === 'carregando...') return;
+
+            navigator.clipboard.writeText(text).then(() => {
+                fingerprintEl.classList.add('copied');
+                toast.classList.add('visible');
+
+                setTimeout(() => {
+                    toast.classList.remove('visible');
+                    fingerprintEl.classList.remove('copied');
+                }, 1500);
+            });
+        }
+    </script>
+</body>
+</html>
