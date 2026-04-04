@@ -1,0 +1,1963 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zaya Plus — Sua Assistente Pessoal de IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0f;
+  --bg2: #0e0e16;
+  --purple: #6c5ce7;
+  --purple-light: #a29bfe;
+  --cyan: #00d4ff;
+  --green: #00e676;
+  --text: #e8e8f0;
+  --text-dim: #8888a0;
+  --glass: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ===== PARTICLE BACKGROUND ===== */
+#particles-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ===== FLOATING NAVBAR ===== */
+.navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  padding: 16px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transform: translateY(-100%);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1), background 0.3s;
+  background: rgba(10,10,15,0.75);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-bottom: 1px solid var(--glass-border);
+}
+.navbar.visible { transform: translateY(0); }
+.navbar-logo {
+  font-size: 1.3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--purple), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.navbar-links { display: flex; gap: 28px; }
+.navbar-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+.navbar-links a:hover { color: var(--text); }
+.navbar-cta {
+  padding: 8px 24px;
+  background: linear-gradient(135deg, var(--purple), #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+.navbar-cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(108,92,231,0.4);
+}
+
+/* ===== SECTIONS BASE ===== */
+section { position: relative; z-index: 1; }
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px;
+  position: relative;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: rgba(108,92,231,0.08);
+  border: 1px solid rgba(108,92,231,0.15);
+  border-radius: 100px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--purple-light);
+  margin-bottom: 28px;
+  animation: fadeInDown 0.8s ease;
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.hero-badge::before {
+  content: '';
+  width: 6px; height: 6px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.5); }
+}
+.hero-title {
+  font-size: clamp(3.5rem, 8vw, 7rem);
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--purple-light), var(--purple), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+  animation: fadeInUp 0.8s ease 0.1s both;
+}
+.hero-orb-container {
+  position: relative;
+  width: 400px; height: 400px;
+  margin: 20px auto;
+  animation: fadeIn 1s ease 0.3s both;
+}
+.hero-orb-container canvas {
+  width: 100%; height: 100%;
+}
+.hero-orb-glow {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(108,92,231,0.15) 0%, transparent 70%);
+  pointer-events: none;
+  animation: breathe 4s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: translate(-50%,-50%) scale(1); opacity: 0.6; }
+  50% { transform: translate(-50%,-50%) scale(1.1); opacity: 1; }
+}
+.hero-subtitle {
+  font-size: clamp(1rem, 2.5vw, 1.35rem);
+  color: var(--text-dim);
+  font-weight: 400;
+  max-width: 550px;
+  margin: 0 auto 36px;
+  animation: fadeInUp 0.8s ease 0.4s both;
+}
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeInUp 0.8s ease 0.5s both;
+}
+.btn-primary {
+  padding: 14px 36px;
+  background: linear-gradient(135deg, var(--purple), #8b5cf6);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s;
+}
+.btn-primary:hover::after { transform: translateX(100%); }
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(108,92,231,0.45);
+}
+.btn-outline {
+  padding: 14px 36px;
+  background: rgba(255,255,255,0.04);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s;
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.btn-outline:hover {
+  background: rgba(108,92,231,0.1);
+  border-color: rgba(108,92,231,0.3);
+  box-shadow: 0 0 20px rgba(108,92,231,0.15), inset 0 1px 0 rgba(255,255,255,0.1);
+  transform: translateY(-2px);
+}
+.scroll-indicator {
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  animation: bounce 2s infinite;
+  opacity: 0.4;
+}
+.scroll-indicator svg { width: 28px; height: 28px; stroke: var(--text-dim); }
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+  40% { transform: translateX(-50%) translateY(-12px); }
+  60% { transform: translateX(-50%) translateY(-6px); }
+}
+
+/* ===== SOCIAL PROOF BAR ===== */
+.social-proof {
+  padding: 60px 20px;
+  position: relative;
+  z-index: 1;
+}
+.social-proof-inner {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px;
+  padding: 36px 40px;
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 32px rgba(0,0,0,0.3);
+  display: flex;
+  justify-content: center;
+  gap: 60px;
+  flex-wrap: wrap;
+  max-width: 800px;
+  margin: 0 auto;
+}
+.proof-item {
+  text-align: center;
+}
+.proof-number {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--purple-light), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.proof-label {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+/* ===== FEATURES ===== */
+.features {
+  padding: 100px 20px;
+}
+.section-title {
+  text-align: center;
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--text), var(--purple-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.section-subtitle {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 1.05rem;
+  margin-bottom: 60px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.feature-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 28px;
+  transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -1px 0 rgba(255,255,255,0.03),
+    0 8px 32px rgba(0,0,0,0.3);
+  transform-style: preserve-3d;
+  will-change: transform;
+  opacity: 0;
+  transform: translateY(30px);
+}
+.feature-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 40%, rgba(255,255,255,0.02) 100%);
+  pointer-events: none;
+}
+.feature-card:hover {
+  transform: translateY(-4px);
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 16px 48px rgba(0,0,0,0.4),
+    0 0 30px rgba(108,92,231,0.08);
+}
+.feature-icon {
+  font-size: 2rem;
+  margin-bottom: 14px;
+  display: block;
+}
+.feature-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.feature-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ===== HOW IT WORKS ===== */
+.how-it-works {
+  padding: 100px 20px;
+}
+.steps-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0;
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+}
+.step {
+  flex: 1;
+  text-align: center;
+  padding: 0 24px;
+  position: relative;
+  opacity: 0;
+  transform: translateY(30px);
+}
+.step.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.step-number {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  background: rgba(108,92,231,0.15);
+  border: 1px solid rgba(108,92,231,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 auto 20px;
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 20px rgba(108,92,231,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.step-line {
+  position: absolute;
+  top: 28px;
+  left: calc(50% + 28px);
+  right: calc(-50% + 28px);
+  height: 2px;
+  background: linear-gradient(90deg, var(--purple), rgba(108,92,231,0.15));
+  z-index: 1;
+}
+.step:last-child .step-line { display: none; }
+.step-mockup {
+  width: 100%;
+  max-width: 260px;
+  height: 140px;
+  border-radius: 12px;
+  margin: 20px auto 0;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 8px 24px rgba(0,0,0,0.3);
+  backdrop-filter: blur(4px);
+}
+.mockup-terminal {
+  background: #1a1a2e;
+  height: 100%;
+  padding: 12px;
+  text-align: left;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.72rem;
+  color: var(--green);
+  position: relative;
+}
+.mockup-terminal .term-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.mockup-terminal .term-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.mockup-terminal .term-dot:nth-child(1) { background: #ff5f57; }
+.mockup-terminal .term-dot:nth-child(2) { background: #ffbd2e; }
+.mockup-terminal .term-dot:nth-child(3) { background: #28ca41; }
+.mockup-terminal .term-line { margin-bottom: 4px; }
+.mockup-terminal .term-prompt { color: var(--cyan); }
+.mockup-terminal .term-cursor {
+  display: inline-block;
+  width: 7px; height: 14px;
+  background: var(--green);
+  animation: blink 1s step-end infinite;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+@keyframes blink { 50% { opacity: 0; } }
+
+.mockup-wizard {
+  background: linear-gradient(135deg, #1a1a2e, #16162a);
+  height: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.mockup-wizard .wiz-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--purple-light);
+}
+.mockup-wizard .wiz-bar {
+  width: 80%;
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.mockup-wizard .wiz-fill {
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--purple), var(--cyan));
+  border-radius: 3px;
+  animation: fillBar 3s ease-in-out infinite;
+}
+@keyframes fillBar {
+  0% { width: 20%; }
+  50% { width: 80%; }
+  100% { width: 20%; }
+}
+.mockup-wizard .wiz-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 80%;
+}
+.mockup-wizard .wiz-check {
+  font-size: 0.65rem;
+  color: var(--green);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.mockup-wizard .wiz-check::before { content: '✓'; font-weight: 700; }
+
+.mockup-dashboard {
+  background: linear-gradient(135deg, #1a1a2e, #16162a);
+  height: 100%;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.mockup-dashboard .dash-card {
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.mockup-dashboard .dash-icon { font-size: 1rem; margin-bottom: 4px; }
+.mockup-dashboard .dash-label { font-size: 0.55rem; color: var(--text-dim); }
+
+.step-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.step-desc {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+/* ===== DEMO / SHOWCASE ===== */
+.demo {
+  padding: 100px 20px;
+}
+.demo-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.demo-player {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s;
+  backdrop-filter: blur(8px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    0 20px 60px rgba(0,0,0,0.4);
+  opacity: 0;
+  transform: translateY(30px);
+}
+.demo-player.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.demo-player:hover {
+  border-color: rgba(255,255,255,0.1);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 20px 60px rgba(0,0,0,0.4),
+    0 0 40px rgba(108,92,231,0.1);
+}
+.demo-player-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 16px;
+}
+.demo-play-btn {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  box-shadow: 0 0 40px rgba(108,92,231,0.4);
+}
+.demo-play-btn:hover { transform: scale(1.1); }
+.demo-play-btn svg { width: 28px; height: 28px; fill: white; margin-left: 4px; }
+.demo-label {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+.demo-grid-bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+.demo-floating-cards {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.demo-float-card {
+  position: absolute;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: float-card 6s ease-in-out infinite;
+  backdrop-filter: blur(12px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 4px 16px rgba(0,0,0,0.3);
+}
+.demo-float-card:nth-child(1) { top: 15%; left: 8%; animation-delay: 0s; }
+.demo-float-card:nth-child(2) { top: 20%; right: 8%; animation-delay: 1.5s; }
+.demo-float-card:nth-child(3) { bottom: 20%; left: 12%; animation-delay: 3s; }
+.demo-float-card:nth-child(4) { bottom: 15%; right: 10%; animation-delay: 4.5s; }
+@keyframes float-card {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(-8px); opacity: 1; }
+}
+.demo-float-icon { font-size: 1.1rem; }
+.demo-footer-note {
+  text-align: center;
+  margin-top: 24px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+.demo-footer-note span {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ===== PRICING ===== */
+.pricing {
+  padding: 100px 20px;
+}
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  max-width: 1050px;
+  margin: 0 auto;
+}
+.pricing-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 20px;
+  padding: 36px 28px;
+  position: relative;
+  transition: all 0.4s;
+  backdrop-filter: blur(12px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    inset 0 -1px 0 rgba(255,255,255,0.03),
+    0 12px 40px rgba(0,0,0,0.3);
+  transform-style: preserve-3d;
+  will-change: transform;
+  opacity: 0;
+  transform: translateY(30px);
+}
+.pricing-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  border-radius: 20px 20px 0 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%);
+  pointer-events: none;
+}
+.pricing-card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.pricing-card:hover {
+  transform: translateY(-6px);
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 20px 60px rgba(0,0,0,0.4),
+    0 0 30px rgba(108,92,231,0.1);
+}
+.pricing-card.popular {
+  border-color: rgba(108,92,231,0.25);
+  background: rgba(108,92,231,0.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 0 40px rgba(108,92,231,0.1),
+    0 16px 50px rgba(0,0,0,0.4);
+}
+.pricing-card.popular:hover {
+  box-shadow: 0 20px 60px rgba(108,92,231,0.2);
+}
+.popular-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 4px 20px;
+  background: linear-gradient(135deg, var(--purple), #8b5cf6);
+  border-radius: 100px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.pricing-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+.pricing-price {
+  font-size: 2.8rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+  letter-spacing: -1px;
+}
+.pricing-price span {
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--text-dim);
+}
+.pricing-desc {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-bottom: 24px;
+}
+.pricing-features {
+  list-style: none;
+  margin-bottom: 28px;
+}
+.pricing-features li {
+  padding: 8px 0;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.pricing-features li::before {
+  content: '✓';
+  color: var(--green);
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.pricing-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-decoration: none;
+}
+.pricing-btn-primary {
+  background: linear-gradient(135deg, var(--purple), #8b5cf6);
+  color: white;
+  border: none;
+}
+.pricing-btn-primary:hover {
+  box-shadow: 0 8px 32px rgba(108,92,231,0.45);
+  transform: translateY(-2px);
+}
+.pricing-btn-outline {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--glass-border);
+}
+.pricing-btn-outline:hover {
+  border-color: var(--purple);
+  background: rgba(108,92,231,0.08);
+}
+.pricing-guarantee {
+  text-align: center;
+  margin-top: 40px;
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.pricing-guarantee svg { width: 18px; height: 18px; stroke: var(--green); flex-shrink: 0; }
+
+/* ===== FAQ ===== */
+.faq {
+  padding: 100px 20px;
+}
+.faq-list {
+  max-width: 700px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.faq-item {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.3s;
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 4px 16px rgba(0,0,0,0.2);
+  opacity: 0;
+  transform: translateY(20px);
+}
+.faq-item.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.faq-item:hover {
+  border-color: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.035);
+}
+.faq-question {
+  padding: 20px 24px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.95rem;
+  user-select: none;
+}
+.faq-question svg {
+  width: 20px; height: 20px;
+  stroke: var(--text-dim);
+  transition: transform 0.3s;
+  flex-shrink: 0;
+}
+.faq-item.open .faq-question svg { transform: rotate(180deg); }
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), padding 0.35s;
+  padding: 0 24px;
+}
+.faq-item.open .faq-answer {
+  max-height: 200px;
+  padding: 0 24px 20px;
+}
+.faq-answer p {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+/* ===== FOOTER CTA ===== */
+.footer-cta {
+  padding: 100px 20px;
+  text-align: center;
+}
+.footer-cta-orb {
+  width: 200px; height: 200px;
+  margin: 0 auto 28px;
+}
+.footer-cta-orb canvas { width: 100%; height: 100%; }
+.footer-cta-title {
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -1px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, var(--text), var(--purple-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.footer-cta .btn-primary {
+  display: inline-block;
+  padding: 16px 48px;
+  font-size: 1.1rem;
+}
+
+/* ===== FOOTER ===== */
+.footer {
+  padding: 40px 20px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.015);
+  backdrop-filter: blur(8px);
+}
+.footer-links {
+  display: flex;
+  gap: 28px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.footer-links a {
+  color: var(--text-dim);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: color 0.3s;
+}
+.footer-links a:hover { color: var(--text); }
+.footer-copy {
+  color: rgba(255,255,255,0.2);
+  font-size: 0.78rem;
+}
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeInDown { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .hero-orb-container { width: 280px; height: 280px; }
+  .hero-orb-glow { width: 350px; height: 350px; }
+  .steps-container {
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+  }
+  .step-line { display: none; }
+  .navbar-links { display: none; }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+  .social-proof-inner { gap: 30px; }
+  .demo-float-card { display: none; }
+}
+
+@media (max-width: 480px) {
+  .hero-orb-container { width: 220px; height: 220px; }
+  .hero-buttons { flex-direction: column; width: 100%; max-width: 300px; }
+  .btn-primary, .btn-outline { width: 100%; text-align: center; }
+}
+
+/* ===== ENHANCEMENT: SLOT MACHINE DIGIT ROLLERS ===== */
+.proof-number {
+  overflow: hidden;
+  height: 3.2rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.digit-roller {
+  display: inline-block;
+  height: 3.2rem;
+  overflow: hidden;
+  position: relative;
+}
+.digit-roller-inner {
+  transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.digit-roller-inner span {
+  display: block;
+  height: 3.2rem;
+  line-height: 3.2rem;
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+.proof-suffix {
+  display: inline-block;
+  height: 3.2rem;
+  line-height: 3.2rem;
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+/* ===== ENHANCEMENT: HERO LETTER ANIMATION ===== */
+.hero-title .char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(40px) rotateX(-40deg);
+  animation: charReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes charReveal {
+  to { opacity: 1; transform: translateY(0) rotateX(0); }
+}
+
+/* ===== ENHANCEMENT: PRICING CARDS FLOAT ===== */
+.pricing-card.visible {
+  animation: priceFloat 6s ease-in-out infinite;
+}
+.pricing-card:nth-child(1) { animation-delay: 0s; }
+.pricing-card:nth-child(2) { animation-delay: 2s; }
+.pricing-card:nth-child(3) { animation-delay: 4s; }
+@keyframes priceFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* ===== ENHANCEMENT: SPRING FAQ ACCORDION ===== */
+.faq-answer {
+  transition: max-height 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), padding 0.4s !important;
+}
+
+/* ===== ENHANCEMENT: SECTION GRADIENT OVERLAPS ===== */
+section::after {
+  content: '';
+  position: absolute;
+  bottom: -60px;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(180deg, transparent, var(--bg));
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* ===== ENHANCEMENT: NAVBAR GLASS MORPHISM ===== */
+.navbar.visible {
+  transform: translateY(0);
+  background: rgba(10,10,15,0.4);
+  backdrop-filter: blur(30px) saturate(1.8);
+  -webkit-backdrop-filter: blur(30px) saturate(1.8);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* ===== ENHANCEMENT: 3D TILT TRANSITION ===== */
+.feature-card, .pricing-card {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* ===== 3D GLASS COMPOSITION ===== */
+.glass-showcase {
+  padding: 100px 20px;
+  background: #0A0A0C;
+  position: relative;
+  overflow: hidden;
+}
+.glass-showcase::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255,160,50,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.glass-scene-wrapper {
+  max-width: 500px;
+  margin: 0 auto;
+  aspect-ratio: 9/16;
+  max-height: 700px;
+  perspective: 1500px;
+  perspective-origin: 30% 60%;
+  position: relative;
+}
+.glass-scene {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transform: rotateY(-12deg) rotateX(4deg);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Glass panel base */
+.g-panel {
+  position: absolute;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(255,255,255,0.04),
+    0 12px 40px rgba(0,0,0,0.5);
+  overflow: hidden;
+  opacity: 0;
+  transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.g-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 50%, rgba(255,255,255,0.02) 100%);
+  pointer-events: none;
+  border-radius: 14px;
+}
+.g-panel.visible { opacity: 1; }
+
+/* Panel 1: Profile header (back) */
+.g-profile {
+  top: 3%;
+  left: 5%;
+  right: 5%;
+  height: 28%;
+  transform: translateZ(-80px) translateY(40px);
+  filter: blur(1.2px);
+  opacity: 0;
+}
+.g-profile.visible {
+  filter: blur(1.2px);
+  opacity: 0.8;
+  transform: translateZ(-80px) translateY(0);
+}
+.g-profile-inner {
+  padding: 20px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  height: 100%;
+}
+.g-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255,160,50,0.3), rgba(255,80,80,0.3));
+  border: 2px solid rgba(255,255,255,0.15);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+}
+.g-profile-info {
+  flex: 1;
+}
+.g-username {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  margin-bottom: 4px;
+}
+.g-bio {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.g-stats {
+  display: flex;
+  gap: 16px;
+}
+.g-stat-num {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.8);
+}
+.g-stat-label {
+  font-size: 0.55rem;
+  color: rgba(255,255,255,0.35);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Panel 2: Video grid (center, SELECTED) */
+.g-grid {
+  top: 34%;
+  left: 5%;
+  right: 5%;
+  height: 42%;
+  transform: translateZ(0px) translateY(60px);
+  border: 2px solid #33b4ff;
+  box-shadow:
+    0 0 15px rgba(51,180,255,0.25),
+    0 0 50px rgba(51,180,255,0.12),
+    inset 0 0 15px rgba(51,180,255,0.06),
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 16px 50px rgba(0,0,0,0.5);
+  animation: neonPulse 3s ease-in-out infinite;
+}
+.g-grid.visible {
+  transform: translateZ(0px) translateY(0);
+}
+.g-grid::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 20px;
+  border: 1px solid rgba(51,180,255,0.08);
+  pointer-events: none;
+  filter: blur(4px);
+}
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 15px rgba(51,180,255,0.25), 0 0 50px rgba(51,180,255,0.12), inset 0 0 15px rgba(51,180,255,0.06), 0 16px 50px rgba(0,0,0,0.5); }
+  50% { box-shadow: 0 0 25px rgba(51,180,255,0.35), 0 0 70px rgba(51,180,255,0.18), inset 0 0 25px rgba(51,180,255,0.1), 0 16px 50px rgba(0,0,0,0.5); }
+}
+.g-grid-inner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 3px;
+  height: 100%;
+}
+.g-thumb {
+  background: rgba(255,255,255,0.03);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.g-thumb::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(0,0,0,0.4));
+}
+.g-thumb svg {
+  width: 16px;
+  height: 16px;
+  fill: rgba(255,255,255,0.5);
+  position: relative;
+  z-index: 1;
+}
+.g-thumb-views {
+  position: absolute;
+  bottom: 4px;
+  left: 6px;
+  font-size: 0.5rem;
+  color: rgba(255,255,255,0.6);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* Panel 3: Nav menu (left, forward) */
+.g-nav {
+  top: 15%;
+  left: -12%;
+  width: 52px;
+  bottom: 20%;
+  transform: translateZ(60px) translateX(-40px);
+  background: rgba(255,255,255,0.025);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 0;
+  gap: 6px;
+}
+.g-nav.visible {
+  transform: translateZ(60px) translateX(0);
+}
+.g-nav-item {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: all 0.3s;
+  position: relative;
+}
+.g-nav-item.active {
+  background: rgba(51,180,255,0.12);
+  box-shadow: 0 0 12px rgba(51,180,255,0.2), inset 0 0 8px rgba(51,180,255,0.1);
+}
+.g-nav-item.active::after {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 16px;
+  background: #33b4ff;
+  border-radius: 2px;
+  box-shadow: 0 0 8px #33b4ff;
+}
+
+/* Floating elements at different depths */
+.g-float-element {
+  position: absolute;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+}
+.g-float-1 {
+  width: 80px; height: 40px;
+  top: 82%; right: -5%;
+  transform: translateZ(30px);
+  animation: gFloat1 7s ease-in-out infinite;
+}
+.g-float-2 {
+  width: 50px; height: 50px;
+  top: 8%; right: -8%;
+  transform: translateZ(40px);
+  border-radius: 50%;
+  animation: gFloat2 9s ease-in-out infinite;
+}
+@keyframes gFloat1 {
+  0%, 100% { transform: translateZ(30px) translateY(0); }
+  50% { transform: translateZ(30px) translateY(-12px); }
+}
+@keyframes gFloat2 {
+  0%, 100% { transform: translateZ(40px) translateY(0) rotate(0deg); }
+  50% { transform: translateZ(40px) translateY(-8px) rotate(15deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .glass-scene-wrapper { max-height: 550px; }
+  .g-nav { display: none; }
+  .g-profile-inner { padding: 12px; }
+  .g-avatar { width: 48px; height: 48px; font-size: 1.2rem; }
+}
+@media (max-width: 480px) {
+  .glass-scene-wrapper { max-height: 450px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Particles Background -->
+<canvas id="particles-canvas"></canvas>
+
+<!-- Navbar -->
+<nav class="navbar" id="navbar">
+  <div class="navbar-logo">ZAYA+</div>
+  <div class="navbar-links">
+    <a href="#features">Recursos</a>
+    <a href="#how-it-works">Como Funciona</a>
+    <a href="#pricing">Precos</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <a href="#pricing" class="navbar-cta">Comecar Agora</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-badge">Assistente de IA completa</div>
+  <h1 class="hero-title">ZAYA PLUS</h1>
+  <div class="hero-orb-container">
+    <div class="hero-orb-glow"></div>
+    <canvas id="hero-orb"></canvas>
+  </div>
+  <p class="hero-subtitle">Sua assistente pessoal de IA. Completa. Instalavel. Privada.</p>
+  <div class="hero-buttons">
+    <a href="#pricing" class="btn-primary">Comecar Agora</a>
+    <a href="#demo" class="btn-outline">Ver Demo</a>
+  </div>
+  <div class="scroll-indicator">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="social-proof">
+  <div class="social-proof-inner">
+    <div class="proof-item anim-scroll">
+      <div class="proof-number" data-target="500">0</div>
+      <div class="proof-label">Usuarios ativos</div>
+    </div>
+    <div class="proof-item anim-scroll">
+      <div class="proof-number" data-target="15">0</div>
+      <div class="proof-label">Integracoes</div>
+    </div>
+    <div class="proof-item anim-scroll">
+      <div class="proof-number" data-target="99">0</div>
+      <div class="proof-label">% Uptime</div>
+    </div>
+    <div class="proof-item anim-scroll">
+      <div class="proof-number" data-target="24">0</div>
+      <div class="proof-label">Horas de suporte</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <h2 class="section-title">Tudo que voce precisa</h2>
+  <p class="section-subtitle">Uma unica plataforma com tudo integrado. Sem complicacao.</p>
+  <div class="features-grid">
+    <div class="feature-card anim-scroll">
+      <span class="feature-icon">🧠</span>
+      <h3 class="feature-title">Chat com IA</h3>
+      <p class="feature-desc">Converse naturalmente. ChatGPT, Groq ou Claude — voce escolhe o modelo.</p>
+    </div>
+    <div class="feature-card anim-scroll">
+      <span class="feature-icon">🎤</span>
+      <h3 class="feature-title">Voz Realista</h3>
+      <p class="feature-desc">Fala com voce usando ElevenLabs. Vozes naturais e expressivas.</p>
+    </div>
+    <div class="feature-card anim-scroll">
+      <span class="feature-icon">💬</span>
+      <h3 class="feature-title">WhatsApp Bot</h3>
+      <p class="feature-desc">Responde mensagens automaticamente. Atendimento 24/7 para seus clientes.</p>
+    </div>
+    <div class="feature-card anim-scroll">
+      <span class="feature-icon">📞</span>
+      <h3 class="feature-title">Ligacoes</h3>
+      <p class="feature-desc">Faz e recebe ligacoes telefonicas com voz natural por IA.</p>
+    </div>
+    <div class="feature-card anim-scroll">
+      <span class="feature-icon">📸</span>
+      <h3 class="feature-title">Instagram & Facebook</h3>
+      <p class="feature-desc">Gerencia suas redes sociais. Respostas automaticas e agendamento.</p>
+    </div>
+    <div class="feature-card anim-scroll">
+      <span class="feature-icon">📊</span>
+      <h3 class="feature-title">Ads Dashboard</h3>
+      <p class="feature-desc">Metricas completas dos seus anuncios. Meta Ads e Google Ads em um lugar.</p>
+    </div>
+    <div class="feature-card anim-scroll">
+      <span class="feature-icon">🎨</span>
+      <h3 class="feature-title">Gerar Imagens</h3>
+      <p class="feature-desc">Cria imagens profissionais com DALL-E e Gemini.</p>
+    </div>
+    <div class="feature-card anim-scroll">
+      <span class="feature-icon">🎬</span>
+      <h3 class="feature-title">Gerar Videos</h3>
+      <p class="feature-desc">Cria videos incriveis com Kling e Veo3 direto do chat.</p>
+    </div>
+    <div class="feature-card anim-scroll">
+      <span class="feature-icon">🔒</span>
+      <h3 class="feature-title">100% Privado</h3>
+      <p class="feature-desc">Tudo roda no SEU computador. Seus dados nunca saem da sua maquina.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="how-it-works">
+  <h2 class="section-title">3 passos para comecar</h2>
+  <p class="section-subtitle">Do zero ao funcionando em menos de 5 minutos.</p>
+  <div class="steps-container">
+    <div class="step anim-scroll">
+      <div class="step-number">1</div>
+      <div class="step-line"></div>
+      <h3 class="step-title">Instale</h3>
+      <p class="step-desc">Um comando no terminal e esta pronto</p>
+      <div class="step-mockup">
+        <div class="mockup-terminal">
+          <div class="term-bar">
+            <div class="term-dot"></div>
+            <div class="term-dot"></div>
+            <div class="term-dot"></div>
+          </div>
+          <div class="term-line"><span class="term-prompt">~$</span> npx zaya-plus install</div>
+          <div class="term-line" style="color: var(--cyan);">Downloading Zaya Plus...</div>
+          <div class="term-line" style="color: var(--green);">✓ Instalado com sucesso!</div>
+          <div class="term-line"><span class="term-prompt">~$</span> <span class="term-cursor"></span></div>
+        </div>
+      </div>
+    </div>
+    <div class="step anim-scroll">
+      <div class="step-number">2</div>
+      <div class="step-line"></div>
+      <h3 class="step-title">Configure</h3>
+      <p class="step-desc">O Setup Wizard te guia em 5 minutos</p>
+      <div class="step-mockup">
+        <div class="mockup-wizard">
+          <div class="wiz-title">Setup Wizard</div>
+          <div class="wiz-bar"><div class="wiz-fill"></div></div>
+          <div class="wiz-checks">
+            <div class="wiz-check">API Key configurada</div>
+            <div class="wiz-check">Voz selecionada</div>
+            <div class="wiz-check">WhatsApp conectado</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="step anim-scroll">
+      <div class="step-number">3</div>
+      <h3 class="step-title">Use</h3>
+      <p class="step-desc">Fale com a Zaya e ela faz tudo</p>
+      <div class="step-mockup">
+        <div class="mockup-dashboard">
+          <div class="dash-card"><span class="dash-icon">💬</span><span class="dash-label">Chat</span></div>
+          <div class="dash-card"><span class="dash-icon">🎤</span><span class="dash-label">Voz</span></div>
+          <div class="dash-card"><span class="dash-icon">📸</span><span class="dash-label">Social</span></div>
+          <div class="dash-card"><span class="dash-icon">📊</span><span class="dash-label">Ads</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DEMO -->
+<section class="demo" id="demo">
+  <h2 class="section-title">Veja a Zaya em acao</h2>
+  <p class="section-subtitle">Interface moderna, rapida e intuitiva.</p>
+  <div class="demo-container">
+    <div class="demo-player anim-scroll">
+      <div class="demo-grid-bg"></div>
+      <div class="demo-floating-cards">
+        <div class="demo-float-card"><span class="demo-float-icon">🧠</span> Processando resposta...</div>
+        <div class="demo-float-card"><span class="demo-float-icon">🎤</span> Voz ativada</div>
+        <div class="demo-float-card"><span class="demo-float-icon">💬</span> 3 msgs novas</div>
+        <div class="demo-float-card"><span class="demo-float-icon">📊</span> +15% conversoes</div>
+      </div>
+      <div class="demo-player-inner">
+        <div class="demo-play-btn">
+          <svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+        <span class="demo-label">Assistir demonstracao</span>
+      </div>
+    </div>
+    <p class="demo-footer-note">Funciona no <span>Mac</span> e <span>Windows</span></p>
+  </div>
+</section>
+
+<!-- 3D GLASS SHOWCASE -->
+<section class="glass-showcase" id="glass-showcase">
+  <h2 class="section-title" style="color:#e8e8f0;-webkit-text-fill-color:#e8e8f0">Gerencie tudo em um lugar</h2>
+  <p class="section-subtitle">Dashboard completo com visual premium</p>
+
+  <div class="glass-scene-wrapper">
+    <div class="glass-scene" id="glass-scene">
+
+      <!-- Panel 1: Profile (back, blurred) -->
+      <div class="g-panel g-profile anim-scroll">
+        <div class="g-profile-inner">
+          <div class="g-avatar">👤</div>
+          <div class="g-profile-info">
+            <div class="g-username">@zayaplus</div>
+            <div class="g-bio">Sua assistente pessoal de IA completa. Instalavel. Privada.</div>
+            <div class="g-stats">
+              <div><div class="g-stat-num">6.2K</div><div class="g-stat-label">Seguidores</div></div>
+              <div><div class="g-stat-num">842</div><div class="g-stat-label">Seguindo</div></div>
+              <div><div class="g-stat-num">156</div><div class="g-stat-label">Posts</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel 2: Video Grid (center, neon selected) -->
+      <div class="g-panel g-grid anim-scroll">
+        <div class="g-grid-inner">
+          <div class="g-thumb"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg><span class="g-thumb-views">▶ 12K</span></div>
+          <div class="g-thumb"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg><span class="g-thumb-views">▶ 8.4K</span></div>
+          <div class="g-thumb"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg><span class="g-thumb-views">▶ 23K</span></div>
+          <div class="g-thumb"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg><span class="g-thumb-views">▶ 5.1K</span></div>
+          <div class="g-thumb"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg><span class="g-thumb-views">▶ 18K</span></div>
+          <div class="g-thumb"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg><span class="g-thumb-views">▶ 9.7K</span></div>
+          <div class="g-thumb"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg><span class="g-thumb-views">▶ 31K</span></div>
+          <div class="g-thumb"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg><span class="g-thumb-views">▶ 4.2K</span></div>
+          <div class="g-thumb"><svg viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg><span class="g-thumb-views">▶ 15K</span></div>
+        </div>
+      </div>
+
+      <!-- Panel 3: Nav menu (left, forward) -->
+      <div class="g-panel g-nav anim-scroll">
+        <div class="g-nav-item">🏠</div>
+        <div class="g-nav-item">🔍</div>
+        <div class="g-nav-item active">🎬</div>
+        <div class="g-nav-item">💬</div>
+        <div class="g-nav-item">👤</div>
+      </div>
+
+      <!-- Floating decorative elements -->
+      <div class="g-float-element g-float-1"></div>
+      <div class="g-float-element g-float-2"></div>
+
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <h2 class="section-title">Escolha seu plano</h2>
+  <p class="section-subtitle">Pagamento unico. Sem assinatura.</p>
+  <div class="pricing-grid">
+    <!-- Basic -->
+    <div class="pricing-card anim-scroll">
+      <div class="pricing-name">Basic</div>
+      <div class="pricing-price">R$ 197</div>
+      <div class="pricing-desc">Perfeito para comecar</div>
+      <ul class="pricing-features">
+        <li>Chat com IA (GPT, Groq, Claude)</li>
+        <li>Voz realista (ElevenLabs)</li>
+        <li>Agendamentos</li>
+        <li>Roda 100% no seu PC</li>
+        <li>Atualizacoes gratuitas</li>
+      </ul>
+      <a href="#" class="pricing-btn pricing-btn-outline">Comprar Basic</a>
+    </div>
+    <!-- Pro -->
+    <div class="pricing-card popular anim-scroll">
+      <div class="popular-badge">Mais Popular</div>
+      <div class="pricing-name">Pro</div>
+      <div class="pricing-price">R$ 497</div>
+      <div class="pricing-desc">Para quem quer escalar</div>
+      <ul class="pricing-features">
+        <li>Tudo do Basic +</li>
+        <li>WhatsApp Bot completo</li>
+        <li>Instagram & Facebook</li>
+        <li>Gerar Imagens com IA</li>
+        <li>Pesquisa Web inteligente</li>
+        <li>Supabase Cloud sync</li>
+      </ul>
+      <a href="#" class="pricing-btn pricing-btn-primary">Comprar Pro</a>
+    </div>
+    <!-- Enterprise -->
+    <div class="pricing-card anim-scroll">
+      <div class="pricing-name">Enterprise</div>
+      <div class="pricing-price">R$ 997</div>
+      <div class="pricing-desc">Tudo sem limites</div>
+      <ul class="pricing-features">
+        <li>Tudo do Pro +</li>
+        <li>Ads Dashboard completo</li>
+        <li>Ligacoes telefonicas com IA</li>
+        <li>Gerar Videos (Kling, Veo3)</li>
+        <li>CRM + Gestao de Leads</li>
+        <li>Suporte prioritario</li>
+      </ul>
+      <a href="#" class="pricing-btn pricing-btn-outline">Comprar Enterprise</a>
+    </div>
+  </div>
+  <div class="pricing-guarantee">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    Garantia de 7 dias. Nao gostou, devolvemos seu dinheiro.
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <h2 class="section-title">Perguntas Frequentes</h2>
+  <p class="section-subtitle">Tire suas duvidas antes de comecar.</p>
+  <div class="faq-list">
+    <div class="faq-item anim-scroll">
+      <div class="faq-question">
+        Preciso saber programar?
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-answer"><p>Nao! A Zaya te guia em tudo pelo Setup Wizard. E tao simples quanto instalar um app normal.</p></div>
+    </div>
+    <div class="faq-item anim-scroll">
+      <div class="faq-question">
+        Funciona no Windows?
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-answer"><p>Sim! Mac e Windows. Precisa apenas do Node.js instalado, e o Setup Wizard cuida do resto.</p></div>
+    </div>
+    <div class="faq-item anim-scroll">
+      <div class="faq-question">
+        Meus dados ficam seguros?
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-answer"><p>100%. Tudo roda no seu computador. Nada vai para nuvem (a menos que voce queira usar o Supabase Cloud).</p></div>
+    </div>
+    <div class="faq-item anim-scroll">
+      <div class="faq-question">
+        Posso cancelar?
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-answer"><p>Garantia de 7 dias. Sem perguntas. Se nao gostar, devolvemos 100% do valor.</p></div>
+    </div>
+    <div class="faq-item anim-scroll">
+      <div class="faq-question">
+        Preciso pagar mensalidade?
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-answer"><p>Nao. Pagamento unico. So paga pelas APIs que usar (OpenAI, ElevenLabs, etc) — voce controla tudo.</p></div>
+    </div>
+    <div class="faq-item anim-scroll">
+      <div class="faq-question">
+        Como recebo o acesso?
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="faq-answer"><p>Apos a compra, voce recebe um token por email para ativar a Zaya Plus instantaneamente.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER CTA -->
+<section class="footer-cta">
+  <div class="footer-cta-orb">
+    <canvas id="footer-orb"></canvas>
+  </div>
+  <h2 class="footer-cta-title">Pronta para ter sua propria assistente de IA?</h2>
+  <a href="#pricing" class="btn-primary">Comecar Agora</a>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="#">Suporte</a>
+    <a href="#">Termos</a>
+    <a href="#">Privacidade</a>
+  </div>
+  <p class="footer-copy">&copy; 2026 Zaya Plus. Todos os direitos reservados.</p>
+</footer>
+
+<!-- ORB SCRIPT -->
+<script src="/orb.js"></script>
+
+<script>
+// ===== PARTICLES (Enhanced with mouse reactivity) =====
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, particles = [];
+  let mouseX = -9999, mouseY = -9999;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  // Track mouse position on the document (canvas has pointer-events: none)
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+  });
+  document.addEventListener('mouseleave', () => {
+    mouseX = -9999;
+    mouseY = -9999;
+  });
+
+  for (let i = 0; i < 80; i++) {
+    particles.push({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      size: Math.random() * 1.5 + 0.3,
+      speedX: (Math.random() - 0.5) * 0.15,
+      speedY: (Math.random() - 0.5) * 0.15,
+      opacity: Math.random() * 0.4 + 0.1,
+    });
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    particles.forEach(p => {
+      // Mouse repulsion
+      const dx = p.x - mouseX;
+      const dy = p.y - mouseY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 150 && dist > 0) {
+        const force = (150 - dist) / 150 * 0.8;
+        p.x += (dx / dist) * force;
+        p.y += (dy / dist) * force;
+      }
+
+      p.x += p.speedX;
+      p.y += p.speedY;
+      if (p.x < 0) p.x = w;
+      if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h;
+      if (p.y > h) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(162, 155, 254, ${p.opacity})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ===== HERO ORB =====
+const heroOrb = new JarvisOrb('hero-orb');
+const states = ['idle', 'listening', 'processing', 'speaking'];
+let stateIndex = 0;
+setInterval(() => {
+  stateIndex = (stateIndex + 1) % states.length;
+  heroOrb.setState(states[stateIndex]);
+  heroOrb.setAudioLevel(Math.random() * 0.7 + 0.1);
+}, 3000);
+
+// ===== FOOTER ORB =====
+const footerOrb = new JarvisOrb('footer-orb');
+let footerStateIndex = 2;
+setInterval(() => {
+  footerStateIndex = (footerStateIndex + 1) % states.length;
+  footerOrb.setState(states[footerStateIndex]);
+  footerOrb.setAudioLevel(Math.random() * 0.5);
+}, 3500);
+
+// ===== NAVBAR SHOW/HIDE =====
+const navbar = document.getElementById('navbar');
+const heroSection = document.getElementById('hero');
+const navObserver = new IntersectionObserver(([entry]) => {
+  navbar.classList.toggle('visible', !entry.isIntersecting);
+}, { threshold: 0.1 });
+navObserver.observe(heroSection);
+
+// ===== SCROLL ANIMATIONS =====
+const scrollElements = document.querySelectorAll('.anim-scroll');
+const scrollObserver = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      // Stagger cards within the same parent
+      const parent = entry.target.parentElement;
+      const siblings = Array.from(parent.querySelectorAll('.anim-scroll'));
+      const idx = siblings.indexOf(entry.target);
+      const delay = idx * 80;
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+      }, delay);
+      scrollObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+scrollElements.forEach(el => scrollObserver.observe(el));
+
+// ===== NUMBER COUNTERS (Slot Machine Digit Rollers) =====
+function createDigitRoller(targetDigit, delay) {
+  const roller = document.createElement('div');
+  roller.className = 'digit-roller';
+  const inner = document.createElement('div');
+  inner.className = 'digit-roller-inner';
+  for (let i = 0; i <= 9; i++) {
+    const span = document.createElement('span');
+    span.textContent = i;
+    inner.appendChild(span);
+  }
+  roller.appendChild(inner);
+  // Animate after a staggered delay
+  setTimeout(() => {
+    inner.style.transform = `translateY(-${targetDigit * 3.2}rem)`;
+  }, delay);
+  return roller;
+}
+
+const counterElements = document.querySelectorAll('[data-target]');
+const counterObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const target = parseInt(el.dataset.target);
+      const isPercent = el.parentElement.querySelector('.proof-label').textContent.includes('%');
+      const isPlus = target >= 100;
+
+      // Clear existing content
+      el.textContent = '';
+
+      // Build digit rollers
+      const digits = String(target).split('');
+      digits.forEach((d, i) => {
+        const roller = createDigitRoller(parseInt(d), 200 + i * 200);
+        el.appendChild(roller);
+      });
+
+      // Add suffix (+, %)
+      if (isPlus || isPercent) {
+        const suffix = document.createElement('span');
+        suffix.className = 'proof-suffix';
+        suffix.textContent = isPercent ? '%' : '+';
+        el.appendChild(suffix);
+      }
+
+      counterObserver.unobserve(el);
+    }
+  });
+}, { threshold: 0.5 });
+
+counterElements.forEach(el => counterObserver.observe(el));
+
+// ===== FAQ ACCORDION =====
+document.querySelectorAll('.faq-question').forEach(q => {
+  q.addEventListener('click', () => {
+    const item = q.parentElement;
+    const wasOpen = item.classList.contains('open');
+    // Close all
+    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+    // Toggle current
+    if (!wasOpen) item.classList.add('open');
+  });
+});
+
+// ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(a.getAttribute('href'));
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  });
+});
+
+// ===== ENHANCEMENT 1: ORB PARALLAX ON SCROLL =====
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY;
+  const heroOrb = document.querySelector('.hero-orb-container');
+  if (heroOrb) {
+    heroOrb.style.transform = `translateY(${scrollY * 0.3}px) scale(${1 - scrollY * 0.0005})`;
+    heroOrb.style.opacity = Math.max(0, 1 - scrollY * 0.002);
+  }
+});
+
+// ===== ENHANCEMENT 3: 3D TILT EFFECT ON CARDS =====
+document.querySelectorAll('.feature-card, .pricing-card').forEach(card => {
+  card.addEventListener('mousemove', (e) => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = (y - centerY) / centerY * -8;
+    const rotateY = (x - centerX) / centerX * 8;
+    card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(10px)`;
+  });
+  card.addEventListener('mouseleave', () => {
+    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) translateZ(0)';
+    card.style.transition = 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)';
+  });
+  card.addEventListener('mouseenter', () => {
+    card.style.transition = 'transform 0.1s';
+  });
+});
+
+// ===== ENHANCEMENT 5: HEADLINE LETTER-BY-LETTER ANIMATION =====
+(function() {
+  const heroTitle = document.querySelector('.hero-title');
+  if (heroTitle) {
+    const text = heroTitle.textContent;
+    heroTitle.innerHTML = '';
+    heroTitle.style.perspective = '600px';
+    text.split('').forEach((char, i) => {
+      const span = document.createElement('span');
+      span.className = 'char';
+      span.textContent = char === ' ' ? '\u00A0' : char;
+      span.style.animationDelay = `${0.1 + i * 0.06}s`;
+      heroTitle.appendChild(span);
+    });
+  }
+})();
+
+// ===== ENHANCEMENT 8: STAGGERED SCROLL ANIMATIONS =====
+const staggerCards = document.querySelectorAll('.feature-card.anim-scroll');
+staggerCards.forEach((card, i) => {
+  card.style.transitionDelay = `${i * 0.08}s`;
+  card.style.transition = 'all 0.7s cubic-bezier(0.16, 1, 0.3, 1)';
+});
+
+// ===== 3D GLASS SCENE — MOUSE TRACKING =====
+const glassScene = document.getElementById('glass-scene');
+if (glassScene) {
+  const wrapper = glassScene.parentElement;
+  wrapper.addEventListener('mousemove', (e) => {
+    const rect = wrapper.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    glassScene.style.transform = `rotateY(${-12 + x * 6}deg) rotateX(${4 + y * -4}deg)`;
+  });
+  wrapper.addEventListener('mouseleave', () => {
+    glassScene.style.transform = 'rotateY(-12deg) rotateX(4deg)';
+  });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaya Plus — Admin Panel</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0f;
+            --card: rgba(255,255,255,0.03);
+            --card-border: rgba(255,255,255,0.06);
+            --accent: #6c5ce7;
+            --accent-glow: rgba(108, 92, 231, 0.4);
+            --accent-dim: rgba(108, 92, 231, 0.15);
+            --green: #00e676;
+            --green-dim: rgba(0, 230, 118, 0.15);
+            --yellow: #ffc107;
+            --yellow-dim: rgba(255, 193, 7, 0.15);
+            --red: #ff5252;
+            --red-dim: rgba(255, 82, 82, 0.15);
+            --gold: #f5a623;
+            --gold-dim: rgba(245, 166, 35, 0.15);
+            --text: #eeeeee;
+            --text-dim: #888899;
+            --border: rgba(255,255,255,0.06);
+            --radius: 16px;
+            --glass: rgba(255,255,255,0.03);
+            --glass-border: rgba(255,255,255,0.06);
+            --glass-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.5;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.3;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ───── Glass Card ───── */
+        .glass-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius);
+            box-shadow: var(--glass-shadow);
+            padding: 28px;
+            margin-bottom: 24px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ───── LOGIN SCREEN ───── */
+        #login-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .login-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius);
+            box-shadow: var(--glass-shadow);
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            animation: fadeUp 0.6s ease both;
+        }
+
+        .login-logo {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent) 0%, #a29bfe 50%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 4px;
+        }
+
+        .login-subtitle {
+            font-size: 14px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 500;
+            margin-bottom: 36px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 15px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            margin-bottom: 20px;
+        }
+
+        .login-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .login-input::placeholder { color: var(--text-dim); }
+
+        .login-error {
+            color: var(--red);
+            font-size: 13px;
+            margin-bottom: 12px;
+            display: none;
+        }
+
+        /* ───── Buttons ───── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+            letter-spacing: 0.3px;
+        }
+
+        .btn:hover {
+            background: #7b6cf0;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn:active { transform: translateY(0); }
+
+        .btn-full { width: 100%; }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 12px;
+            border-radius: 8px;
+        }
+
+        .btn-danger {
+            background: rgba(255, 82, 82, 0.15);
+            color: var(--red);
+            border: 1px solid rgba(255, 82, 82, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: rgba(255, 82, 82, 0.25);
+            box-shadow: 0 4px 20px rgba(255, 82, 82, 0.2);
+        }
+
+        .btn-ghost {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-dim);
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .btn-ghost:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text);
+            box-shadow: none;
+        }
+
+        .btn-copy {
+            background: rgba(108, 92, 231, 0.12);
+            color: var(--accent);
+            border: 1px solid rgba(108, 92, 231, 0.2);
+        }
+
+        .btn-copy:hover {
+            background: rgba(108, 92, 231, 0.2);
+            box-shadow: 0 4px 20px rgba(108, 92, 231, 0.15);
+        }
+
+        /* ───── DASHBOARD ───── */
+        #dashboard { display: none; }
+
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .dashboard-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent) 0%, #a29bfe 50%, #00d4ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .dashboard-meta {
+            font-size: 13px;
+            color: var(--text-dim);
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-dim);
+            border: 1px solid rgba(255,255,255,0.06);
+            font-size: 13px;
+            padding: 8px 16px;
+        }
+
+        /* ───── Stats Row ───── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius);
+            box-shadow: var(--glass-shadow);
+            padding: 20px;
+            text-align: center;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .stat-card:nth-child(2) { animation-delay: 0.05s; }
+        .stat-card:nth-child(3) { animation-delay: 0.1s; }
+        .stat-card:nth-child(4) { animation-delay: 0.15s; }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 18px;
+        }
+
+        .stat-icon.purple { background: var(--accent-dim); }
+        .stat-icon.green { background: var(--green-dim); }
+        .stat-icon.yellow { background: var(--yellow-dim); }
+        .stat-icon.gold { background: var(--gold-dim); }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.2;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        /* ───── Section Titles ───── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .count-badge {
+            background: var(--accent-dim);
+            color: var(--accent);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        /* ───── Form ───── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full { grid-column: 1 / -1; }
+
+        .form-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .form-input, .form-select {
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .form-input::placeholder { color: #555; }
+
+        .form-select {
+            cursor: pointer;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 36px;
+        }
+
+        .form-select option {
+            background: #1a1a28;
+            color: var(--text);
+        }
+
+        .form-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        /* ───── Token Display ───── */
+        .token-display {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: rgba(108, 92, 231, 0.06);
+            border: 2px dashed rgba(108, 92, 231, 0.3);
+            border-radius: 12px;
+            text-align: center;
+            animation: glowPulse 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glowPulse {
+            from { box-shadow: 0 0 10px rgba(108, 92, 231, 0.1); }
+            to { box-shadow: 0 0 25px rgba(108, 92, 231, 0.25); }
+        }
+
+        .token-display.visible { display: block; }
+
+        .token-label {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .token-value {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 16px;
+            color: var(--accent);
+            word-break: break-all;
+            line-height: 1.6;
+            user-select: all;
+            margin-bottom: 14px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+        }
+
+        /* ───── Filter Bar ───── */
+        .filter-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-toggles {
+            display: flex;
+            gap: 4px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            padding: 3px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .filter-btn {
+            padding: 6px 14px;
+            border: none;
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .filter-btn:hover:not(.active) {
+            color: var(--text);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 180px;
+            padding: 8px 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-dim);
+        }
+
+        .search-input::placeholder { color: #555; }
+
+        /* ───── Table ───── */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.04);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+        }
+
+        thead th {
+            padding: 12px 14px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        tbody tr {
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: rgba(108, 92, 231, 0.04);
+        }
+
+        tbody td {
+            padding: 12px 14px;
+            font-size: 13px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            color: var(--text);
+            vertical-align: middle;
+        }
+
+        .token-cell {
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            cursor: pointer;
+            transition: opacity 0.2s;
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .token-cell:hover { opacity: 0.7; }
+
+        /* ───── Badges ───── */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+        }
+
+        .badge-basic { background: rgba(102,102,102,0.2); color: #aaa; }
+        .badge-pro { background: var(--accent-dim); color: #a29bfe; }
+        .badge-enterprise { background: var(--gold-dim); color: var(--gold); }
+
+        .badge-ativo { background: var(--green-dim); color: var(--green); }
+        .badge-pendente { background: var(--yellow-dim); color: var(--yellow); }
+        .badge-expirado { background: var(--red-dim); color: var(--red); }
+
+        .machine-cell {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .machine-cell.active { color: var(--text); }
+
+        .date-cell {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: var(--text-dim);
+            font-size: 14px;
+        }
+
+        .empty-state span {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        /* ───── Toast ───── */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            animation: toastIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.success { border-color: rgba(0, 230, 118, 0.3); }
+        .toast.error { border-color: rgba(255, 82, 82, 0.3); }
+
+        .toast.hiding { animation: toastOut 0.3s ease forwards; }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(40px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(40px); }
+        }
+
+        /* ───── Loading ───── */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.15);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.6);
+            z-index: 5000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loading-overlay.visible {
+            display: flex;
+        }
+
+        .loading-box {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 32px 40px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 14px;
+            color: var(--text-dim);
+            box-shadow: var(--glass-shadow);
+        }
+
+        .loading-box .spinner {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* ───── Plan Price Tags ───── */
+        .plan-option {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* ───── Responsive ───── */
+        @media (max-width: 640px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full { grid-column: auto; }
+
+            .login-card { padding: 32px 24px; }
+
+            .glass-card { padding: 20px; }
+
+            .dashboard-header { flex-direction: column; align-items: flex-start; }
+
+            .filter-bar { flex-direction: column; align-items: stretch; }
+
+            .filter-toggles { justify-content: center; }
+
+            .stat-value { font-size: 22px; }
+
+            .container { padding: 20px 14px; }
+        }
+
+        @media (max-width: 400px) {
+            .stats-row {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .stat-card { padding: 14px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-box">
+            <div class="spinner"></div>
+            Carregando...
+        </div>
+    </div>
+
+    <!-- ═══════ LOGIN SCREEN ═══════ -->
+    <div id="login-screen">
+        <div class="login-card">
+            <div class="login-logo">ZAYA PLUS</div>
+            <div class="login-subtitle">Admin</div>
+
+            <form id="loginForm" onsubmit="return handleLogin(event)">
+                <input
+                    type="password"
+                    class="login-input"
+                    id="loginPassword"
+                    placeholder="Senha de administrador"
+                    autocomplete="off"
+                    autofocus
+                >
+                <div class="login-error" id="loginError">Senha incorreta ou erro de conexao</div>
+                <button type="submit" class="btn btn-full" id="loginBtn">Entrar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ═══════ DASHBOARD ═══════ -->
+    <div id="dashboard">
+        <div class="container">
+
+            <!-- Header -->
+            <div class="dashboard-header">
+                <div>
+                    <div class="dashboard-title">ZAYA PLUS</div>
+                    <div class="dashboard-meta">Painel Administrativo</div>
+                </div>
+                <button class="btn btn-logout" onclick="handleLogout()">Sair</button>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row" id="statsRow">
+                <div class="stat-card">
+                    <div class="stat-icon purple">&#x1f4ca;</div>
+                    <div class="stat-value" id="statTotal">0</div>
+                    <div class="stat-label">Total Licencas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">&#x2713;</div>
+                    <div class="stat-value" id="statActive">0</div>
+                    <div class="stat-label">Ativas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon yellow">&#x23f3;</div>
+                    <div class="stat-value" id="statPending">0</div>
+                    <div class="stat-label">Pendentes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon gold">&#x1f4b0;</div>
+                    <div class="stat-value" id="statRevenue">R$ 0</div>
+                    <div class="stat-label">Revenue Estimado</div>
+                </div>
+            </div>
+
+            <!-- Section: Generate Token -->
+            <div class="glass-card" style="animation-delay: 0.1s;">
+                <div class="section-header">
+                    <div class="section-title">Gerar Nova Licenca</div>
+                </div>
+
+                <form id="generateForm" onsubmit="return handleGenerate(event)">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Nome</label>
+                            <input type="text" class="form-input" id="genName" placeholder="Nome do cliente" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-input" id="genEmail" placeholder="email@exemplo.com" required>
+                        </div>
+                        <div class="form-group full">
+                            <label class="form-label">Plano</label>
+                            <select class="form-select" id="genPlan" required>
+                                <option value="basic">Basic — R$ 29/mes</option>
+                                <option value="pro">Pro — R$ 79/mes</option>
+                                <option value="enterprise">Enterprise — R$ 199/mes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn" id="genBtn">Gerar Token</button>
+                    </div>
+                </form>
+
+                <div class="token-display" id="tokenDisplay">
+                    <div class="token-label">Token Gerado</div>
+                    <div class="token-value" id="tokenValue"></div>
+                    <button class="btn btn-copy btn-sm" onclick="copyGeneratedToken()">Copiar Token</button>
+
+                    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+                        <div class="token-label">Comando de Ativacao (envie para o cliente)</div>
+                        <div class="token-value" id="activateCommand" style="font-size:0.7rem;color:#00e676"></div>
+                        <button class="btn btn-copy btn-sm" onclick="copyActivateCommand()" style="background:linear-gradient(135deg,#00b894,#00e676)">Copiar Comando</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: All Licenses -->
+            <div class="glass-card" style="animation-delay: 0.2s;">
+                <div class="section-header">
+                    <div class="section-title">Licencas Geradas</div>
+                    <span class="count-badge" id="countBadge">0</span>
+                </div>
+
+                <div class="filter-bar">
+                    <div class="filter-toggles">
+                        <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">Todos</button>
+                        <button class="filter-btn" data-filter="basic" onclick="setFilter('basic', this)">Basic</button>
+                        <button class="filter-btn" data-filter="pro" onclick="setFilter('pro', this)">Pro</button>
+                        <button class="filter-btn" data-filter="enterprise" onclick="setFilter('enterprise', this)">Enterprise</button>
+                    </div>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Buscar por nome, email ou token..." oninput="renderTable()">
+                </div>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Token</th>
+                                <th>Plano</th>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Maquina</th>
+                                <th>Criado em</th>
+                                <th>Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="licenseTableBody">
+                            <tr>
+                                <td colspan="8" class="empty-state">
+                                    <span>&#x1f4e6;</span>
+                                    Carregando licencas...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ═══════ State ═══════
+        let adminPassword = '';
+        let licenses = [];
+        let currentFilter = 'all';
+        let refreshInterval = null;
+        let generatedToken = '';
+
+        const PLAN_PRICES = { basic: 29, pro: 79, enterprise: 199 };
+
+        // ═══════ API Helpers ═══════
+        const API_BASE = window.location.origin;
+
+        async function apiCall(url, options = {}) {
+            try {
+                const res = await fetch(API_BASE + url, {
+                    headers: { 'Content-Type': 'application/json' },
+                    ...options
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || data.message || 'Erro na requisicao');
+                return data;
+            } catch (err) {
+                throw err;
+            }
+        }
+
+        // ═══════ Login ═══════
+        async function handleLogin(e) {
+            e.preventDefault();
+            const pwd = document.getElementById('loginPassword').value.trim();
+            if (!pwd) return;
+
+            const btn = document.getElementById('loginBtn');
+            const errEl = document.getElementById('loginError');
+            btn.innerHTML = '<div class="spinner"></div> Entrando...';
+            btn.disabled = true;
+            errEl.style.display = 'none';
+
+            try {
+                const data = await apiCall('/api/license/admin/list?password=' + encodeURIComponent(pwd));
+                adminPassword = pwd;
+                licenses = Array.isArray(data) ? data : (data.licenses || []);
+                document.getElementById('login-screen').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                updateStats();
+                renderTable();
+                startAutoRefresh();
+            } catch (err) {
+                errEl.textContent = err.message || 'Senha incorreta ou erro de conexao';
+                errEl.style.display = 'block';
+            } finally {
+                btn.innerHTML = 'Entrar';
+                btn.disabled = false;
+            }
+        }
+
+        function handleLogout() {
+            adminPassword = '';
+            licenses = [];
+            if (refreshInterval) clearInterval(refreshInterval);
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('login-screen').style.display = 'flex';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        // ═══════ Generate Token ═══════
+        async function handleGenerate(e) {
+            e.preventDefault();
+            const btn = document.getElementById('genBtn');
+            btn.innerHTML = '<div class="spinner"></div> Gerando...';
+            btn.disabled = true;
+
+            try {
+                const data = await apiCall('/api/license/admin/generate', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        name: document.getElementById('genName').value.trim(),
+                        email: document.getElementById('genEmail').value.trim(),
+                        plan: document.getElementById('genPlan').value,
+                        password: adminPassword
+                    })
+                });
+
+                generatedToken = data.token || data.license?.token || '';
+                document.getElementById('tokenValue').textContent = generatedToken;
+                document.getElementById('activateCommand').textContent = `cd ~/zaya-plus && node activate.js ${generatedToken}`;
+                document.getElementById('tokenDisplay').classList.add('visible');
+
+                showToast('Licenca gerada com sucesso!', 'success');
+                document.getElementById('generateForm').reset();
+                refreshLicenses();
+            } catch (err) {
+                showToast(err.message || 'Erro ao gerar licenca', 'error');
+            } finally {
+                btn.innerHTML = 'Gerar Token';
+                btn.disabled = false;
+            }
+        }
+
+        function copyGeneratedToken() {
+            if (!generatedToken) return;
+            navigator.clipboard.writeText(generatedToken).then(() => {
+                showToast('Token copiado!', 'success');
+            });
+        }
+
+        function copyActivateCommand() {
+            if (!generatedToken) return;
+            const cmd = `cd ~/zaya-plus && node activate.js ${generatedToken}`;
+            navigator.clipboard.writeText(cmd).then(() => {
+                showToast('Comando copiado! Envie para o cliente.', 'success');
+            });
+        }
+
+        // ═══════ License List ═══════
+        async function refreshLicenses() {
+            try {
+                const data = await apiCall('/api/license/admin/list?password=' + encodeURIComponent(adminPassword));
+                licenses = Array.isArray(data) ? data : (data.licenses || []);
+                updateStats();
+                renderTable();
+            } catch (err) {
+                // silent fail on auto-refresh
+            }
+        }
+
+        function startAutoRefresh() {
+            if (refreshInterval) clearInterval(refreshInterval);
+            refreshInterval = setInterval(refreshLicenses, 30000);
+        }
+
+        function getStatus(license) {
+            if (license.expires && new Date(license.expires) < new Date()) return 'expirado';
+            if (license.expiresAt && new Date(license.expiresAt) < new Date()) return 'expirado';
+            if (license.activated) return 'ativo';
+            return 'pendente';
+        }
+
+        function updateStats() {
+            const total = licenses.length;
+            let active = 0, pending = 0, revenue = 0;
+
+            licenses.forEach(l => {
+                const status = getStatus(l);
+                if (status === 'ativo') active++;
+                else if (status === 'pendente') pending++;
+                const plan = (l.plan || 'basic').toLowerCase();
+                revenue += PLAN_PRICES[plan] || 0;
+            });
+
+            animateCounter('statTotal', total);
+            animateCounter('statActive', active);
+            animateCounter('statPending', pending);
+            animateRevenueCounter('statRevenue', revenue);
+            document.getElementById('countBadge').textContent = total;
+        }
+
+        function animateCounter(id, target) {
+            const el = document.getElementById(id);
+            const current = parseInt(el.textContent) || 0;
+            if (current === target) return;
+
+            const duration = 600;
+            const start = performance.now();
+
+            function step(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.round(current + (target - current) * eased);
+                if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function animateRevenueCounter(id, target) {
+            const el = document.getElementById(id);
+            const currentText = el.textContent.replace(/[^\d]/g, '');
+            const current = parseInt(currentText) || 0;
+            if (current === target) return;
+
+            const duration = 600;
+            const start = performance.now();
+
+            function step(now) {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                const val = Math.round(current + (target - current) * eased);
+                el.textContent = 'R$ ' + val.toLocaleString('pt-BR');
+                if (progress < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        function setFilter(filter, btn) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('licenseTableBody');
+            const search = (document.getElementById('searchInput').value || '').toLowerCase();
+
+            let filtered = licenses.filter(l => {
+                if (currentFilter !== 'all' && (l.plan || '').toLowerCase() !== currentFilter) return false;
+                if (search) {
+                    const haystack = [l.token, l.name, l.email, l.plan].join(' ').toLowerCase();
+                    if (!haystack.includes(search)) return false;
+                }
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="8" class="empty-state">
+                        <span>&#x1f50d;</span>
+                        Nenhuma licenca encontrada
+                    </td></tr>`;
+                return;
+            }
+
+            // Sort newest first
+            filtered.sort((a, b) => new Date(b.createdAt || b.created || 0) - new Date(a.createdAt || a.created || 0));
+
+            tbody.innerHTML = filtered.map(l => {
+                const status = getStatus(l);
+                const plan = (l.plan || 'basic').toLowerCase();
+                const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+                const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+                const token = l.token || '';
+                const truncToken = token.length > 16 ? token.slice(0, 8) + '...' + token.slice(-6) : token;
+                const machine = l.hostname || l.machine || l.machineId || '';
+                const machineDisplay = machine || 'Nao ativado';
+                const machineClass = machine ? 'active' : '';
+                const date = l.createdAt || l.created || '';
+                const dateDisplay = date ? new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-';
+
+                return `<tr>
+                    <td class="token-cell" title="${token}" onclick="copyToken('${token}')">${truncToken}</td>
+                    <td><span class="badge badge-${plan}">${planLabel}</span></td>
+                    <td>${escapeHtml(l.name || '-')}</td>
+                    <td>${escapeHtml(l.email || '-')}</td>
+                    <td><span class="badge badge-${status}">${statusLabel}</span></td>
+                    <td class="machine-cell ${machineClass}">${escapeHtml(machineDisplay)}</td>
+                    <td class="date-cell">${dateDisplay}</td>
+                    <td>
+                        ${status === 'ativo' ? `<button class="btn btn-danger btn-sm" onclick="deactivateLicense('${token}')">Desativar</button>` : ''}
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        // ═══════ Actions ═══════
+        async function deactivateLicense(token) {
+            if (!confirm('Desativar esta licenca?')) return;
+
+            showLoading(true);
+            try {
+                await apiCall('/api/license/deactivate', {
+                    method: 'POST',
+                    body: JSON.stringify({ token, password: adminPassword })
+                });
+                showToast('Licenca desativada', 'success');
+                await refreshLicenses();
+            } catch (err) {
+                showToast(err.message || 'Erro ao desativar', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        function copyToken(token) {
+            navigator.clipboard.writeText(token).then(() => {
+                showToast('Token copiado!', 'success');
+            });
+        }
+
+        // ═══════ UI Helpers ═══════
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `${type === 'success' ? '&#x2713;' : '&#x2717;'} ${message}`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('hiding');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').classList.toggle('visible', show);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

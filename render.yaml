@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: zaya-plus
+    runtime: node
+    rootDir: render-server
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: SUPABASE_URL
+        value: https://qzgzpfcdfanhtehrikyy.supabase.co
+      - key: SUPABASE_KEY
+        sync: false
+      - key: LICENSE_ADMIN_PASSWORD
+        sync: false
