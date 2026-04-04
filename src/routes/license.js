@@ -3,6 +3,7 @@ import {
   checkLocalLicense,
   activateLicense,
   deactivateLicense,
+  revokeLicense,
   generateLicense,
   listLicenses,
 } from '../services/license.js';
@@ -122,6 +123,26 @@ router.get('/admin/list', async (req, res) => {
     return res.json(licenses);
   } catch (err) {
     log.server.error(`License list error: ${err.message}`);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /admin/revoke — Revoke a license permanently
+router.post('/admin/revoke', async (req, res) => {
+  try {
+    if (!ADMIN_PASSWORD) {
+      return res.status(403).json({ error: 'LICENSE_ADMIN_PASSWORD nao configurada' });
+    }
+    const { token, password } = req.body;
+    if (!checkAdmin(password)) {
+      return res.status(401).json({ error: 'Senha admin invalida' });
+    }
+    if (!token) {
+      return res.status(400).json({ error: 'token obrigatorio' });
+    }
+    const result = await revokeLicense(token);
+    return res.json(result);
+  } catch (err) {
     return res.status(500).json({ error: err.message });
   }
 });

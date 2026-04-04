@@ -156,7 +156,12 @@ export async function validateLicense(token) {
       return { valid: false, error: 'Token invalido' };
     }
 
-    // 4. Verificar expiração
+    // 4a. Verificar se foi revogado
+    if (tokenData.revoked) {
+      return { valid: false, error: 'Licenca revogada' };
+    }
+
+    // 4b. Verificar expiração
     if (tokenData.expires && new Date(tokenData.expires) < new Date()) {
       return { valid: false, error: 'Licenca expirada' };
     }
@@ -251,6 +256,26 @@ export async function deactivateLicense(token) {
     if (fs.existsSync(LICENSE_FILE)) fs.unlinkSync(LICENSE_FILE);
     log.server.info(`Licença desativada: ${token.slice(0, 8)}...`);
     return { success: true };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+}
+
+// ================================================================
+// REVOKE LICENSE (bloqueia permanentemente)
+// ================================================================
+
+export async function revokeLicense(token) {
+  try {
+    const db = readLicenseDB();
+    if (db.tokens[token]) {
+      db.tokens[token].revoked = true;
+      db.tokens[token].revoked_at = new Date().toISOString();
+      writeLicenseDB(db);
+      log.server.info(`Licença REVOGADA: ${token.slice(0, 8)}...`);
+      return { success: true };
+    }
+    return { success: false, error: 'Token nao encontrado' };
   } catch (err) {
     return { success: false, error: err.message };
   }

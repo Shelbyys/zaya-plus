@@ -838,7 +838,13 @@
                 <div class="token-display" id="tokenDisplay">
                     <div class="token-label">Token Gerado</div>
                     <div class="token-value" id="tokenValue"></div>
-                    <button class="btn btn-copy btn-sm" onclick="copyGeneratedToken()">Copiar</button>
+                    <button class="btn btn-copy btn-sm" onclick="copyGeneratedToken()">Copiar Token</button>
+
+                    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
+                        <div class="token-label">Comando de Ativacao (envie para o cliente)</div>
+                        <div class="token-value" id="activateCommand" style="font-size:0.7rem;color:#00e676"></div>
+                        <button class="btn btn-copy btn-sm" onclick="copyActivateCommand()" style="background:linear-gradient(135deg,#00b894,#00e676)">Copiar Comando</button>
+                    </div>
                 </div>
             </div>
 
@@ -974,6 +980,7 @@
 
                 generatedToken = data.token || data.license?.token || '';
                 document.getElementById('tokenValue').textContent = generatedToken;
+                document.getElementById('activateCommand').textContent = `cd ~/zaya-plus && node activate.js ${generatedToken}`;
                 document.getElementById('tokenDisplay').classList.add('visible');
 
                 showToast('Licenca gerada com sucesso!', 'success');
@@ -991,6 +998,14 @@
             if (!generatedToken) return;
             navigator.clipboard.writeText(generatedToken).then(() => {
                 showToast('Token copiado!', 'success');
+            });
+        }
+
+        function copyActivateCommand() {
+            if (!generatedToken) return;
+            const cmd = `cd ~/zaya-plus && node activate.js ${generatedToken}`;
+            navigator.clipboard.writeText(cmd).then(() => {
+                showToast('Comando copiado! Envie para o cliente.', 'success');
             });
         }
 
