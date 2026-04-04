@@ -222,10 +222,15 @@ async function scheduledIGScrape() {
 
 export function startScheduler() {
   if (schedulerInterval) return;
-  schedulerInterval = setInterval(() => {
+  schedulerInterval = setInterval(async () => {
     executePending();
     executeEventReminders();
     scheduledIGScrape();
+    // Verificar se licença foi revogada/expirada
+    try {
+      const { periodicLicenseCheck } = await import('./license.js');
+      periodicLicenseCheck();
+    } catch(e) {}
   }, 30000);
   log.ai.info('Scheduler iniciado (30s interval)');
   executePending();

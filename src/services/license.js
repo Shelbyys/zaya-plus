@@ -328,10 +328,49 @@ export function isLicensed() {
     if (!fs.existsSync(LICENSE_FILE)) return false;
     const data = JSON.parse(fs.readFileSync(LICENSE_FILE, 'utf-8'));
     if (data.fingerprint !== getMachineFingerprint()) return false;
-    // Verify HMAC signature to prevent manual .license crafting
     if (!verifyLicenseSignature(data)) return false;
     return true;
   } catch {
     return false;
+  }
+}
+
+// ================================================================
+// VERIFICACAO PERIODICA (roda no servidor a cada 30min)
+// Checa se a licenca foi revogada e desativa localmente
+// ================================================================
+
+let lastPeriodicCheck = 0;
+const CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutos
+
+export async function periodicLicenseCheck() {
+  const now = Date.now();
+  if (now - lastPeriodicCheck < CHECK_INTERVAL) return;
+  lastPeriodicCheck = now;
+
+  if (!fs.existsSync(LICENSE_FILE)) return;
+
+  try {
+    const data = JSON.parse(fs.readFileSync(LICENSE_FILE, 'utf-8'));
+    const db = readLicenseDB();
+    const tokenData = db.tokens[data.token];
+
+    if (!tokenData) return;
+
+    // Se foi revogado pelo admin, deletar licenca local
+    if (tokenData.revoked) {
+      fs.unlinkSync(LICENSE_FILE);
+      log.server.warn('Licenca revogada remotamente — acesso bloqueado');
+      return;
+    }
+
+    // Se expirou, deletar licenca local
+    if (tokenData.expires && new Date(tokenData.expires) < new Date()) {
+      fs.unlinkSync(LICENSE_FILE);
+      log.server.warn('Licenca expirada — acesso bloqueado');
+      return;
+    }
+  } catch (e) {
+    // Silently fail
   }
 }
