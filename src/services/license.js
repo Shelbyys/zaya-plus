@@ -6,61 +6,50 @@ import { ROOT_DIR } from '../config.js';
 import { log } from '../logger.js';
 
 // ================================================================
-// ZAYA PLUS — LICENSE SYSTEM
-// Validação online via GitHub Gist + bloqueio por hardware
+// ZAYA PLUS — LICENSE SYSTEM (Supabase Online)
+// Tokens ficam no Supabase. Validacao online.
+// .license local é cache — servidor é a verdade.
 // ================================================================
 
-// URL do Gist com os tokens válidos (JSON)
-// Formato do Gist: { "tokens": { "uuid-token": { "plan": "pro", "email": "...", "name": "...", "expires": "2027-01-01" } } }
-const LICENSE_GIST_URL = process.env.LICENSE_GIST_URL || 'https://gist.githubusercontent.com/Shelbyys/raw/zaya-licenses.json';
+const SUPABASE_URL = 'https://qzgzpfcdfanhtehrikyy.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6Z3pwZmNkZmFuaHRlaHJpa3l5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTMwMjEzOCwiZXhwIjoyMDg0ODc4MTM4fQ.LXQRc0y38UROwof1d5hBpnNgOPsFEr7AhvMuLcXIVZg';
+const TABLE = 'licenses';
 
 const LICENSE_FILE = join(ROOT_DIR, '.license');
-const LICENSE_DB_FILE = join(ROOT_DIR, 'licenses.json');
+const SECRET_KEY = crypto.createHash('sha256').update(SUPABASE_KEY + 'zaya-plus-hmac').digest();
 
 // ================================================================
-// SECURITY KEYS
+// SUPABASE HELPERS
 // ================================================================
 
-const LICENSE_SERVER_KEY = process.env.LICENSE_SERVER_KEY || 'zaya-default-server-key';
-const SECRET_KEY = crypto.createHash('sha256').update(LICENSE_SERVER_KEY + 'zaya-plus-license-salt').digest();
-// AES-256 key for encrypting licenses.json (must be 32 bytes)
-const AES_KEY = crypto.createHash('sha256').update(LICENSE_SERVER_KEY + 'zaya-plus-aes-db').digest();
-const AES_IV_LENGTH = 16;
+const headers = {
+  'apikey': SUPABASE_KEY,
+  'Authorization': `Bearer ${SUPABASE_KEY}`,
+  'Content-Type': 'application/json'
+};
 
-// ================================================================
-// HMAC SIGNATURE HELPERS
-// ================================================================
-
-function signLicense(token, fingerprint, plan) {
-  return crypto.createHmac('sha256', SECRET_KEY).update(token + fingerprint + plan).digest('hex');
+async function sbSelect(filter) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}?${filter}`, { headers });
+  if (!r.ok) throw new Error(`Supabase SELECT: ${r.status}`);
+  return r.json();
 }
 
-function verifyLicenseSignature(data) {
-  if (!data.signature) return false;
-  const expected = signLicense(data.token, data.fingerprint, data.plan);
-  return crypto.timingSafeEqual(Buffer.from(data.signature, 'hex'), Buffer.from(expected, 'hex'));
+async function sbInsert(body) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}`, {
+    method: 'POST', headers: { ...headers, 'Prefer': 'return=representation' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(`Supabase INSERT: ${r.status}`);
+  return r.json();
 }
 
-// ================================================================
-// AES-256 ENCRYPTION FOR licenses.json
-// ================================================================
-
-function encryptDB(plaintext) {
-  const iv = crypto.randomBytes(AES_IV_LENGTH);
-  const cipher = crypto.createCipheriv('aes-256-cbc', AES_KEY, iv);
-  let encrypted = cipher.update(plaintext, 'utf-8', 'hex');
-  encrypted += cipher.final('hex');
-  return iv.toString('hex') + ':' + encrypted;
-}
-
-function decryptDB(ciphertext) {
-  const parts = ciphertext.split(':');
-  const iv = Buffer.from(parts.shift(), 'hex');
-  const encrypted = parts.join(':');
-  const decipher = crypto.createDecipheriv('aes-256-cbc', AES_KEY, iv);
-  let decrypted = decipher.update(encrypted, 'hex', 'utf-8');
-  decrypted += decipher.final('utf-8');
-  return decrypted;
+async function sbUpdate(filter, body) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${TABLE}?${filter}`, {
+    method: 'PATCH', headers: { ...headers, 'Prefer': 'return=representation' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(`Supabase UPDATE: ${r.status}`);
+  return r.json();
 }
 
 // ================================================================
@@ -71,151 +60,102 @@ function getMacAddress() {
   const interfaces = os.networkInterfaces();
   for (const name of Object.keys(interfaces)) {
     for (const iface of interfaces[name]) {
-      if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') {
-        return iface.mac;
-      }
+      if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') return iface.mac;
     }
   }
-  return 'unknown-mac';
+  return 'unknown';
 }
 
 export function getMachineFingerprint() {
-  const data = [
-    os.hostname(),
-    os.platform(),
-    os.arch(),
-    (os.cpus()[0] || {}).model || 'unknown-cpu',
-    getMacAddress(),
-  ].join('|');
+  const data = [os.hostname(), os.platform(), os.arch(), (os.cpus()[0] || {}).model || '', getMacAddress()].join('|');
   return crypto.createHash('sha256').update(data).digest('hex');
 }
 
 // ================================================================
-// LOCAL LICENSE DB (para admin gerar tokens offline)
+// HMAC SIGNATURE (para proteger .license local)
 // ================================================================
 
-function readLicenseDB() {
+function signLicense(token, fingerprint, plan) {
+  return crypto.createHmac('sha256', SECRET_KEY).update(token + fingerprint + plan).digest('hex');
+}
+
+function verifySignature(data) {
+  if (!data.signature) return false;
   try {
-    if (fs.existsSync(LICENSE_DB_FILE)) {
-      const raw = fs.readFileSync(LICENSE_DB_FILE, 'utf-8');
-      // Try encrypted format first, fall back to plain JSON for migration
-      try {
-        const decrypted = decryptDB(raw);
-        return JSON.parse(decrypted);
-      } catch {
-        // Possibly old unencrypted format — migrate on next write
-        return JSON.parse(raw);
-      }
-    }
-  } catch (e) {}
-  return { tokens: {} };
-}
-
-function writeLicenseDB(db) {
-  const encrypted = encryptDB(JSON.stringify(db, null, 2));
-  fs.writeFileSync(LICENSE_DB_FILE, encrypted, 'utf-8');
+    const expected = signLicense(data.token, data.fingerprint, data.plan);
+    return crypto.timingSafeEqual(Buffer.from(data.signature, 'hex'), Buffer.from(expected, 'hex'));
+  } catch { return false; }
 }
 
 // ================================================================
-// VALIDATE LICENSE
+// VALIDATE LICENSE (online)
 // ================================================================
 
 export async function validateLicense(token) {
   try {
     const fingerprint = getMachineFingerprint();
-    let tokenData = null;
 
-    // 1. Verificar no DB local primeiro
-    const localDB = readLicenseDB();
-    if (localDB.tokens[token]) {
-      tokenData = localDB.tokens[token];
-    }
+    // Buscar no Supabase
+    const rows = await sbSelect(`token=eq.${encodeURIComponent(token)}&select=*`);
+    if (!rows || rows.length === 0) return { valid: false, error: 'Token invalido' };
 
-    // 2. Se não encontrou localmente, tentar online (Gist)
-    if (!tokenData) {
-      try {
-        const r = await fetch(LICENSE_GIST_URL + '?t=' + Date.now(), {
-          headers: { 'Cache-Control': 'no-cache' }
-        });
-        if (r.ok) {
-          const onlineDB = await r.json();
-          if (onlineDB.tokens && onlineDB.tokens[token]) {
-            tokenData = onlineDB.tokens[token];
-            // Salvar localmente para cache
-            localDB.tokens[token] = tokenData;
-            writeLicenseDB(localDB);
-          }
-        }
-      } catch (e) {
-        log.server.warn({ err: e.message }, 'Erro ao verificar licença online');
-      }
-    }
+    const record = rows[0];
 
-    // 3. Token não encontrado
-    if (!tokenData) {
-      return { valid: false, error: 'Token invalido' };
-    }
+    // Revogado?
+    if (record.revoked) return { valid: false, error: 'Licenca revogada' };
 
-    // 4a. Verificar se foi revogado
-    if (tokenData.revoked) {
-      return { valid: false, error: 'Licenca revogada' };
-    }
+    // Expirado?
+    if (record.expires_at && new Date(record.expires_at) < new Date()) return { valid: false, error: 'Licenca expirada' };
 
-    // 4b. Verificar expiração
-    if (tokenData.expires && new Date(tokenData.expires) < new Date()) {
-      return { valid: false, error: 'Licenca expirada' };
-    }
-
-    // 5. Já ativado em OUTRO computador
-    if (tokenData.activated && tokenData.fingerprint && tokenData.fingerprint !== fingerprint) {
+    // Ativado em OUTRO computador?
+    if (record.activated && record.fingerprint && record.fingerprint !== fingerprint) {
       return { valid: false, error: 'Token ja ativado em outro computador' };
     }
 
-    // 6. Primeira ativação — gravar fingerprint
-    if (!tokenData.activated) {
-      tokenData.activated = true;
-      tokenData.fingerprint = fingerprint;
-      tokenData.activated_at = new Date().toISOString();
-      tokenData.machine = {
-        hostname: os.hostname(),
-        platform: os.platform(),
-        arch: os.arch()
-      };
-      localDB.tokens[token] = tokenData;
-      writeLicenseDB(localDB);
-      log.server.info(`Licença ativada: ${token.slice(0, 8)}... em ${os.hostname()}`);
-      return { valid: true, plan: tokenData.plan, activated: true };
+    // Primeira ativação
+    if (!record.activated) {
+      await sbUpdate(`token=eq.${encodeURIComponent(token)}`, {
+        fingerprint,
+        activated: true,
+        activated_at: new Date().toISOString(),
+        machine_info: { hostname: os.hostname(), platform: os.platform(), arch: os.arch() }
+      });
+      log.server.info(`Licença ativada online: ${token.slice(0, 8)}...`);
+      return { valid: true, plan: record.plan, activated: true };
     }
 
-    // 7. Mesmo computador — tudo OK
-    return { valid: true, plan: tokenData.plan };
+    // Mesmo computador — OK
+    return { valid: true, plan: record.plan };
   } catch (err) {
-    log.server.error({ err: err.message }, 'Erro na validação de licença');
-    return { valid: false, error: 'Erro ao validar: ' + err.message };
+    log.server.error({ err: err.message }, 'Erro validação online');
+
+    // Fallback: se não tem internet, verificar cache local
+    const local = checkLocalLicenseSync();
+    if (local.valid) {
+      log.server.info('Validação offline via cache local');
+      return local;
+    }
+
+    return { valid: false, error: 'Sem conexao. Tente novamente.' };
   }
 }
 
 // ================================================================
-// CHECK LOCAL LICENSE (cached .license file)
+// CHECK LOCAL LICENSE (cache)
 // ================================================================
 
-export async function checkLocalLicense() {
+function checkLocalLicenseSync() {
   try {
     if (!fs.existsSync(LICENSE_FILE)) return { valid: false };
     const data = JSON.parse(fs.readFileSync(LICENSE_FILE, 'utf-8'));
-    if (data.fingerprint !== getMachineFingerprint()) {
-      log.server.warn('Fingerprint local não confere — possível troca de máquina');
-      return { valid: false };
-    }
-    // Verify HMAC signature to prevent manual .license crafting
-    if (!verifyLicenseSignature(data)) {
-      log.server.warn('Assinatura HMAC do .license invalida — possível falsificação');
-      return { valid: false };
-    }
+    if (data.fingerprint !== getMachineFingerprint()) return { valid: false };
+    if (!verifySignature(data)) return { valid: false };
     return { valid: true, plan: data.plan, token: data.token };
-  } catch (err) {
-    return { valid: false };
-  }
+  } catch { return { valid: false }; }
+}
+
+export async function checkLocalLicense() {
+  return checkLocalLicenseSync();
 }
 
 // ================================================================
@@ -227,58 +167,43 @@ export async function activateLicense(token) {
   if (result.valid) {
     const fingerprint = getMachineFingerprint();
     const plan = result.plan;
-    const licenseData = {
-      token,
-      fingerprint,
-      plan,
+    fs.writeFileSync(LICENSE_FILE, JSON.stringify({
+      token, fingerprint, plan,
       activatedAt: new Date().toISOString(),
       signature: signLicense(token, fingerprint, plan)
-    };
-    fs.writeFileSync(LICENSE_FILE, JSON.stringify(licenseData, null, 2), 'utf-8');
-    log.server.info(`Licença salva localmente: plano ${plan}`);
+    }, null, 2), 'utf-8');
+    log.server.info(`Cache local salvo: plano ${plan}`);
   }
   return result;
 }
 
 // ================================================================
-// DEACTIVATE LICENSE
+// DEACTIVATE (permite reativar em outra máquina)
 // ================================================================
 
 export async function deactivateLicense(token) {
   try {
-    const db = readLicenseDB();
-    if (db.tokens[token]) {
-      db.tokens[token].activated = false;
-      db.tokens[token].fingerprint = null;
-      db.tokens[token].machine = null;
-      writeLicenseDB(db);
-    }
+    await sbUpdate(`token=eq.${encodeURIComponent(token)}`, {
+      activated: false, fingerprint: null, machine_info: {}
+    });
     if (fs.existsSync(LICENSE_FILE)) fs.unlinkSync(LICENSE_FILE);
     log.server.info(`Licença desativada: ${token.slice(0, 8)}...`);
     return { success: true };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
+  } catch (err) { return { success: false, error: err.message }; }
 }
 
 // ================================================================
-// REVOKE LICENSE (bloqueia permanentemente)
+// REVOKE (bloqueia permanentemente)
 // ================================================================
 
 export async function revokeLicense(token) {
   try {
-    const db = readLicenseDB();
-    if (db.tokens[token]) {
-      db.tokens[token].revoked = true;
-      db.tokens[token].revoked_at = new Date().toISOString();
-      writeLicenseDB(db);
-      log.server.info(`Licença REVOGADA: ${token.slice(0, 8)}...`);
-      return { success: true };
-    }
-    return { success: false, error: 'Token nao encontrado' };
-  } catch (err) {
-    return { success: false, error: err.message };
-  }
+    await sbUpdate(`token=eq.${encodeURIComponent(token)}`, {
+      revoked: true, revoked_at: new Date().toISOString()
+    });
+    log.server.info(`Licença REVOGADA: ${token.slice(0, 8)}...`);
+    return { success: true };
+  } catch (err) { return { success: false, error: err.message }; }
 }
 
 // ================================================================
@@ -290,20 +215,13 @@ export async function generateLicense(plan, email, name) {
   const expires = new Date();
   expires.setFullYear(expires.getFullYear() + 1);
 
-  const db = readLicenseDB();
-  db.tokens[token] = {
-    plan: plan || 'basic',
-    email: email || '',
-    name: name || '',
-    activated: false,
-    fingerprint: null,
-    machine: null,
-    created_at: new Date().toISOString(),
-    expires: expires.toISOString()
-  };
-  writeLicenseDB(db);
+  await sbInsert({
+    token, plan: plan || 'basic', email: email || '', name: name || '',
+    activated: false, revoked: false,
+    expires_at: expires.toISOString()
+  });
 
-  log.server.info(`Licença gerada: ${token} — plano ${plan} para ${email}`);
+  log.server.info(`Licença gerada: ${token} — ${plan} para ${email}`);
   return token;
 }
 
@@ -312,65 +230,42 @@ export async function generateLicense(plan, email, name) {
 // ================================================================
 
 export async function listLicenses() {
-  const db = readLicenseDB();
-  return Object.entries(db.tokens).map(([token, data]) => ({
-    token,
-    ...data
-  }));
+  return await sbSelect('select=*&order=created_at.desc');
 }
 
 // ================================================================
-// IS LICENSED (sync check)
+// IS LICENSED (sync — usa cache local)
 // ================================================================
 
 export function isLicensed() {
-  try {
-    if (!fs.existsSync(LICENSE_FILE)) return false;
-    const data = JSON.parse(fs.readFileSync(LICENSE_FILE, 'utf-8'));
-    if (data.fingerprint !== getMachineFingerprint()) return false;
-    if (!verifyLicenseSignature(data)) return false;
-    return true;
-  } catch {
-    return false;
-  }
+  return checkLocalLicenseSync().valid;
 }
 
 // ================================================================
-// VERIFICACAO PERIODICA (roda no servidor a cada 30min)
-// Checa se a licenca foi revogada e desativa localmente
+// VERIFICACAO PERIODICA (a cada 30min)
+// Checa online se a licença foi revogada/expirada
 // ================================================================
 
-let lastPeriodicCheck = 0;
-const CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutos
+let lastCheck = 0;
 
 export async function periodicLicenseCheck() {
-  const now = Date.now();
-  if (now - lastPeriodicCheck < CHECK_INTERVAL) return;
-  lastPeriodicCheck = now;
+  if (Date.now() - lastCheck < 30 * 60 * 1000) return;
+  lastCheck = Date.now();
 
   if (!fs.existsSync(LICENSE_FILE)) return;
 
   try {
-    const data = JSON.parse(fs.readFileSync(LICENSE_FILE, 'utf-8'));
-    const db = readLicenseDB();
-    const tokenData = db.tokens[data.token];
+    const local = JSON.parse(fs.readFileSync(LICENSE_FILE, 'utf-8'));
+    const rows = await sbSelect(`token=eq.${encodeURIComponent(local.token)}&select=revoked,expires_at`);
 
-    if (!tokenData) return;
-
-    // Se foi revogado pelo admin, deletar licenca local
-    if (tokenData.revoked) {
-      fs.unlinkSync(LICENSE_FILE);
-      log.server.warn('Licenca revogada remotamente — acesso bloqueado');
-      return;
-    }
-
-    // Se expirou, deletar licenca local
-    if (tokenData.expires && new Date(tokenData.expires) < new Date()) {
-      fs.unlinkSync(LICENSE_FILE);
-      log.server.warn('Licenca expirada — acesso bloqueado');
-      return;
+    if (rows && rows[0]) {
+      const remote = rows[0];
+      if (remote.revoked || (remote.expires_at && new Date(remote.expires_at) < new Date())) {
+        fs.unlinkSync(LICENSE_FILE);
+        log.server.warn('Licença revogada/expirada remotamente — acesso bloqueado');
+      }
     }
   } catch (e) {
-    // Silently fail
+    // Sem internet — mantém cache local
   }
 }
