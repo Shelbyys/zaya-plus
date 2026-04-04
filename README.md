@@ -4,16 +4,27 @@ Sua assistente pessoal de IA completa. Chat, voz, WhatsApp, Instagram, Facebook 
 
 ## Instalacao
 
-```bash
-git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install && npm start
+**Passo 1:** Baixe o projeto
+```
+git clone https://github.com/Shelbyys/zaya-plus.git
 ```
 
-Acesse `http://localhost:3001` e o Setup Wizard vai te guiar.
+**Passo 2:** Entre na pasta e inicie
+```
+cd zaya-plus
+bash start.sh
+```
 
-Se nao tem Node.js ou Git, rode primeiro:
-- **Mac:** `xcode-select --install && brew install node`
-- **Linux:** `curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt install -y nodejs git`
-- **Windows:** Baixe em [nodejs.org](https://nodejs.org) e [git-scm.com](https://git-scm.com)
+**Passo 3:** Acesse no navegador
+```
+http://localhost:3001
+```
+
+O Setup Wizard vai te guiar na configuracao.
+
+### Requisitos
+- **Node.js 18+** — Baixe em [nodejs.org](https://nodejs.org)
+- **Git** — Baixe em [git-scm.com](https://git-scm.com)
 
 ## Requisitos
 

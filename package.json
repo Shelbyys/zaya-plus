@@ -6,6 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "setup": "cp -n .env.example .env 2>/dev/null; node server.js",
     "dev": "node --watch server.js",
     "test": "vitest run",
     "test:watch": "vitest"
