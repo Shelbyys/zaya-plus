@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAYA — WhatsApp Manager</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#e0e0e0;min-height:100vh;padding:20px;max-width:900px;margin:0 auto;}
+h1{color:#f36600;font-size:28px;margin-bottom:20px;font-weight:800;letter-spacing:2px;}
+h2{color:#888;font-size:12px;text-transform:uppercase;letter-spacing:3px;margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
+h2::after{content:'';flex:1;height:1px;background:#1e1e2e;}
+.card{background:#12121a;border:1px solid #1e1e2e;border-radius:12px;padding:20px;margin-bottom:16px;}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
+
+/* Instances */
+.instance{display:flex;justify-content:space-between;align-items:center;padding:14px;border:1px solid #1e1e2e;border-radius:8px;margin-bottom:8px;}
+.instance.connected{border-color:#25d366;box-shadow:0 0 10px rgba(37,211,102,0.1);}
+.instance-name{font-weight:600;font-size:16px;}
+.instance-phone{color:#666;font-size:13px;margin-top:2px;}
+.instance-status{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;}
+.instance-status.connected{background:rgba(37,211,102,0.15);color:#25d366;}
+.instance-status.offline{background:rgba(255,71,87,0.15);color:#ff4757;}
+.instance-status.connecting{background:rgba(255,192,72,0.15);color:#ffc048;}
+.btns{display:flex;gap:6px;margin-top:8px;}
+
+/* Buttons */
+.btn{padding:6px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;}
+.btn-primary{background:#f36600;color:#fff;}
+.btn-green{background:#25d366;color:#000;}
+.btn-red{background:#ff4757;color:#fff;}
+.btn-blue{background:#6c5ce7;color:#fff;}
+.btn-gray{background:#222;color:#999;border:1px solid #333;}
+.btn:hover{opacity:0.85;transform:scale(0.98);}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
+.btn-lg{padding:12px 20px;font-size:14px;width:100%;}
+
+/* Inputs */
+input,select,textarea{width:100%;padding:10px 14px;background:#1a1a25;border:1px solid #2a2a3a;border-radius:8px;color:#e0e0e0;font-size:14px;margin-bottom:10px;outline:none;font-family:inherit;}
+input:focus,select:focus,textarea:focus{border-color:#f36600;}
+input::placeholder,textarea::placeholder{color:#444;}
+select{-webkit-appearance:none;cursor:pointer;}
+textarea{resize:vertical;min-height:60px;}
+
+/* Toggle switch */
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a25;}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-label{font-size:14px;color:#ccc;}
+.toggle-desc{font-size:11px;color:#555;margin-top:2px;}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#333;border-radius:24px;transition:.3s;}
+.toggle .slider::before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#666;border-radius:50%;transition:.3s;}
+.toggle input:checked+.slider{background:#25d366;}
+.toggle input:checked+.slider::before{transform:translateX(20px);background:#fff;}
+
+/* Tags/chips */
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#1a1a25;border:1px solid #2a2a3a;border-radius:20px;font-size:12px;color:#ccc;}
+.tag .remove{cursor:pointer;color:#ff4757;font-weight:700;margin-left:2px;}
+.tag .remove:hover{color:#ff6b6b;}
+.add-number{display:flex;gap:8px;}
+.add-number input{margin-bottom:0;flex:1;}
+
+/* Pair section */
+.pair-btns{display:flex;gap:10px;margin-bottom:16px;}
+.pair-btns .btn{flex:1;}
+.code{font-size:48px;font-weight:700;color:#25d366;text-align:center;padding:20px;border:2px solid #25d366;border-radius:12px;margin:16px 0;letter-spacing:8px;text-shadow:0 0 20px rgba(37,211,102,0.4);}
+.hint{color:#666;font-size:13px;text-align:center;line-height:1.8;}
+.qr-wrap{text-align:center;padding:16px;}
+.qr-wrap img{border:3px solid #25d366;padding:10px;background:#fff;border-radius:8px;max-width:300px;}
+.success{text-align:center;padding:30px;color:#25d366;font-size:18px;font-weight:600;}
+.error{color:#ff4757;text-align:center;padding:10px;}
+.timer{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0;}
+.timer-bar{width:200px;height:4px;background:#1e1e2e;border-radius:2px;overflow:hidden;}
+.timer-fill{height:100%;background:#25d366;border-radius:2px;transition:width 1s linear;}
+.timer-text{color:#666;font-size:12px;}
+
+/* Config sections */
+.config-section{margin-bottom:16px;}
+.config-section label{display:block;font-size:12px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;}
+
+/* Log */
+.log{background:#060610;padding:12px;border-radius:8px;font-family:'SF Mono',monospace;font-size:11px;color:#25d366;max-height:120px;overflow-y:auto;margin-top:10px;white-space:pre-wrap;}
+
+/* Saved indicator */
+.saved{color:#25d366;font-size:12px;opacity:0;transition:opacity 0.3s;}
+.saved.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>WHATSAPP</h1>
+</div>
+
+<!-- INSTÂNCIAS -->
+<div class="card">
+  <h2>Instancias Conectadas</h2>
+  <div id="instances"><div style="color:#555">Carregando...</div></div>
+</div>
+
+<!-- BOT CONFIG (oculto até clicar em Configurar) -->
+<div class="card" id="configCard" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h2 style="margin:0">Configuracoes do Bot</h2>
+    <button class="btn btn-gray" onclick="toggleConfig(false)" style="font-size:11px">FECHAR</button>
+  </div>
+  <div id="configPanel">Carregando...</div>
+</div>
+
+<!-- NOVA CONEXÃO -->
+<button class="btn btn-primary btn-lg" style="margin-bottom:16px" onclick="toggleNewConn()">+ NOVA CONEXAO</button>
+<div class="card" id="newConnCard" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <h2 style="margin:0">Nova Conexao</h2>
+    <button class="btn btn-gray" onclick="toggleNewConn()" style="font-size:11px">FECHAR</button>
+  </div>
+  <div style="margin-top:12px">
+    <input type="text" id="name" placeholder="Nome da instancia (ex: Pessoal)">
+    <input type="text" id="phone" placeholder="Telefone com DDD (ex: 5511999999999)">
+    <input type="text" id="label" placeholder="Label (opcional)">
+    <div class="pair-btns">
+      <button class="btn btn-primary btn-lg" id="qrBtn" onclick="pairQR()">CONECTAR VIA QR CODE</button>
+    </div>
+    <div id="result"></div>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let pollInterval=null, qrSource=null, botConfig={};
+const CODE_TIMEOUT=120, QR_MAX=15, QR_SHOW_TIME=45, POLL_MS=2000;
+
+function log(msg){const el=$('log');el.textContent+='['+new Date().toLocaleTimeString()+'] '+msg+'\n';el.scrollTop=el.scrollHeight;}
+function toggleConfig(show){
+  const card=$('configCard');
+  if(show){card.style.display='block';loadConfig();card.scrollIntoView({behavior:'smooth'});}
+  else{card.style.display='none';}
+}
+function toggleNewConn(){
+  const card=$('newConnCard');
+  const visible=card.style.display!=='none';
+  card.style.display=visible?'none':'block';
+  if(!visible)card.scrollIntoView({behavior:'smooth'});
+}
+function cleanup(){if(pollInterval){clearInterval(pollInterval);pollInterval=null;}if(qrSource){qrSource.close();qrSource=null;}}
+function resetButtons(){$('codeBtn').disabled=false;$('codeBtn').textContent='CODIGO NUMERICO';$('qrBtn').disabled=false;$('qrBtn').textContent='QR CODE';}
+function clearForm(){$('name').value='';$('phone').value='';$('label').value='';}
+
+// ================================================================
+// INSTANCES
+// ================================================================
+async function loadInstances(){
+  try{
+    const r=await fetch('/api/whatsapp/instances');
+    const data=await r.json();
+    const c=$('instances');
+    if(!data.instances.length){c.innerHTML='<div style="color:#555">Nenhuma instancia conectada.</div>';return;}
+    c.innerHTML=data.instances.map(i=>`
+      <div class="instance ${i.status}">
+        <div>
+          <div class="instance-name">${i.name} ${i.isDefault?'<span style="color:#f36600;font-size:11px">PADRAO</span>':''}</div>
+          <div class="instance-phone">${i.label} — ${i.phone}</div>
+          <div class="btns">
+            <button class="btn btn-primary" onclick="toggleConfig(true)">Configurar</button>
+            ${!i.isDefault?`<button class="btn btn-gray" onclick="setDefault('${i.name}')">Tornar Padrao</button>`:''}
+            <button class="btn btn-gray" onclick="reconnect('${i.name}')">Reconectar</button>
+            <button class="btn btn-red" onclick="remove('${i.name}')">Remover</button>
+          </div>
+        </div>
+        <span class="instance-status ${i.status}">${i.status.toUpperCase()}</span>
+      </div>
+    `).join('');
+  }catch(e){$('instances').innerHTML='<div class="error">Erro: '+e.message+'</div>';}
+}
+
+// ================================================================
+// BOT CONFIG PANEL
+// ================================================================
+async function loadConfig(){
+  try{
+    const r=await fetch('/api/bot/config');
+    botConfig=await r.json();
+    renderConfig();
+  }catch(e){$('configPanel').innerHTML='<div class="error">Erro: '+e.message+'</div>';}
+}
+
+function renderConfig(){
+  const c=botConfig;
+  $('configPanel').innerHTML=`
+    <!-- Bot Ativo -->
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Bot Ativo</div>
+        <div class="toggle-desc">Responder mensagens automaticamente</div>
+      </div>
+      <label class="toggle"><input type="checkbox" ${c.botActive?'checked':''} onchange="updateConfig('botActive',this.checked)"><span class="slider"></span></label>
+    </div>
+
+    <!-- Auto Login Admin -->
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Auto-login Admin</div>
+        <div class="toggle-desc">Admins nao precisam digitar /login</div>
+      </div>
+      <label class="toggle"><input type="checkbox" ${c.autoLoginAdmin?'checked':''} onchange="updateConfig('autoLoginAdmin',this.checked)"><span class="slider"></span></label>
+    </div>
+
+    <!-- Read Receipts -->
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Marcar como Lido</div>
+        <div class="toggle-desc">Envia confirmacao de leitura</div>
+      </div>
+      <label class="toggle"><input type="checkbox" ${c.readReceipts?'checked':''} onchange="updateConfig('readReceipts',this.checked)"><span class="slider"></span></label>
+    </div>
+
+    <!-- Responder Grupos -->
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Responder em Grupos</div>
+        <div class="toggle-desc">Bot responde mensagens de grupos</div>
+      </div>
+      <label class="toggle"><input type="checkbox" ${c.replyGroups?'checked':''} onchange="updateConfig('replyGroups',this.checked)"><span class="slider"></span></label>
+    </div>
+
+    <!-- Transcrever Audio -->
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Transcrever Audios</div>
+        <div class="toggle-desc">Transcreve audios recebidos com Whisper</div>
+      </div>
+      <label class="toggle"><input type="checkbox" ${c.transcribeAudio?'checked':''} onchange="updateConfig('transcribeAudio',this.checked)"><span class="slider"></span></label>
+    </div>
+
+    <!-- Analisar Imagens -->
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Analisar Imagens</div>
+        <div class="toggle-desc">Analisa imagens com GPT Vision</div>
+      </div>
+      <label class="toggle"><input type="checkbox" ${c.analyzeImages?'checked':''} onchange="updateConfig('analyzeImages',this.checked)"><span class="slider"></span></label>
+    </div>
+
+    <!-- Editar Videos -->
+    <div class="toggle-row">
+      <div>
+        <div class="toggle-label">Editar Videos</div>
+        <div class="toggle-desc">Aceita videos para edicao com IA</div>
+      </div>
+      <label class="toggle"><input type="checkbox" ${c.editVideos?'checked':''} onchange="updateConfig('editVideos',this.checked)"><span class="slider"></span></label>
+    </div>
+
+    <div style="height:16px"></div>
+
+    <!-- Modo de Resposta -->
+    <div class="config-section">
+      <label>Modo de Resposta</label>
+      <select onchange="updateConfig('replyMode',this.value)">
+        <option value="admin_only" ${c.replyMode==='admin_only'?'selected':''}>Apenas Admins</option>
+        <option value="whitelist" ${c.replyMode==='whitelist'?'selected':''}>Contatos Selecionados</option>
+        <option value="everyone" ${c.replyMode==='everyone'?'selected':''}>Todos</option>
+      </select>
+    </div>
+
+    <!-- Numeros Admin -->
+    <div class="config-section">
+      <label>Numeros Admin (acesso total ao bot)</label>
+      <div class="tag-list" id="adminTags">
+        ${(c.adminNumbers||[]).map(n=>`<span class="tag">${n}<span class="remove" onclick="removeAdmin('${n}')">&times;</span></span>`).join('')}
+      </div>
+      <div class="add-number">
+        <input type="text" id="newAdmin" placeholder="5511999999999" style="margin:0">
+        <button class="btn btn-primary" onclick="addAdmin()">Adicionar</button>
+      </div>
+    </div>
+
+    <!-- Whitelist (se modo = whitelist) -->
+    <div class="config-section" id="whitelistSection" style="display:${c.replyMode==='whitelist'?'block':'none'}">
+      <label>Contatos Autorizados (whitelist)</label>
+      <div class="tag-list" id="whitelistTags">
+        ${(c.whitelist||[]).map(n=>`<span class="tag">${n}<span class="remove" onclick="removeWhitelist('${n}')">&times;</span></span>`).join('')}
+      </div>
+      <div class="add-number">
+        <input type="text" id="newWhitelist" placeholder="5511999999999" style="margin:0">
+        <button class="btn btn-primary" onclick="addWhitelist()">Adicionar</button>
+      </div>
+    </div>
+
+    <!-- Resposta para nao autorizados -->
+    <div class="config-section">
+      <label>Resposta para nao autorizados (vazio = ignora)</label>
+      <textarea id="unauthorizedReply" placeholder="Ex: Desculpe, este bot e privado." onchange="updateConfig('unauthorizedReply',this.value)">${c.unauthorizedReply||''}</textarea>
+    </div>
+
+    <!-- Modelo IA -->
+    <div class="config-section">
+      <label>Modelo IA</label>
+      <select onchange="updateConfig('aiModel',this.value)">
+        <option value="gpt-4o-mini" ${c.aiModel==='gpt-4o-mini'?'selected':''}>GPT-4o Mini (rapido, barato)</option>
+        <option value="gpt-4o" ${c.aiModel==='gpt-4o'?'selected':''}>GPT-4o (mais inteligente)</option>
+      </select>
+    </div>
+
+    <!-- Mensagem de boas-vindas -->
+    <div class="config-section">
+      <label>Mensagem de boas-vindas (apos /login)</label>
+      <textarea id="welcomeMsg" placeholder="Ex: Bem-vindo ao ZAYA Bot!" onchange="updateConfig('welcomeMessage',this.value)">${c.welcomeMessage||''}</textarea>
+    </div>
+
+    <!-- Números monitorados -->
+    <div class="config-section">
+      <label>Numeros Monitorados (avisa quando mandarem msg)</label>
+      <div class="tag-list" id="watchTags">
+        ${(c.watchNumbers||[]).map(w=>`<span class="tag">${w.nome} (${w.numero}) ${w.notify?'✅':'❌'}<span class="remove" onclick="removeWatch('${w.numero}')">&times;</span></span>`).join('')}
+      </div>
+      <div class="add-number">
+        <input type="text" id="newWatchNum" placeholder="5511999999999" style="margin:0;flex:1">
+        <input type="text" id="newWatchName" placeholder="Nome" style="margin:0;flex:1">
+        <button class="btn btn-primary" onclick="addWatch()">Adicionar</button>
+      </div>
+    </div>
+
+    <!-- Modo de notificação -->
+    <div class="config-section">
+      <label>Modo de Notificacao</label>
+      <select onchange="updateConfig('watchNotifyMode',this.value)">
+        <option value="both" ${c.watchNotifyMode==='both'?'selected':''}>WhatsApp + Voz (ambos)</option>
+        <option value="whatsapp" ${c.watchNotifyMode==='whatsapp'?'selected':''}>Apenas WhatsApp</option>
+        <option value="voice" ${c.watchNotifyMode==='voice'?'selected':''}>Apenas Voz/Dashboard</option>
+      </select>
+    </div>
+
+    <span class="saved" id="savedIndicator">Salvo!</span>
+  `;
+}
+
+async function updateConfig(key, value){
+  botConfig[key]=value;
+  try{
+    await fetch('/api/bot/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({[key]:value})});
+    // Show/hide whitelist section
+    if(key==='replyMode'){
+      const ws=document.getElementById('whitelistSection');
+      if(ws) ws.style.display=value==='whitelist'?'block':'none';
+    }
+    flashSaved();
+  }catch(e){log('Erro salvando config: '+e.message);}
+}
+
+function flashSaved(){
+  const el=$('savedIndicator');
+  if(el){el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1500);}
+}
+
+function addAdmin(){
+  const n=$('newAdmin').value.trim().replace(/\D/g,'');
+  if(!n||n.length<10)return;
+  if(!botConfig.adminNumbers)botConfig.adminNumbers=[];
+  if(!botConfig.adminNumbers.includes(n)){
+    botConfig.adminNumbers.push(n);
+    updateConfig('adminNumbers',botConfig.adminNumbers);
+    renderConfig();
+  }
+  $('newAdmin').value='';
+}
+
+function removeAdmin(n){
+  botConfig.adminNumbers=botConfig.adminNumbers.filter(x=>x!==n);
+  updateConfig('adminNumbers',botConfig.adminNumbers);
+  renderConfig();
+}
+
+function addWhitelist(){
+  const n=$('newWhitelist').value.trim().replace(/\D/g,'');
+  if(!n||n.length<10)return;
+  if(!botConfig.whitelist)botConfig.whitelist=[];
+  if(!botConfig.whitelist.includes(n)){
+    botConfig.whitelist.push(n);
+    updateConfig('whitelist',botConfig.whitelist);
+    renderConfig();
+  }
+}
+
+function removeWhitelist(n){
+  botConfig.whitelist=botConfig.whitelist.filter(x=>x!==n);
+  updateConfig('whitelist',botConfig.whitelist);
+  renderConfig();
+}
+
+function addWatch(){
+  const n=$('newWatchNum').value.trim().replace(/\D/g,'');
+  const name=$('newWatchName').value.trim()||n;
+  if(!n||n.length<10)return;
+  if(!botConfig.watchNumbers)botConfig.watchNumbers=[];
+  if(!botConfig.watchNumbers.find(w=>w.numero===n)){
+    botConfig.watchNumbers.push({numero:n,nome:name,notify:true});
+    updateConfig('watchNumbers',botConfig.watchNumbers);
+    renderConfig();
+  }
+}
+
+function removeWatch(n){
+  botConfig.watchNumbers=botConfig.watchNumbers.filter(w=>w.numero!==n);
+  updateConfig('watchNumbers',botConfig.watchNumbers);
+  renderConfig();
+}
+
+// ================================================================
+// PAIRING (código e QR — mantido igual)
+// ================================================================
+async function pairCode(){
+  const name=$('name').value.trim(),phone=$('phone').value.trim().replace(/\D/g,''),label=$('label').value.trim(),result=$('result');
+  if(!name||!phone){result.innerHTML='<div class="error">Preencha nome e telefone</div>';return;}
+  cleanup();$('codeBtn').disabled=true;$('qrBtn').disabled=true;$('codeBtn').textContent='CONECTANDO...';
+  result.innerHTML='<div style="color:#666;text-align:center">Gerando codigo...</div>';
+  try{
+    const r=await fetch('/api/whatsapp/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,label:label||name})});
+    const data=await r.json();
+    if(data.error){result.innerHTML='<div class="error">'+data.error+'</div>';resetButtons();return;}
+    if(data.code){
+      let timeLeft=CODE_TIMEOUT;
+      result.innerHTML=`<div class="code">${data.code}</div><div class="timer"><div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div><span class="timer-text" id="timerText">${CODE_TIMEOUT}s</span></div><div class="hint">1. WhatsApp → Configuracoes → Dispositivos conectados<br>2. Conectar dispositivo → <b>Conectar com numero</b><br>3. Digite: <b>${data.code}</b></div>`;
+      const timer=setInterval(()=>{timeLeft--;const f=document.getElementById('timerFill'),t=document.getElementById('timerText');if(f)f.style.width=(timeLeft/CODE_TIMEOUT*100)+'%';if(t)t.textContent=timeLeft+'s';if(timeLeft<=15&&f)f.style.background='#ff4757';if(timeLeft<=0){clearInterval(timer);cleanup();result.innerHTML='<div class="error">Tempo esgotado.</div>';resetButtons();}},1000);
+      const nn=name.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+      pollInterval=setInterval(async()=>{try{const d=await(await fetch('/api/whatsapp/instances')).json();if(d.instances.find(i=>i.name===nn&&i.status==='connected')){clearInterval(timer);cleanup();result.innerHTML='<div class="success">CONECTADO COM SUCESSO!</div>';resetButtons();clearForm();loadInstances();}}catch{}},POLL_MS);
+    }else if(data.paired){result.innerHTML='<div class="success">CONECTADO COM SUCESSO!</div>';resetButtons();clearForm();loadInstances();}
+    else{result.innerHTML='<div class="error">'+(data.message||'Erro')+'</div>';resetButtons();}
+  }catch(e){result.innerHTML='<div class="error">'+e.message+'</div>';resetButtons();}
+}
+
+function pairQR(){
+  const name=$('name').value.trim(),phone=$('phone').value.trim().replace(/\D/g,''),label=$('label').value.trim(),result=$('result');
+  if(!name||!phone){result.innerHTML='<div class="error">Preencha nome e telefone</div>';return;}
+  cleanup();$('qrBtn').disabled=true;$('codeBtn').disabled=true;$('qrBtn').textContent='AGUARDANDO...';
+  result.innerHTML='<div style="color:#666;text-align:center">Iniciando Chrome... aguarde</div>';
+  const url='/api/whatsapp/pair-qr?name='+encodeURIComponent(name)+'&phone='+encodeURIComponent(phone)+'&label='+encodeURIComponent(label||name);
+  qrSource=new EventSource(url);
+  let timerInt=null,errCount=0,currentQR=null,pendingQR=null,qrDisplayCount=0;
+
+  function showQR(d){qrDisplayCount++;currentQR=d;pendingQR=null;if(timerInt)clearInterval(timerInt);let tl=QR_SHOW_TIME;
+    result.innerHTML=`<div class="qr-wrap"><img src="${d.qr}"></div><div class="timer"><div class="timer-bar"><div class="timer-fill" id="qrTimer" style="width:100%"></div></div><span class="timer-text">QR ${qrDisplayCount}/${d.maxCount||QR_MAX} — <span id="qrSecs">${QR_SHOW_TIME}</span>s</span></div><div class="hint">WhatsApp → Dispositivos conectados → Escaneie o QR<br><b>Aguarde processar!</b></div>`;
+    timerInt=setInterval(()=>{tl--;const f=document.getElementById('qrTimer'),s=document.getElementById('qrSecs');if(f)f.style.width=(tl/QR_SHOW_TIME*100)+'%';if(s)s.textContent=tl;if(tl<=10&&f)f.style.background='#ffc048';if(tl<=0){clearInterval(timerInt);timerInt=null;if(pendingQR)showQR(pendingQR);}},1000);
+  }
+
+  qrSource.addEventListener('qr',e=>{errCount=0;const d=JSON.parse(e.data);if(!currentQR)showQR(d);else pendingQR=d;});
+  qrSource.addEventListener('connected',e=>{if(timerInt)clearInterval(timerInt);cleanup();result.innerHTML='<div class="success">CONECTADO COM SUCESSO!</div>';resetButtons();clearForm();loadInstances();});
+  qrSource.addEventListener('timeout',()=>{if(timerInt)clearInterval(timerInt);cleanup();result.innerHTML='<div class="error">Tempo esgotado.</div>';resetButtons();});
+  qrSource.addEventListener('error',()=>{if(!qrSource||qrSource.readyState===2){if(timerInt)clearInterval(timerInt);cleanup();result.innerHTML='<div class="error">Conexao perdida.</div>';resetButtons();return;}errCount++;if(errCount>=10){if(timerInt)clearInterval(timerInt);cleanup();result.innerHTML='<div class="error">Muitos erros.</div>';resetButtons();}});
+}
+
+async function setDefault(n){await fetch('/api/whatsapp/default/'+n,{method:'POST'});loadInstances();}
+async function reconnect(n){await fetch('/api/whatsapp/reconnect/'+n,{method:'POST'});setTimeout(loadInstances,3000);}
+async function remove(n){if(!confirm('Remover '+n+'?'))return;await fetch('/api/whatsapp/instances/'+n,{method:'DELETE'});loadInstances();}
+
+// Init
+loadInstances();
+setInterval(loadInstances,10000);
+</script>
+</body>
+</html>

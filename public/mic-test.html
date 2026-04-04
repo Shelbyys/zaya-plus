@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>Teste Microfone</title>
+<style>
+body{background:#111;color:#fff;font-family:monospace;padding:40px;text-align:center;}
+button{padding:20px 40px;font-size:20px;background:#f36600;color:#fff;border:none;cursor:pointer;border-radius:8px;margin:10px;}
+button:hover{background:#ff8833;}
+#log{text-align:left;max-width:600px;margin:20px auto;padding:20px;background:#222;border-radius:8px;font-size:14px;line-height:1.8;max-height:400px;overflow-y:auto;}
+.ok{color:#0c6;}
+.err{color:#f44;}
+.info{color:#fa0;}
+</style></head><body>
+<h1>Teste de Microfone - Zaya</h1>
+<button onclick="testMic()">TESTAR MICROFONE</button>
+<button onclick="testSpeech()">TESTAR RECONHECIMENTO DE VOZ</button>
+<div id="log"></div>
+<script>
+const log=document.getElementById('log');
+function add(msg,cls){log.innerHTML+=`<div class="${cls}">${msg}</div>`;log.scrollTop=log.scrollHeight;}
+
+async function testMic(){
+  log.innerHTML='';
+  add('=== TESTE DE MICROFONE ===','info');
+
+  // 1. Check API
+  if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
+    add('✓ navigator.mediaDevices.getUserMedia disponivel','ok');
+  }else{
+    add('✗ getUserMedia NAO disponivel - navegador antigo ou sem HTTPS','err');
+    return;
+  }
+
+  // 2. Request permission
+  add('Solicitando permissao do microfone...','info');
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    add('✓ Permissao concedida!','ok');
+
+    // 3. Check tracks
+    const tracks=stream.getAudioTracks();
+    add(`✓ ${tracks.length} faixa(s) de audio encontrada(s)`,'ok');
+    tracks.forEach((t,i)=>add(`  Track ${i}: ${t.label} (${t.readyState})`,'ok'));
+
+    // 4. Test audio level
+    add('Medindo nivel de audio (fale algo)...','info');
+    const ctx=new AudioContext();
+    const src=ctx.createMediaStreamSource(stream);
+    const analyser=ctx.createAnalyser();
+    analyser.fftSize=256;
+    src.connect(analyser);
+    const data=new Uint8Array(analyser.frequencyBinCount);
+
+    let maxLevel=0;
+    const check=setInterval(()=>{
+      analyser.getByteFrequencyData(data);
+      const avg=data.reduce((a,b)=>a+b,0)/data.length;
+      if(avg>maxLevel)maxLevel=avg;
+    },100);
+
+    setTimeout(()=>{
+      clearInterval(check);
+      stream.getTracks().forEach(t=>t.stop());
+      ctx.close();
+      if(maxLevel>5){
+        add(`✓ Audio detectado! Nivel maximo: ${maxLevel.toFixed(1)}`, 'ok');
+      }else{
+        add(`✗ Nivel de audio muito baixo (${maxLevel.toFixed(1)}). Microfone pode estar mutado ou desconectado.`,'err');
+      }
+      add('=== TESTE CONCLUIDO ===','info');
+    },3000);
+
+  }catch(e){
+    add('✗ Erro ao acessar microfone: '+e.message,'err');
+    if(e.name==='NotAllowedError'){
+      add('→ Permissao NEGADA. Clique no icone de cadeado na barra de URL e permita o microfone.','err');
+    }else if(e.name==='NotFoundError'){
+      add('→ Nenhum microfone encontrado. Conecte um microfone.','err');
+    }
+  }
+}
+
+function testSpeech(){
+  log.innerHTML='';
+  add('=== TESTE DE RECONHECIMENTO DE VOZ ===','info');
+
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){
+    add('✗ SpeechRecognition NAO disponivel neste navegador','err');
+    add('→ Use Google Chrome para reconhecimento de voz','err');
+    return;
+  }
+  add('✓ SpeechRecognition disponivel','ok');
+
+  const rec=new SR();
+  rec.lang='pt-BR';
+  rec.continuous=false;
+  rec.interimResults=true;
+
+  add('Iniciando reconhecimento... FALE AGORA!','info');
+
+  rec.onstart=()=>add('✓ Reconhecimento iniciado - ouvindo...','ok');
+
+  rec.onresult=(ev)=>{
+    for(let i=ev.resultIndex;i<ev.results.length;i++){
+      const t=ev.results[i][0].transcript;
+      const conf=ev.results[i][0].confidence;
+      if(ev.results[i].isFinal){
+        add(`✓ FINAL: "${t}" (confianca: ${(conf*100).toFixed(1)}%)`,'ok');
+      }else{
+        add(`... parcial: "${t}"`,'info');
+      }
+    }
+  };
+
+  rec.onend=()=>add('Reconhecimento encerrado.','info');
+
+  rec.onerror=(e)=>{
+    add('✗ ERRO: '+e.error,'err');
+    if(e.error==='not-allowed')add('→ Permissao do microfone NEGADA. Permita no navegador.','err');
+    else if(e.error==='no-speech')add('→ Nenhuma fala detectada. Fale mais alto ou mais perto do mic.','err');
+    else if(e.error==='network')add('→ Erro de rede. O reconhecimento precisa de internet (Google Speech API).','err');
+    else if(e.error==='service-not-allowed')add('→ Servico bloqueado. Use Chrome e acesse via localhost.','err');
+  };
+
+  rec.onspeechstart=()=>add('✓ Fala detectada!','ok');
+  rec.onspeechend=()=>add('Fala terminou.','info');
+  rec.onaudiostart=()=>add('✓ Audio do mic iniciado','ok');
+
+  try{
+    rec.start();
+    add('✓ rec.start() executado com sucesso','ok');
+    // Safety timeout
+    setTimeout(()=>{try{rec.stop();}catch(e){}},10000);
+  }catch(e){
+    add('✗ Erro ao chamar rec.start(): '+e.message,'err');
+  }
+}
+</script></body></html>

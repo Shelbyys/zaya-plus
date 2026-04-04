@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAYA — Calendário</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#e0e0e0;min-height:100vh;}
+.app{display:grid;grid-template-columns:280px 1fr;grid-template-rows:56px 1fr;height:100vh;}
+
+/* HEADER */
+.header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid #1a1a25;background:#0d0b09;}
+.header h1{font-size:22px;color:#f36600;font-weight:800;letter-spacing:3px;}
+.header-nav{display:flex;gap:6px;}
+.header-nav button{padding:6px 14px;border:1px solid #2a2a3a;border-radius:6px;background:transparent;color:#999;font-size:12px;cursor:pointer;font-weight:600;}
+.header-nav button.active{background:#f36600;color:#fff;border-color:#f36600;}
+.header-nav button:hover{border-color:#f36600;color:#f36600;}
+.header-nav button.active:hover{color:#fff;}
+.month-nav{display:flex;align-items:center;gap:12px;}
+.month-nav button{background:none;border:1px solid #2a2a3a;color:#999;width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:16px;}
+.month-nav button:hover{border-color:#f36600;color:#f36600;}
+.month-nav span{font-size:16px;font-weight:600;min-width:180px;text-align:center;}
+.btn-today{padding:6px 12px;border:1px solid #25d366;border-radius:6px;background:transparent;color:#25d366;font-size:11px;cursor:pointer;font-weight:600;}
+.btn-today:hover{background:#25d366;color:#000;}
+
+/* SIDEBAR */
+.sidebar{border-right:1px solid #1a1a25;padding:16px;overflow-y:auto;background:#0d0b09;}
+.sidebar h3{font-size:10px;letter-spacing:3px;color:#666;text-transform:uppercase;margin:16px 0 8px;}
+.btn-new{width:100%;padding:12px;background:#f36600;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:16px;}
+.btn-new:hover{opacity:0.9;}
+.upcoming-event{padding:10px;border-left:3px solid #f36600;margin-bottom:8px;background:#12121a;border-radius:0 6px 6px 0;cursor:pointer;}
+.upcoming-event:hover{background:#1a1a25;}
+.upcoming-event .ue-time{font-size:10px;color:#888;font-family:monospace;}
+.upcoming-event .ue-title{font-size:13px;margin-top:2px;color:#e0e0e0;}
+.upcoming-event .ue-cat{font-size:9px;color:#888;margin-top:2px;}
+.cat-filters{display:flex;flex-wrap:wrap;gap:4px;}
+.cat-chip{padding:3px 8px;border-radius:12px;font-size:10px;cursor:pointer;border:1px solid transparent;opacity:0.7;}
+.cat-chip:hover,.cat-chip.active{opacity:1;border-color:currentColor;}
+
+/* CALENDAR GRID */
+.calendar{padding:16px;overflow-y:auto;}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#1a1a25;border-radius:8px;overflow:hidden;}
+.cal-header{padding:8px;text-align:center;font-size:10px;letter-spacing:2px;color:#666;background:#12121a;text-transform:uppercase;}
+.cal-day{min-height:100px;padding:6px;background:#0d0b09;cursor:pointer;position:relative;transition:background 0.15s;}
+.cal-day:hover{background:#12121a;}
+.cal-day.other-month{opacity:0.3;}
+.cal-day.today{background:#1a1510;box-shadow:inset 0 0 0 1px #f36600;}
+.cal-day .day-num{font-size:12px;font-weight:600;margin-bottom:4px;}
+.cal-day.today .day-num{color:#f36600;}
+.cal-event{font-size:9px;padding:2px 4px;border-radius:3px;margin-bottom:2px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;color:#fff;}
+.cal-event:hover{opacity:0.85;}
+.cal-more{font-size:9px;color:#888;text-align:center;margin-top:2px;}
+
+/* LIST VIEW */
+.list-view{padding:0;}
+.list-day{padding:12px 0;border-bottom:1px solid #1a1a25;}
+.list-date{font-size:11px;color:#f36600;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;font-weight:600;}
+.list-event{display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;cursor:pointer;transition:background 0.15s;}
+.list-event:hover{background:#12121a;}
+.list-event .le-color{width:4px;height:36px;border-radius:2px;flex-shrink:0;}
+.list-event .le-time{font-size:11px;color:#888;font-family:monospace;min-width:45px;}
+.list-event .le-title{font-size:14px;}
+.list-event .le-meta{font-size:11px;color:#666;}
+
+/* MODAL */
+.modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:none;align-items:center;justify-content:center;z-index:100;}
+.modal-overlay.open{display:flex;}
+.modal{background:#12121a;border:1px solid #2a2a3a;border-radius:12px;padding:24px;width:420px;max-height:80vh;overflow-y:auto;}
+.modal h2{font-size:18px;margin-bottom:16px;color:#f36600;}
+.modal label{display:block;font-size:11px;color:#888;margin:10px 0 4px;text-transform:uppercase;letter-spacing:1px;}
+.modal input,.modal select,.modal textarea{width:100%;padding:10px;background:#1a1a25;border:1px solid #2a2a3a;border-radius:6px;color:#e0e0e0;font-size:14px;outline:none;}
+.modal input:focus,.modal select:focus,.modal textarea:focus{border-color:#f36600;}
+.modal textarea{min-height:60px;resize:vertical;}
+.modal-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.modal-actions{display:flex;gap:8px;margin-top:20px;}
+.modal-actions button{flex:1;padding:10px;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;}
+.modal-actions .btn-save{background:#f36600;color:#fff;}
+.modal-actions .btn-cancel{background:#222;color:#999;}
+.modal-actions .btn-delete{background:#ff4757;color:#fff;}
+.cat-select{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.cat-opt{padding:4px 10px;border-radius:12px;font-size:11px;cursor:pointer;border:1px solid transparent;}
+.cat-opt:hover,.cat-opt.selected{border-color:currentColor;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <button onclick="window.location.href='/'" style="background:none;border:1px solid #2a2a3a;color:#999;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;margin-right:10px">&lt; VOLTAR</button>
+    <h1>CALENDARIO</h1>
+    <div class="month-nav">
+      <button onclick="changeMonth(-1)">&lt;</button>
+      <span id="monthLabel"></span>
+      <button onclick="changeMonth(1)">&gt;</button>
+      <button class="btn-today" onclick="goToday()">HOJE</button>
+    </div>
+    <div class="header-nav">
+      <button id="viewMonth" class="active" onclick="setView('month')">MES</button>
+      <button id="viewList" onclick="setView('list')">LISTA</button>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <button class="btn-new" onclick="openModal()">+ NOVO EVENTO</button>
+    <h3>Proximos</h3>
+    <div id="upcoming"></div>
+    <h3>Categorias</h3>
+    <div class="cat-filters" id="catFilters"></div>
+  </div>
+
+  <div class="calendar" id="calendarArea"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <h2 id="modalTitle">Novo Evento</h2>
+    <input type="hidden" id="evId">
+    <label>Titulo</label>
+    <input type="text" id="evTitle" placeholder="Reunião com o time">
+    <label>Categoria</label>
+    <div class="cat-select" id="catSelect"></div>
+    <input type="hidden" id="evCategory" value="geral">
+    <div class="modal-row">
+      <div><label>Inicio</label><input type="datetime-local" id="evStart"></div>
+      <div><label>Fim (opcional)</label><input type="datetime-local" id="evEnd"></div>
+    </div>
+    <label>Local</label>
+    <input type="text" id="evLocation" placeholder="Escritório, Zoom, etc">
+    <label>Descricao</label>
+    <textarea id="evDesc" placeholder="Detalhes do evento..."></textarea>
+    <label>Participantes</label>
+    <input type="text" id="evParticipants" placeholder="Fulano, Ciclano">
+    <div class="modal-row">
+      <div><label>Lembrar antes (min)</label><input type="number" id="evRemind" value="30" min="0"></div>
+      <div><label>Repetir</label><select id="evRepeat"><option value="">Não repete</option><option value="daily">Diário</option><option value="weekly">Semanal</option><option value="monthly">Mensal</option></select></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">CANCELAR</button>
+      <button class="btn-delete" id="btnDelete" style="display:none" onclick="deleteEvent()">EXCLUIR</button>
+      <button class="btn-save" onclick="saveEvent()">SALVAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+let currentDate=new Date();
+let currentView='month';
+let events=[];
+let categories={};
+let selectedCat=null;
+
+const MONTHS=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DAYS=['DOM','SEG','TER','QUA','QUI','SEX','SAB'];
+
+// ================================================================
+// DATA
+// ================================================================
+async function loadEvents(){
+  const y=currentDate.getFullYear(), m=currentDate.getMonth();
+  const start=new Date(y,m-1,1).toISOString().slice(0,10);
+  const end=new Date(y,m+2,0).toISOString().slice(0,10);
+  events=(await(await fetch(`/api/calendar/events?start=${start}&end=${end}`)).json())||[];
+}
+
+async function loadCategories(){
+  categories=await(await fetch('/api/calendar/categories')).json();
+  renderCatFilters();
+}
+
+async function loadUpcoming(){
+  const upcoming=await(await fetch('/api/calendar/upcoming?limit=8')).json();
+  $('upcoming').innerHTML=upcoming.length?upcoming.map(e=>{
+    const d=new Date(e.start_at);
+    const time=e.all_day?'Dia inteiro':d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    const date=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
+    const color=e.color||'#f36600';
+    return `<div class="upcoming-event" style="border-left-color:${color}" onclick="openModal(${e.id})">
+      <div class="ue-time">${date} — ${time}</div>
+      <div class="ue-title">${e.title}</div>
+      <div class="ue-cat">${e.location||''} ${e.participants?'com '+e.participants:''}</div>
+    </div>`;
+  }).join(''):'<div style="color:#555;font-size:12px">Nenhum evento</div>';
+}
+
+function renderCatFilters(){
+  $('catFilters').innerHTML=Object.entries(categories).map(([k,v])=>
+    `<span class="cat-chip ${selectedCat===k?'active':''}" style="color:${v.color};background:${v.color}22" onclick="filterCat('${k}')">${v.label}</span>`
+  ).join('')+'<span class="cat-chip '+(selectedCat===null?'active':'')+'" style="color:#999" onclick="filterCat(null)">Todos</span>';
+}
+
+function filterCat(cat){selectedCat=cat;renderCatFilters();render();}
+
+// ================================================================
+// RENDER
+// ================================================================
+function render(){
+  $('monthLabel').textContent=MONTHS[currentDate.getMonth()]+' '+currentDate.getFullYear();
+  if(currentView==='month')renderMonth();
+  else renderList();
+}
+
+function renderMonth(){
+  const y=currentDate.getFullYear(),m=currentDate.getMonth();
+  const firstDay=new Date(y,m,1).getDay();
+  const daysInMonth=new Date(y,m+1,0).getDate();
+  const daysInPrev=new Date(y,m,0).getDate();
+  const today=new Date();
+
+  let html='<div class="cal-grid">';
+  DAYS.forEach(d=>{html+=`<div class="cal-header">${d}</div>`;});
+
+  const filtered=selectedCat?events.filter(e=>e.category===selectedCat):events;
+
+  // Prev month days
+  for(let i=firstDay-1;i>=0;i--){
+    html+=`<div class="cal-day other-month"><span class="day-num">${daysInPrev-i}</span></div>`;
+  }
+
+  // Current month
+  for(let d=1;d<=daysInMonth;d++){
+    const dateStr=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday=today.getFullYear()===y&&today.getMonth()===m&&today.getDate()===d;
+    const dayEvents=filtered.filter(e=>e.start_at.slice(0,10)===dateStr);
+
+    html+=`<div class="cal-day ${isToday?'today':''}" onclick="openModalForDate('${dateStr}')">`;
+    html+=`<span class="day-num">${d}</span>`;
+    dayEvents.slice(0,3).forEach(e=>{
+      html+=`<div class="cal-event" style="background:${e.color||'#f36600'}" onclick="event.stopPropagation();openModal(${e.id})">${e.all_day?'':e.start_at.slice(11,16)+' '}${e.title}</div>`;
+    });
+    if(dayEvents.length>3)html+=`<div class="cal-more">+${dayEvents.length-3} mais</div>`;
+    html+='</div>';
+  }
+
+  // Next month fill
+  const totalCells=firstDay+daysInMonth;
+  const remaining=totalCells%7===0?0:7-totalCells%7;
+  for(let i=1;i<=remaining;i++){
+    html+=`<div class="cal-day other-month"><span class="day-num">${i}</span></div>`;
+  }
+
+  html+='</div>';
+  $('calendarArea').innerHTML=html;
+}
+
+function renderList(){
+  const filtered=selectedCat?events.filter(e=>e.category===selectedCat):events;
+  const future=filtered.filter(e=>new Date(e.start_at)>=new Date(new Date().toDateString())).sort((a,b)=>a.start_at.localeCompare(b.start_at));
+
+  if(!future.length){$('calendarArea').innerHTML='<div class="list-view" style="padding:40px;text-align:center;color:#555">Nenhum evento futuro</div>';return;}
+
+  // Agrupa por data
+  const groups={};
+  future.forEach(e=>{const d=e.start_at.slice(0,10);if(!groups[d])groups[d]=[];groups[d].push(e);});
+
+  let html='<div class="list-view">';
+  for(const[date,evts]of Object.entries(groups)){
+    const d=new Date(date+'T12:00:00');
+    const label=d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'});
+    const isToday=date===new Date().toISOString().slice(0,10);
+    html+=`<div class="list-day"><div class="list-date">${isToday?'HOJE — ':''}${label}</div>`;
+    evts.forEach(e=>{
+      const time=e.all_day?'Dia':''+e.start_at.slice(11,16);
+      const cat=categories[e.category]?.label||e.category;
+      html+=`<div class="list-event" onclick="openModal(${e.id})">
+        <div class="le-color" style="background:${e.color||'#f36600'}"></div>
+        <div class="le-time">${time}</div>
+        <div><div class="le-title">${e.title}</div><div class="le-meta">${cat}${e.location?' — '+e.location:''}${e.participants?' com '+e.participants:''}</div></div>
+      </div>`;
+    });
+    html+='</div>';
+  }
+  html+='</div>';
+  $('calendarArea').innerHTML=html;
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function changeMonth(delta){currentDate.setMonth(currentDate.getMonth()+delta);refresh();}
+function goToday(){currentDate=new Date();refresh();}
+function setView(v){currentView=v;$('viewMonth').classList.toggle('active',v==='month');$('viewList').classList.toggle('active',v==='list');render();}
+
+async function refresh(){await loadEvents();render();loadUpcoming();}
+
+// ================================================================
+// MODAL
+// ================================================================
+async function openModal(id){
+  $('modalOverlay').classList.add('open');
+  $('btnDelete').style.display='none';
+  $('modalTitle').textContent='Novo Evento';
+  $('evId').value='';$('evTitle').value='';$('evDesc').value='';$('evLocation').value='';
+  $('evParticipants').value='';$('evRemind').value='30';$('evRepeat').value='';$('evEnd').value='';
+  $('evCategory').value='geral';
+
+  renderCatSelect('geral');
+
+  if(id){
+    const e=events.find(x=>x.id===id);
+    if(!e)return;
+    $('modalTitle').textContent='Editar Evento';
+    $('evId').value=e.id;
+    $('evTitle').value=e.title;
+    $('evDesc').value=e.description||'';
+    $('evLocation').value=e.location||'';
+    $('evStart').value=(e.start_at||'').replace(' ','T').slice(0,16);
+    $('evEnd').value=e.end_at?(e.end_at).replace(' ','T').slice(0,16):'';
+    $('evParticipants').value=e.participants||'';
+    $('evRemind').value=e.remind_before||30;
+    $('evRepeat').value=e.repeat_rule||'';
+    $('evCategory').value=e.category||'geral';
+    $('btnDelete').style.display='block';
+    renderCatSelect(e.category||'geral');
+  }
+}
+
+function openModalForDate(dateStr){
+  openModal();
+  $('evStart').value=dateStr+'T09:00';
+}
+
+function closeModal(){$('modalOverlay').classList.remove('open');}
+
+function renderCatSelect(selected){
+  $('catSelect').innerHTML=Object.entries(categories).map(([k,v])=>
+    `<span class="cat-opt ${k===selected?'selected':''}" style="color:${v.color};background:${v.color}22" onclick="selectCat('${k}')">${v.label}</span>`
+  ).join('');
+}
+
+function selectCat(cat){
+  $('evCategory').value=cat;
+  renderCatSelect(cat);
+}
+
+async function saveEvent(){
+  const id=$('evId').value;
+  const data={
+    title:$('evTitle').value,
+    description:$('evDesc').value,
+    category:$('evCategory').value,
+    location:$('evLocation').value,
+    start_at:($('evStart').value||'').replace('T',' ')+':00',
+    end_at:$('evEnd').value?$('evEnd').value.replace('T',' ')+':00':null,
+    remind_before:parseInt($('evRemind').value)||30,
+    repeat_rule:$('evRepeat').value||null,
+    participants:$('evParticipants').value,
+  };
+
+  if(!data.title||!data.start_at.includes(':'))return alert('Preencha título e data');
+
+  if(id){
+    await fetch('/api/calendar/events/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  }else{
+    await fetch('/api/calendar/events',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  }
+
+  closeModal();
+  refresh();
+}
+
+async function deleteEvent(){
+  const id=$('evId').value;
+  if(!id||!confirm('Excluir este evento?'))return;
+  await fetch('/api/calendar/events/'+id,{method:'DELETE'});
+  closeModal();
+  refresh();
+}
+
+// ================================================================
+// INIT
+// ================================================================
+(async()=>{
+  await loadCategories();
+  await refresh();
+})();
+</script>
+</body>
+</html>

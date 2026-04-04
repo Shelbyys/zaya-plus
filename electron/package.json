@@ -1,0 +1,61 @@
+{
+  "name": "zaya",
+  "productName": "ZAYA",
+  "version": "8.0.0",
+  "description": "ZAYA - IA Assistente Pessoal do Sr. Alisson",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --mac",
+    "build:dmg": "electron-builder --mac dmg",
+    "build:app": "electron-builder --mac dir"
+  },
+  "build": {
+    "appId": "com.zaya.assistant",
+    "productName": "ZAYA",
+    "mac": {
+      "category": "public.app-category.utilities",
+      "icon": "../public/logo.png",
+      "target": [
+        "dmg",
+        "dir"
+      ],
+      "entitlements": "entitlements.plist",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "ZAYA precisa do microfone para reconhecimento de voz",
+        "NSCameraUsageDescription": "ZAYA precisa da camera para analise visual",
+        "NSSpeechRecognitionUsageDescription": "ZAYA usa reconhecimento de fala para comandos de voz"
+      }
+    },
+    "files": [
+      "main.js",
+      "../server.js",
+      "../src/**/*",
+      "../public/**/*",
+      "../node_modules/**/*",
+      "../.env",
+      "../credentials.vault",
+      "../zaya.db",
+      "../contatos.json",
+      "../music/**/*",
+      "../video-tools/**/*",
+      "../fc_tool.py",
+      "../pesquisas/**/*",
+      "../package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../whatsapp-sessions",
+        "to": "whatsapp-sessions",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
+  },
+  "devDependencies": {
+    "@electron/packager": "^19.1.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}
