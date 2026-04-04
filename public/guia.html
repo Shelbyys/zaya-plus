@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zaya Plus — Guia de Configuracao</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0a0f;
+  --accent: #6c5ce7;
+  --accent-light: #a29bfe;
+  --cyan: #00d4ff;
+  --green: #00e676;
+  --text: #e8e8f0;
+  --text-dim: #8888a8;
+  --glass-bg: rgba(255,255,255,0.04);
+  --glass-border: rgba(255,255,255,0.08);
+  --glass-bg-hover: rgba(255,255,255,0.07);
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Slide Container ── */
+.slides-viewport {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+}
+
+.slides-track {
+  display: flex;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.slide {
+  min-width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 40px;
+  position: relative;
+  overflow-y: auto;
+}
+
+/* ── Navigation ── */
+.nav-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  color: var(--text);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.nav-arrow:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--accent);
+  color: var(--accent-light);
+  box-shadow: 0 0 20px rgba(108,92,231,0.3);
+}
+
+.nav-arrow.left { left: 20px; }
+.nav-arrow.right { right: 20px; }
+.nav-arrow.hidden { opacity: 0; pointer-events: none; }
+
+/* ── Progress Bar ── */
+.progress-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: rgba(255,255,255,0.05);
+  z-index: 100;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 10px rgba(0,212,255,0.4);
+}
+
+/* ── Slide Counter ── */
+.slide-counter {
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  z-index: 100;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-dim);
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+/* ── Common Elements ── */
+.slide-title {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--text) 0%, var(--accent-light) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+}
+
+.slide-subtitle {
+  font-size: clamp(14px, 1.5vw, 18px);
+  color: var(--text-dim);
+  margin-bottom: 40px;
+  text-align: center;
+  max-width: 600px;
+}
+
+.glass-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 28px;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.glass-card:hover {
+  background: var(--glass-bg-hover);
+  border-color: rgba(108,92,231,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.cards-row {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 900px;
+  width: 100%;
+}
+
+.cards-row .glass-card {
+  flex: 1 1 240px;
+  max-width: 280px;
+  text-align: center;
+}
+
+.card-icon {
+  font-size: 36px;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.card-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.card-desc {
+  font-size: 14px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+.card-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--cyan);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.card-link:hover { color: var(--accent-light); }
+
+/* ── Orb (CSS only) ── */
+.orb {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--cyan), var(--accent) 50%, #1a1a2e 100%);
+  box-shadow: 0 0 60px rgba(108,92,231,0.5), 0 0 120px rgba(0,212,255,0.2), inset 0 0 40px rgba(0,212,255,0.1);
+  animation: orbPulse 4s ease-in-out infinite;
+  position: relative;
+}
+
+.orb::after {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108,92,231,0.15) 0%, transparent 70%);
+  animation: orbGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes orbPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 60px rgba(108,92,231,0.5), 0 0 120px rgba(0,212,255,0.2); }
+  50% { transform: scale(1.06); box-shadow: 0 0 80px rgba(108,92,231,0.7), 0 0 160px rgba(0,212,255,0.3); }
+}
+
+@keyframes orbGlow {
+  0% { opacity: 0.5; transform: scale(1); }
+  100% { opacity: 1; transform: scale(1.1); }
+}
+
+.orb-small {
+  width: 120px;
+  height: 120px;
+}
+
+/* ── Terminal Mockup ── */
+.terminal {
+  background: #0d0d14;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  max-width: 640px;
+  width: 100%;
+  overflow: hidden;
+}
+
+.terminal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.terminal-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.terminal-dot.red { background: #ff5f57; }
+.terminal-dot.yellow { background: #febc2e; }
+.terminal-dot.green { background: #28c840; }
+
+.terminal-body {
+  padding: 20px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--green);
+  position: relative;
+}
+
+.terminal-body .prompt { color: var(--cyan); }
+.terminal-body .cmd { color: var(--text); }
+
+.copy-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  background: var(--glass-bg);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Inter', sans-serif;
+}
+.copy-btn:hover {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.copy-btn.copied {
+  background: var(--green);
+  color: #0a0a0f;
+  border-color: var(--green);
+}
+
+.terminal-note {
+  margin-top: 20px;
+  font-size: 14px;
+  color: var(--text-dim);
+  text-align: center;
+}
+.terminal-note code {
+  color: var(--cyan);
+  background: rgba(0,212,255,0.1);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+/* ── Mockup Frame ── */
+.mockup-frame {
+  background: #111118;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 100%;
+  position: relative;
+}
+
+.mockup-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.mockup-input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+  margin-bottom: 12px;
+  pointer-events: none;
+}
+
+.mockup-input::placeholder { color: var(--text-dim); }
+
+.mockup-arrow {
+  position: absolute;
+  right: -60px;
+  top: 50%;
+  color: var(--green);
+  font-size: 28px;
+  animation: arrowBounce 1.5s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(8px); }
+}
+
+/* ── Steps List ── */
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 560px;
+  width: 100%;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.step-item:hover {
+  background: var(--glass-bg-hover);
+  border-color: rgba(0,212,255,0.2);
+}
+
+.step-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  color: white;
+  flex-shrink: 0;
+}
+
+.step-text {
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+/* ── Option Cards ── */
+.option-cards {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 700px;
+}
+
+.option-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 24px;
+  width: 180px;
+  text-align: center;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.option-card:hover {
+  border-color: var(--accent);
+  background: var(--glass-bg-hover);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(108,92,231,0.2);
+}
+
+.option-card.recommended {
+  border-color: var(--green);
+  box-shadow: 0 0 20px rgba(0,230,118,0.15);
+}
+
+.option-card .card-icon { font-size: 32px; margin-bottom: 10px; }
+.option-card .card-title { font-size: 15px; }
+
+.recommend-badge {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(0,230,118,0.15);
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* ── Modules Grid ── */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  max-width: 700px;
+  width: 100%;
+}
+
+.module-item {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 16px 12px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+.module-item:hover {
+  border-color: var(--accent);
+  background: var(--glass-bg-hover);
+}
+
+.module-item .mod-icon {
+  display: block;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+/* ── Mockup Dashboard ── */
+.dashboard-mockup {
+  background: #0d0d14;
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 20px;
+  max-width: 600px;
+  width: 100%;
+}
+
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.dash-title {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.dash-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.dash-stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px;
+  padding: 14px;
+  text-align: center;
+}
+
+.dash-stat-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--cyan);
+}
+
+.dash-stat-label {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.dash-chart {
+  height: 60px;
+  background: linear-gradient(180deg, rgba(108,92,231,0.1) 0%, transparent 100%);
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dash-chart-line {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 60'%3E%3Cpath d='M0,50 Q50,30 100,35 T200,20 T300,30 T400,15 T500,25 T600,10' fill='none' stroke='%236c5ce7' stroke-width='2'/%3E%3C/svg%3E") no-repeat center;
+  background-size: cover;
+}
+
+/* ── CTA Button ── */
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 36px;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  color: white;
+  font-size: 17px;
+  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 24px rgba(108,92,231,0.4);
+}
+
+.cta-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 36px rgba(108,92,231,0.6);
+}
+
+/* ── Two-Col Layout ── */
+.two-col {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  max-width: 800px;
+  width: 100%;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.two-col > * { flex: 1 1 320px; }
+
+/* ── Groq Console Mockup ── */
+.groq-mockup {
+  background: #111118;
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 400px;
+  width: 100%;
+}
+
+.groq-mockup-header {
+  padding: 10px 16px;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.groq-mockup-body {
+  padding: 16px;
+}
+
+.groq-key-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.groq-key-name { font-size: 13px; color: var(--text); }
+.groq-key-date { font-size: 11px; color: var(--text-dim); }
+
+.groq-create-btn {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px dashed rgba(0,212,255,0.3);
+  background: rgba(0,212,255,0.05);
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  cursor: default;
+  margin-top: 4px;
+}
+
+/* ── Features Row ── */
+.features-row {
+  display: flex;
+  gap: 24px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.feature-tag {
+  padding: 8px 18px;
+  border-radius: 20px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  font-size: 13px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* ── Tips Grid ── */
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  max-width: 700px;
+  width: 100%;
+}
+
+.tip-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 22px;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+}
+
+.tip-card:hover {
+  background: var(--glass-bg-hover);
+  border-color: rgba(0,212,255,0.2);
+}
+
+.tip-icon {
+  font-size: 24px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.tip-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+/* ── Hint text ── */
+.hint {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* ── Nav Hint ── */
+.nav-hint {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-top: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nav-hint kbd {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  font-size: 13px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ── Gradient Text ── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--accent-light), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gradient-text-green {
+  background: linear-gradient(135deg, var(--green), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Support ── */
+.support-text {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-top: 24px;
+}
+
+.support-text a {
+  color: var(--cyan);
+  text-decoration: none;
+}
+.support-text a:hover { text-decoration: underline; }
+
+/* ── Responsive ── */
+@media (max-width: 700px) {
+  .slide { padding: 40px 20px; }
+  .nav-arrow { width: 40px; height: 40px; font-size: 16px; }
+  .nav-arrow.left { left: 8px; }
+  .nav-arrow.right { right: 8px; }
+  .cards-row .glass-card { max-width: 100%; }
+  .option-card { width: 140px; padding: 16px; }
+  .two-col { gap: 20px; }
+  .mockup-arrow { display: none; }
+  .dash-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ── Print ── */
+@media print {
+  .slides-viewport { overflow: visible; height: auto; }
+  .slides-track { flex-direction: column; transform: none !important; }
+  .slide { min-width: auto; page-break-after: always; height: auto; min-height: 100vh; }
+  .nav-arrow, .progress-bar, .slide-counter { display: none; }
+}
+
+/* ── BG subtle grid ── */
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 30px 30px;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div class="slide-counter" id="counter">1/15</div>
+
+<button class="nav-arrow left hidden" id="prevBtn" aria-label="Slide anterior">&#8592;</button>
+<button class="nav-arrow right" id="nextBtn" aria-label="Proximo slide">&#8594;</button>
+
+<div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+<div class="slides-viewport">
+<div class="slides-track" id="track">
+
+<!-- ═══════ SLIDE 1: Cover ═══════ -->
+<div class="slide">
+  <div class="orb" style="margin-bottom: 40px;"></div>
+  <h1 style="font-size: clamp(40px, 7vw, 72px); font-weight: 900; letter-spacing: -2px;" class="gradient-text">ZAYA PLUS</h1>
+  <p style="font-size: clamp(16px, 2.5vw, 24px); color: var(--text-dim); margin-top: 8px; font-weight: 300;">Guia de Configuracao</p>
+  <div class="nav-hint" style="margin-top: 48px;">
+    <span>Use as setas</span>
+    <kbd>&#8592;</kbd>
+    <kbd>&#8594;</kbd>
+    <span>para navegar</span>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 2: Requisitos ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">O que voce precisa</h2>
+  <p class="slide-subtitle">Antes de comecar, certifique-se de ter instalado:</p>
+  <div class="cards-row">
+    <div class="glass-card">
+      <span class="card-icon">&#9881;</span>
+      <div class="card-title">Node.js 18+</div>
+      <div class="card-desc">Ambiente de execucao JavaScript. Necessario para rodar a Zaya.</div>
+      <a class="card-link" href="https://nodejs.org" target="_blank">Baixar em nodejs.org &rarr;</a>
+    </div>
+    <div class="glass-card">
+      <span class="card-icon">&#128268;</span>
+      <div class="card-title">Git</div>
+      <div class="card-desc">Controle de versao. Usado para baixar o codigo da Zaya.</div>
+      <a class="card-link" href="https://git-scm.com" target="_blank">Baixar em git-scm.com &rarr;</a>
+    </div>
+    <div class="glass-card">
+      <span class="card-icon">&#127760;</span>
+      <div class="card-title">Google Chrome</div>
+      <div class="card-desc">Opcional. Necessario para automacao de navegador.</div>
+      <a class="card-link" href="https://www.google.com/chrome/" target="_blank">Baixar Chrome &rarr;</a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 3: Instalacao ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Instalando a Zaya</h2>
+  <p class="slide-subtitle">Abra o terminal e execute os comandos abaixo:</p>
+  <div class="terminal">
+    <div class="terminal-header">
+      <span class="terminal-dot red"></span>
+      <span class="terminal-dot yellow"></span>
+      <span class="terminal-dot green"></span>
+    </div>
+    <div class="terminal-body">
+      <button class="copy-btn" onclick="copyCommands(this)">Copiar</button>
+      <div><span class="prompt">$</span> <span class="cmd">git clone https://github.com/Shelbyys/zaya-plus.git</span></div>
+      <div><span class="prompt">$</span> <span class="cmd">cd zaya-plus</span></div>
+      <div><span class="prompt">$</span> <span class="cmd">npm install</span></div>
+      <div><span class="prompt">$</span> <span class="cmd">npm start</span></div>
+    </div>
+  </div>
+  <p class="terminal-note">Acesse <code>http://localhost:3001</code> no navegador</p>
+</div>
+
+<!-- ═══════ SLIDE 4: Ativacao ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Ativando sua Licenca</h2>
+  <p class="slide-subtitle">Cole o token que voce recebeu por email</p>
+  <div class="mockup-frame">
+    <div class="mockup-label">Zaya Plus &mdash; Ativacao</div>
+    <input class="mockup-input" placeholder="Cole seu token aqui..." value="ZAYA-XXXX-XXXX-XXXX-XXXX" readonly>
+    <div style="display:flex; gap:12px; justify-content:flex-end;">
+      <div style="padding: 10px 24px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--cyan)); color: white; font-size: 14px; font-weight: 600;">Ativar</div>
+    </div>
+    <span class="mockup-arrow">&#8592;</span>
+  </div>
+  <p class="hint">Verifique a caixa de spam caso nao encontre o email</p>
+</div>
+
+<!-- ═══════ SLIDE 5: Setup — Mente ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Passo 1: Escolha a Mente</h2>
+  <p class="slide-subtitle">Selecione qual inteligencia artificial a Zaya vai usar</p>
+  <div class="option-cards">
+    <div class="option-card">
+      <span class="card-icon">&#129302;</span>
+      <div class="card-title">ChatGPT</div>
+      <div class="card-desc" style="font-size:12px; color:var(--text-dim);">OpenAI</div>
+    </div>
+    <div class="option-card recommended">
+      <span class="card-icon">&#9889;</span>
+      <div class="card-title">Groq</div>
+      <div class="card-desc" style="font-size:12px; color:var(--text-dim);">Ultra rapido</div>
+      <span class="recommend-badge">Recomendado</span>
+    </div>
+    <div class="option-card">
+      <span class="card-icon">&#128172;</span>
+      <div class="card-title">Claude</div>
+      <div class="card-desc" style="font-size:12px; color:var(--text-dim);">Anthropic</div>
+    </div>
+  </div>
+  <p class="hint" style="margin-top: 24px;"><span style="color: var(--green);">Recomendamos Groq</span> (gratuito) para comecar</p>
+</div>
+
+<!-- ═══════ SLIDE 6: Como pegar API Key ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Pegando sua API Key</h2>
+  <p class="slide-subtitle">Siga o passo a passo para obter sua chave gratuita do Groq</p>
+  <div class="two-col">
+    <div class="steps-list">
+      <div class="step-item"><span class="step-num">1</span><span class="step-text">Acesse <a href="https://console.groq.com" target="_blank" style="color:var(--cyan); text-decoration:none;">console.groq.com</a></span></div>
+      <div class="step-item"><span class="step-num">2</span><span class="step-text">Crie uma conta gratuita</span></div>
+      <div class="step-item"><span class="step-num">3</span><span class="step-text">Va em <strong>API Keys</strong></span></div>
+      <div class="step-item"><span class="step-num">4</span><span class="step-text">Clique em <strong>Create API Key</strong></span></div>
+      <div class="step-item"><span class="step-num">5</span><span class="step-text">Copie e cole no Setup Wizard</span></div>
+    </div>
+    <div class="groq-mockup">
+      <div class="groq-mockup-header">
+        <span style="color:var(--cyan);">&#9670;</span> Groq Console &mdash; API Keys
+      </div>
+      <div class="groq-mockup-body">
+        <div class="groq-key-row">
+          <span class="groq-key-name">zaya-key-prod</span>
+          <span class="groq-key-date">Hoje</span>
+        </div>
+        <div class="groq-create-btn">+ Create API Key</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 7: Setup — Identidade ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Passo 2: Quem e voce?</h2>
+  <p class="slide-subtitle">A Zaya vai usar seu nome para personalizar as respostas</p>
+  <div class="mockup-frame" style="max-width: 420px;">
+    <div class="mockup-label">Identidade</div>
+    <input class="mockup-input" placeholder="Seu nome" value="Maria" readonly>
+    <input class="mockup-input" placeholder="Seu telefone (WhatsApp)" value="+55 11 99999-9999" readonly>
+    <input class="mockup-input" placeholder="Idioma preferido" value="Portugues (BR)" readonly>
+  </div>
+  <p class="hint">Essas informacoes podem ser alteradas depois nas configuracoes</p>
+</div>
+
+<!-- ═══════ SLIDE 8: Setup — Voz ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Passo 3: Voz da Zaya</h2>
+  <p class="slide-subtitle">Escolha se a Zaya vai falar com voz ultra-realista</p>
+  <div class="option-cards" style="max-width: 500px;">
+    <div class="option-card" style="width: 210px;">
+      <span class="card-icon">&#127908;</span>
+      <div class="card-title">ElevenLabs</div>
+      <div class="card-desc" style="font-size:12px; color:var(--text-dim);">Voz ultra realista</div>
+      <div style="margin-top:8px; font-size:11px; color:var(--accent-light);">Pago</div>
+    </div>
+    <div class="option-card" style="width: 210px;">
+      <span class="card-icon">&#128263;</span>
+      <div class="card-title">Sem Voz</div>
+      <div class="card-desc" style="font-size:12px; color:var(--text-dim);">Apenas texto</div>
+      <div style="margin-top:8px; font-size:11px; color:var(--green);">Gratuito</div>
+    </div>
+  </div>
+  <p class="hint">Pode pular e configurar depois nas opcoes</p>
+</div>
+
+<!-- ═══════ SLIDE 9: Setup — Modulos ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Passo 4: O que voce quer?</h2>
+  <p class="slide-subtitle">Selecione os modulos que precisa. Pode ativar mais depois.</p>
+  <div class="modules-grid">
+    <div class="module-item"><span class="mod-icon">&#128172;</span>WhatsApp</div>
+    <div class="module-item"><span class="mod-icon">&#128247;</span>Instagram</div>
+    <div class="module-item"><span class="mod-icon">&#128101;</span>Facebook</div>
+    <div class="module-item"><span class="mod-icon">&#128202;</span>Meta Ads</div>
+    <div class="module-item"><span class="mod-icon">&#127912;</span>Gerar Imagens</div>
+    <div class="module-item"><span class="mod-icon">&#127909;</span>Editar Videos</div>
+    <div class="module-item"><span class="mod-icon">&#128269;</span>Pesquisar Web</div>
+    <div class="module-item"><span class="mod-icon">&#128197;</span>Agendamentos</div>
+    <div class="module-item"><span class="mod-icon">&#128231;</span>Emails</div>
+    <div class="module-item"><span class="mod-icon">&#128200;</span>Analytics</div>
+    <div class="module-item"><span class="mod-icon">&#127911;</span>Voz (TTS)</div>
+    <div class="module-item"><span class="mod-icon">&#128736;</span>Automacoes</div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 10: WhatsApp ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Configurando WhatsApp</h2>
+  <p class="slide-subtitle">Conecte a Zaya ao seu WhatsApp em minutos</p>
+  <div class="steps-list">
+    <div class="step-item"><span class="step-num">1</span><span class="step-text">Selecione <strong>WhatsApp</strong> no Setup Wizard</span></div>
+    <div class="step-item"><span class="step-num">2</span><span class="step-text">Escolha: <strong style="color:var(--green);">Baileys (gratuito)</strong> ou WaSender</span></div>
+    <div class="step-item"><span class="step-num">3</span><span class="step-text">Escaneie o <strong>QR Code</strong> no celular</span></div>
+    <div class="step-item"><span class="step-num">4</span><span class="step-text">Pronto! A Zaya responde suas mensagens automaticamente</span></div>
+  </div>
+  <p class="hint">&#128274; Seus dados ficam no seu computador, 100% privados</p>
+</div>
+
+<!-- ═══════ SLIDE 11: Instagram & Facebook ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Configurando Redes Sociais</h2>
+  <p class="slide-subtitle">Conecte Instagram e Facebook a Zaya</p>
+  <div class="steps-list">
+    <div class="step-item"><span class="step-num">1</span><span class="step-text">Acesse <a href="https://developers.facebook.com" target="_blank" style="color:var(--cyan); text-decoration:none;">developers.facebook.com</a></span></div>
+    <div class="step-item"><span class="step-num">2</span><span class="step-text">Gere um token no <strong>Graph API Explorer</strong></span></div>
+    <div class="step-item"><span class="step-num">3</span><span class="step-text">Cole o token no <strong>Setup Wizard</strong> da Zaya</span></div>
+    <div class="step-item"><span class="step-num">4</span><span class="step-text">Selecione suas <strong>paginas e perfis</strong></span></div>
+  </div>
+  <p class="hint">A Zaya pode responder DMs, comentarios e gerenciar postagens</p>
+</div>
+
+<!-- ═══════ SLIDE 12: Ads Dashboard ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Monitorando seus Anuncios</h2>
+  <p class="slide-subtitle">Metricas em tempo real, analise com IA</p>
+  <div class="dashboard-mockup">
+    <div class="dash-header">
+      <span class="dash-title">&#128202; Meta Ads Dashboard</span>
+      <span style="font-size:12px; color:var(--green);">&#9679; Ao vivo</span>
+    </div>
+    <div class="dash-stats">
+      <div class="dash-stat">
+        <div class="dash-stat-value">12.4k</div>
+        <div class="dash-stat-label">Impressoes</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat-value" style="color:var(--green);">R$2.31</div>
+        <div class="dash-stat-label">CPC Medio</div>
+      </div>
+      <div class="dash-stat">
+        <div class="dash-stat-value" style="color:var(--accent-light);">3.8%</div>
+        <div class="dash-stat-label">CTR</div>
+      </div>
+    </div>
+    <div class="dash-chart"><div class="dash-chart-line"></div></div>
+  </div>
+  <p class="hint">Peca a Zaya para analisar performance e sugerir otimizacoes</p>
+</div>
+
+<!-- ═══════ SLIDE 13: Dashboard Principal ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Usando a Zaya</h2>
+  <p class="slide-subtitle">Seu painel principal esta pronto</p>
+  <div class="dashboard-mockup" style="max-width: 560px;">
+    <div class="dash-header">
+      <span class="dash-title">Zaya Plus</span>
+      <span style="font-size:12px; color:var(--green);">&#9679; Online</span>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; padding: 30px 0;">
+      <div class="orb orb-small"></div>
+    </div>
+    <div style="display:flex; gap:8px;">
+      <input class="mockup-input" style="margin:0; flex:1;" placeholder="Fale com a Zaya..." readonly>
+      <div style="width:42px; height:42px; border-radius:8px; background:linear-gradient(135deg, var(--accent), var(--cyan)); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0;">&#9654;</div>
+    </div>
+  </div>
+  <div class="features-row">
+    <span class="feature-tag">&#128488; Fale por texto ou voz</span>
+    <span class="feature-tag">&#9889; Peca qualquer coisa</span>
+    <span class="feature-tag">&#128640; Ela executa pra voce</span>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 14: Dicas ═══════ -->
+<div class="slide">
+  <h2 class="slide-title">Dicas Pro</h2>
+  <p class="slide-subtitle">Tire o maximo da sua Zaya</p>
+  <div class="tips-grid">
+    <div class="tip-card">
+      <span class="tip-icon">&#128483;</span>
+      <div class="tip-text"><strong>Fale naturalmente</strong> &mdash; a Zaya entende contexto e linguagem coloquial. Nao precisa ser formal.</div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">&#127912;</span>
+      <div class="tip-text"><strong>Peca para criar</strong> &mdash; pesquisar na web, gerar imagens, editar videos. Tudo por texto.</div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">&#9200;</span>
+      <div class="tip-text"><strong>Agendamentos</strong> &mdash; configure lembretes e tarefas recorrentes automaticamente.</div>
+    </div>
+    <div class="tip-card">
+      <span class="tip-icon">&#128202;</span>
+      <div class="tip-text"><strong>Use o /meta</strong> &mdash; gerencie redes sociais, ads e metricas pelo dashboard integrado.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ SLIDE 15: Final ═══════ -->
+<div class="slide">
+  <div class="orb" style="margin-bottom: 40px;"></div>
+  <h2 style="font-size: clamp(28px, 5vw, 48px); font-weight: 900;" class="gradient-text-green">Pronta para comecar!</h2>
+  <p style="font-size: 18px; color: var(--text-dim); margin-top: 8px; margin-bottom: 32px;">Sua Zaya esta esperando</p>
+  <a href="http://localhost:3001" class="cta-btn">&#128640; Abrir Zaya</a>
+  <p class="support-text">Precisa de ajuda? <a href="mailto:suporte@zayaplus.com">suporte@zayaplus.com</a></p>
+</div>
+
+</div><!-- /track -->
+</div><!-- /viewport -->
+
+<script>
+(function() {
+  const track = document.getElementById('track');
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progressFill');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const totalSlides = track.children.length;
+  let current = 0;
+
+  function goTo(index) {
+    if (index < 0 || index >= totalSlides) return;
+    current = index;
+    track.style.transform = `translateX(-${current * 100}vw)`;
+    counter.textContent = `${current + 1}/${totalSlides}`;
+    progress.style.width = `${((current + 1) / totalSlides) * 100}%`;
+    prevBtn.classList.toggle('hidden', current === 0);
+    nextBtn.classList.toggle('hidden', current === totalSlides - 1);
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  prevBtn.addEventListener('click', prev);
+  nextBtn.addEventListener('click', next);
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+  });
+
+  // Touch/swipe support
+  let touchStartX = 0;
+  let touchEndX = 0;
+
+  document.addEventListener('touchstart', function(e) {
+    touchStartX = e.changedTouches[0].screenX;
+  }, { passive: true });
+
+  document.addEventListener('touchend', function(e) {
+    touchEndX = e.changedTouches[0].screenX;
+    const diff = touchStartX - touchEndX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) next();
+      else prev();
+    }
+  }, { passive: true });
+
+  // Init
+  goTo(0);
+})();
+
+function copyCommands(btn) {
+  const cmds = `git clone https://github.com/Shelbyys/zaya-plus.git
+cd zaya-plus
+npm install
+npm start`;
+  navigator.clipboard.writeText(cmds).then(function() {
+    btn.textContent = 'Copiado!';
+    btn.classList.add('copied');
+    setTimeout(function() {
+      btn.textContent = 'Copiar';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+</script>
+</body>
+</html>
