@@ -402,9 +402,10 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ text })
             });
-            if (!res.ok) return;
+            if (!res.ok || res.status === 204) return;
 
             const blob = await res.blob();
+            if (blob.size < 100) return; // Audio vazio
             const url = URL.createObjectURL(blob);
             const audio = new Audio(url);
 

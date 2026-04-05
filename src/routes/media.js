@@ -63,7 +63,9 @@ router.post('/speak', async (req, res) => {
       });
       if (!response.ok) {
         const err = await response.text();
-        return res.status(response.status).json({ error: 'Erro OpenAI TTS: ' + err });
+        console.log('[TTS] OpenAI erro:', response.status, err.slice(0, 200));
+        // Fallback silencioso — retorna audio vazio em vez de erro
+        return res.status(204).end();
       }
       res.set('Content-Type', 'audio/mpeg');
       return res.send(Buffer.from(await response.arrayBuffer()));
@@ -71,7 +73,7 @@ router.post('/speak', async (req, res) => {
 
     // ElevenLabs TTS
     const apiKey = process.env.ELEVENLABS_API_KEY;
-    if (!apiKey) return res.status(400).json({ error: 'Nenhum provedor de voz configurado' });
+    if (!apiKey) return res.status(204).end(); // Sem voz — silencioso
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${currentVoiceId}`, {
       method: 'POST',
       headers: { 'xi-api-key': apiKey, 'Content-Type': 'application/json' },
