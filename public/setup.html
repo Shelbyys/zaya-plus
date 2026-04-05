@@ -763,11 +763,19 @@
         <p class="step-subtitle">Quer que eu fale com voce?</p>
 
         <div class="option-cards" id="voiceCards">
+            <div class="option-card" data-value="openai-tts" id="openaiTtsCard" onclick="selectVoice(this)" style="display:none">
+                <div class="option-icon">&#129302;</div>
+                <div class="option-info">
+                    <div class="option-name">OpenAI TTS</div>
+                    <div class="option-desc">Voz do ChatGPT (usa sua mesma API key)</div>
+                </div>
+                <div class="option-radio"></div>
+            </div>
             <div class="option-card" data-value="elevenlabs" onclick="selectVoice(this)">
                 <div class="option-icon">&#127908;</div>
                 <div class="option-info">
                     <div class="option-name">ElevenLabs</div>
-                    <div class="option-desc">Voz ultra realista</div>
+                    <div class="option-desc">Voz ultra realista (precisa de outra API key)</div>
                 </div>
                 <div class="option-radio"></div>
             </div>
@@ -1058,6 +1066,7 @@
         updateProgress(step);
         window.scrollTo({ top: 0, behavior: 'smooth' });
 
+        if (step === 3) updateVoiceOptions();
         if (step === 5) buildChecklist();
     }
 
@@ -1139,6 +1148,20 @@
     }
 
     // ───── Step 3: Voice ─────
+    // Mostrar opção OpenAI TTS quando provider é OpenAI
+    function updateVoiceOptions() {
+        const openaiTtsCard = document.getElementById('openaiTtsCard');
+        if (config.ai.provider === 'openai') {
+            openaiTtsCard.style.display = 'flex';
+        } else {
+            openaiTtsCard.style.display = 'none';
+            if (config.voice.provider === 'openai-tts') {
+                config.voice.provider = '';
+                openaiTtsCard.classList.remove('selected');
+            }
+        }
+    }
+
     function selectVoice(card) {
         document.querySelectorAll('#voiceCards .option-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
