@@ -136,7 +136,33 @@ app.post('/api/license/admin/generate', async (req, res) => {
 
     await sbInsert({ token, plan, email, name, activated: false, revoked: false, expires_at: expires.toISOString() });
 
-    res.json({ token, plan });
+    res.json({ token, plan, expires_at: expires.toISOString() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Gerar licença TRIAL (com tempo limitado)
+app.post('/api/license/admin/generate-trial', async (req, res) => {
+  try {
+    if (!checkAdmin(req.body.password)) return res.status(401).json({ error: 'Senha invalida' });
+    const { plan, email, name, hours, minutes } = req.body;
+    if (!email || !name) return res.status(400).json({ error: 'email e name obrigatorios' });
+
+    const token = 'TRIAL-' + crypto.randomUUID().slice(0, 18).toUpperCase();
+    const totalMs = ((parseInt(hours) || 0) * 60 + (parseInt(minutes) || 0)) * 60 * 1000;
+    if (totalMs <= 0) return res.status(400).json({ error: 'Defina pelo menos 1 minuto' });
+
+    const expires = new Date(Date.now() + totalMs);
+
+    await sbInsert({
+      token, plan: plan || 'enterprise', email, name,
+      activated: false, revoked: false,
+      expires_at: expires.toISOString(),
+      machine_info: { trial: true, duration_ms: totalMs }
+    });
+
+    res.json({ token, plan: plan || 'enterprise', expires_at: expires.toISOString(), trial: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
