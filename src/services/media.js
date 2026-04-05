@@ -46,7 +46,7 @@ export async function whisperTranscribe(audioPath, outputFormat = 'json') {
     const outDir = dirname(audioPath);
     exec(`${WHISPER_BIN} "${audioPath}" --model base --language pt --output_format ${outputFormat} --output_dir "${outDir}"`, {
       timeout: 120000,
-      env: { ...process.env, PATH: `${HOME}/Library/Python/3.9/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin` },
+      env: { ...process.env, PATH: process.env.PATH || `${HOME}/Library/Python/3.9/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin` },
     }, (err) => {
       if (err) { reject(err); return; }
       const baseName = basename(audioPath, extname(audioPath));

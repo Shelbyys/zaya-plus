@@ -74,7 +74,7 @@ async function generateAudio(text) {
     audioCache.set(id, { buffer, ts: Date.now() });
 
     // URL pública do Render servindo o áudio
-    const baseUrl = process.env.PUBLIC_URL || (process.env.RENDER_EXTERNAL_HOSTNAME ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}` : 'http://localhost:3001');
+    const baseUrl = process.env.PUBLIC_URL || (process.env.RENDER_EXTERNAL_HOSTNAME ? `https://${process.env.RENDER_EXTERNAL_HOSTNAME}` : `http://localhost:${process.env.PORT||3001}`);
     const audioUrl = `${baseUrl}/voice/audio/${id}`;
     log.ai.info({ id, size: buffer.length, url: audioUrl?.slice(0, 60) }, 'ElevenLabs áudio gerado');
     return audioUrl;

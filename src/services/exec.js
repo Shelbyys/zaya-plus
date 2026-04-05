@@ -33,7 +33,7 @@ export function runClaudeCode(prompt, dir, timeout) {
       cwd, timeout: maxTime, stdio: ['pipe', 'pipe', 'pipe'],
       env: {
         ...process.env,
-        PATH: '/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin',
+        PATH: process.env.PATH || '/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin',
         HOME,
       },
     });

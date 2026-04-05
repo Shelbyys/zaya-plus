@@ -5,8 +5,8 @@ const { spawn } = require('child_process');
 let mainWindow = null;
 let tray = null;
 let serverProcess = null;
-const SERVER_PORT = 3001;
-const PROJECT_DIR = '/Volumes/KINGSTON/claude-code/jarvis';
+const SERVER_PORT = process.env.PORT || 3001;
+const PROJECT_DIR = path.resolve(__dirname, '..');
 const SERVER_SCRIPT = path.join(PROJECT_DIR, 'server.js');
 
 // ================================================================

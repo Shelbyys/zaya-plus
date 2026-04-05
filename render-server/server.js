@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3000;
 // ================================================================
 // SUPABASE CONFIG
 // ================================================================
-const SB_URL = process.env.SUPABASE_URL || 'https://qzgzpfcdfanhtehrikyy.supabase.co';
+const SB_URL = process.env.SUPABASE_URL || '';
 const SB_KEY = process.env.SUPABASE_KEY || '';
 const ADMIN_PASSWORD = process.env.LICENSE_ADMIN_PASSWORD || '';
 const TABLE = 'licenses';

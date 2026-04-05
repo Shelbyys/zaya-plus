@@ -273,16 +273,20 @@ io.on('connection', () => {
 // ================================================================
 async function updateLocation() {
   try {
-    const r = await fetch('https://ipinfo.io/json');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    const r = await fetch('https://ipinfo.io/json', { signal: controller.signal });
+    clearTimeout(timeout);
     const d = await r.json();
     Object.assign(macLocation, { city: d.city || '', region: d.region || '', country: d.country || 'BR', loc: d.loc || '', timezone: d.timezone || '' });
     log.server.info({ city: macLocation.city, region: macLocation.region }, 'Localização atualizada');
   } catch (e) {
-    log.server.warn({ err: e.message }, 'Erro ao obter localização');
+    log.server.debug({ err: e.message }, 'Localização indisponível (offline ou sem acesso)');
   }
 }
 
-updateLocation();
+// Não bloqueia startup — roda em background
+updateLocation().catch(() => {});
 setInterval(updateLocation, 30 * 60 * 1000);
 
 // ================================================================

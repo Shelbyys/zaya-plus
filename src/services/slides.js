@@ -232,7 +232,7 @@ pres.writeFile({ fileName: ${JSON.stringify(outputFile)} }).then(() => {
   writeFileSync(scriptFile, scriptContent);
 
   const result = await new Promise((resolve) => {
-    exec(`NODE_PATH=/opt/homebrew/lib/node_modules node "${scriptFile}"`, { timeout: 30000 }, (err, stdout, stderr) => {
+    exec(`node "${scriptFile}"`, { timeout: 30000, env: { ...process.env } }, (err, stdout, stderr) => {
       resolve({ err, stdout, stderr });
     });
   });
