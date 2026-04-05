@@ -123,7 +123,7 @@ router.post('/pesquisa', async (req, res) => {
     const summaryRes = await openai.chat.completions.create({
       model: AI_MODEL_MINI, max_tokens: 200,
       messages: [
-        { role: 'system', content: `Voce e a ZAYA, assistente do ${ADMIN_NAME || 'usuario'}. Resuma em 2-3 frases CURTAS o que encontrou na pesquisa. Fale de forma natural e sergipana. Diga que mandou os detalhes no painel de mensagens.` },
+        { role: 'system', content: `Voce e a ZAYA, assistente do ${ADMIN_NAME || 'usuario'}. Resuma em 2-3 frases CURTAS o que encontrou na pesquisa. Fale de forma natural. Diga que mandou os detalhes no painel de mensagens.` },
         { role: 'user', content: `Pesquisa sobre "${query}". Resumo:\n${research.content.slice(0, 2000)}` },
       ],
     });

@@ -1,5 +1,6 @@
 import { exec, spawn } from 'child_process';
 import { join } from 'path';
+import { readFileSync } from 'fs';
 import os from 'os';
 import { ADMIN_NAME, TMP_DIR, ROOT_DIR } from '../config.js';
 import { openai, conversationHistory, macLocation, io } from '../state.js';
@@ -40,12 +41,21 @@ export function getSystemPrompt() {
   const loc = macLocation.city ? `${macLocation.city}, ${macLocation.region}, ${macLocation.country}` : 'desconhecida';
   const coords = macLocation.loc || 'desconhecidas';
 
-  // Personalidade configuravel pelo usuario
-  const callName = process.env.ZAYA_CALL_NAME || ADMIN_NAME || 'voce';
-  const style = process.env.ZAYA_STYLE || 'amigavel';
-  const accent = process.env.ZAYA_ACCENT || 'neutro';
-  const profession = process.env.ZAYA_USER_PROFESSION || '';
-  const expectations = process.env.ZAYA_USER_EXPECTATIONS || '';
+  // Personalidade configuravel — reler .env em tempo real
+  let envVars = {};
+  try {
+    const envPath = join(ROOT_DIR, '.env');
+    const content = readFileSync(envPath, 'utf-8');
+    content.split('\n').forEach(line => {
+      const m = line.match(/^([^#=]+)=(.*)$/);
+      if (m) envVars[m[1].trim()] = m[2].trim();
+    });
+  } catch {}
+  const callName = envVars.ZAYA_CALL_NAME || process.env.ZAYA_CALL_NAME || ADMIN_NAME || 'voce';
+  const style = envVars.ZAYA_STYLE || process.env.ZAYA_STYLE || 'amigavel';
+  const accent = envVars.ZAYA_ACCENT || process.env.ZAYA_ACCENT || 'neutro';
+  const profession = envVars.ZAYA_USER_PROFESSION || process.env.ZAYA_USER_PROFESSION || '';
+  const expectations = envVars.ZAYA_USER_EXPECTATIONS || process.env.ZAYA_USER_EXPECTATIONS || '';
 
   // Gerar instrucoes de estilo baseado na configuracao
   const styleMap = {
@@ -306,7 +316,7 @@ PERGUNTAS OBRIGATÓRIAS por tipo:
 - EVENTOS/LEMBRETES: "Que horário? Qual duração? Quer lembrete antes? Repetir?"
 - CANVAS/ARTE: "Que estilo artístico? Quais cores? Para que vai usar?"
 
-REGRA: Faça de 2 a 4 perguntas CURTAS e NATURAIS (no seu jeitinho sergipano). ESPERE o ${ADMIN_NAME} responder. Só depois de receber as respostas, execute com tudo que coletou.
+REGRA: Faça de 2 a 4 perguntas CURTAS e NATURAIS (no seu estilo configurado). ESPERE o ${callName} responder. Só depois de receber as respostas, execute com tudo que coletou.
 EXCEÇÃO: Se o pedido já tiver TODAS as informações necessárias e for bem detalhado, pode executar direto.
 ${getMemoriesForPrompt()}`;
 }
@@ -1695,7 +1705,7 @@ export async function processVoiceChat(message, statusCallback) {
           const contact = await searchContact(refusal.contact);
           if (contact?.telefone) {
             const result = await sendWhatsApp(contact.telefone, refusal.message);
-            reply = `Pronto meu bem, mandei a mensagem pra ${refusal.contact}!`;
+            reply = `Pronto, mandei a mensagem pra ${refusal.contact}!`;
             log.ai.info({ contact: refusal.contact, result }, 'Fallback: mensagem enviada com sucesso');
           }
         }
@@ -1906,7 +1916,7 @@ export async function processWithAI(text, jid, isAdmin) {
             const contact = await searchContact(refusal.contact);
             if (contact?.telefone) {
               const result = await sendWhatsApp(contact.telefone, refusal.message);
-              reply = `Pronto meu bem, mandei a mensagem pra ${refusal.contact}!`;
+              reply = `Pronto, mandei a mensagem pra ${refusal.contact}!`;
               log.ai.info({ contact: refusal.contact, result }, 'Fallback WA: mensagem enviada');
             }
           }

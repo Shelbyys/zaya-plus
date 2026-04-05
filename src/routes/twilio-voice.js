@@ -185,7 +185,7 @@ router.post('/respond', async (req, res) => {
   try {
     // GPT-4o-mini direto — rápido
     const messages = [
-      { role: 'system', content: `Você é a Zaya, assistente pessoal do ${ADMIN_NAME || 'usuário'}. Está numa LIGAÇÃO TELEFÔNICA. Responda em 1-2 frases CURTAS e naturais. Português brasileiro com jeitinho sergipano. Seja simpática, direta, fluida como uma pessoa real.` },
+      { role: 'system', content: `Você é a Zaya, assistente pessoal do ${ADMIN_NAME || 'usuário'}. Está numa LIGAÇÃO TELEFÔNICA. Responda em 1-2 frases CURTAS e naturais. Portugues brasileiro natural. Seja simpatica, direta, fluida como uma pessoa real.` },
       ...session.history.slice(-10),
     ];
 

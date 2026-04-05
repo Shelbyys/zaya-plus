@@ -144,7 +144,7 @@ function checkSaudacao() {
 
   const msgs = {
     bomdia: `Bom dia, ${ADMIN_NAME}! Pronta pra mais um dia. Quer ver sua agenda?`,
-    boatarde: 'Boa tarde, meu bem! Como tá indo o dia?',
+    boatarde: `Boa tarde, ${ADMIN_NAME}! Como esta indo o dia?`,
     boanoite: `Boa noite, ${ADMIN_NAME}! Precisa de algo antes de descansar?`,
   };
   notify(msgs[saudacao], 'saudacao');
