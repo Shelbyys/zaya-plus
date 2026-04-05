@@ -241,8 +241,12 @@ app.use(errorHandler);
 // ================================================================
 // SOCKET.IO
 // ================================================================
+let dashboardConnected = false;
 io.on('connection', () => {
-  log.server.info('Dashboard conectado');
+  if (!dashboardConnected) {
+    log.server.info('Dashboard conectado');
+    dashboardConnected = true;
+  }
 });
 
 // ================================================================
@@ -272,6 +276,15 @@ import { startInboxPoller } from './src/services/inbox-poller.js';
 import { startProactiveMonitor } from './src/services/proactive.js';
 
 server.listen(PORT, '0.0.0.0', async () => {
+  console.log('');
+  console.log('  \x1b[35m\x1b[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m');
+  console.log('');
+  console.log('  \x1b[35m\x1b[1m  ZAYA PLUS\x1b[0m  \x1b[32m● ONLINE\x1b[0m');
+  console.log('');
+  console.log('  \x1b[36m  http://localhost:' + PORT + '\x1b[0m');
+  console.log('');
+  console.log('  \x1b[35m\x1b[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m');
+  console.log('');
   log.server.info(`ZAYA v2.0 online em http://localhost:${PORT}`);
   startOutboxMonitor();
   startScheduler();
