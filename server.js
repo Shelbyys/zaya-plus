@@ -286,16 +286,7 @@ import { startInboxPoller } from './src/services/inbox-poller.js';
 import { startProactiveMonitor } from './src/services/proactive.js';
 
 server.listen(PORT, '0.0.0.0', async () => {
-  console.log('');
-  console.log('  \x1b[35m\x1b[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m');
-  console.log('');
-  console.log('  \x1b[35m\x1b[1m  ZAYA PLUS\x1b[0m  \x1b[32m● ONLINE\x1b[0m');
-  console.log('');
-  console.log('  \x1b[36m  http://localhost:' + PORT + '\x1b[0m');
-  console.log('');
-  console.log('  \x1b[35m\x1b[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m');
-  console.log('');
-  log.server.info(`ZAYA v2.0 online em http://localhost:${PORT}`);
+  log.server.info(`Iniciando ZAYA PLUS...`);
   startOutboxMonitor();
   startScheduler();
   startInboxPoller();
@@ -306,6 +297,20 @@ server.listen(PORT, '0.0.0.0', async () => {
   if (isSupabaseEnabled()) {
     initSupabaseTables().then(() => syncAllToSupabase());
   }
+
+  // Banner final — aparece DEPOIS de tudo inicializar
+  setTimeout(() => {
+    console.log('');
+    console.log('  \x1b[35m\x1b[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m');
+    console.log('');
+    console.log('  \x1b[35m\x1b[1m  ZAYA PLUS\x1b[0m  \x1b[32m● ONLINE\x1b[0m');
+    console.log('');
+    console.log('  \x1b[36m  Acesse no navegador:\x1b[0m');
+    console.log('  \x1b[36m\x1b[1m  http://localhost:' + PORT + '\x1b[0m');
+    console.log('');
+    console.log('  \x1b[35m\x1b[1m━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\x1b[0m');
+    console.log('');
+  }, 3000);
 });
 
 async function gracefulShutdown() {
