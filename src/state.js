@@ -28,6 +28,6 @@ export const macLocation = { city: 'desconhecida', region: '', country: 'BR', lo
 // AI client — Zaya IA (ou OpenAI fallback)
 import OpenAI from 'openai';
 export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY || 'sk-placeholder',
   ...(process.env.OPENAI_BASE_URL ? { baseURL: process.env.OPENAI_BASE_URL } : {}),
 });
