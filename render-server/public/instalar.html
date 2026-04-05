@@ -671,9 +671,10 @@ footer {
   <div class="card">
     <div class="step-header">
       <div class="step-number">2</div>
-      <div class="step-title">Baixar a Zaya Plus</div>
+      <div class="step-title">Instalar, Ativar e Iniciar</div>
     </div>
-    <p>Cole este comando no terminal e pressione Enter:</p>
+    <p>Voce recebeu um <strong>comando por email</strong> apos a compra. Cole no terminal e pressione Enter:</p>
+    <p style="font-size:0.85rem;color:var(--text-dim);margin-bottom:16px">O comando ja faz tudo automaticamente: baixa, instala, ativa sua licenca e inicia a Zaya.</p>
 
     <div class="code-wrapper">
       <div class="code-header">
@@ -683,20 +684,54 @@ footer {
           Copiar
         </button>
       </div>
-      <div class="code-block"><code>git clone https://github.com/Shelbyys/zaya-plus.git</code></div>
+      <div class="code-block"><code>git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install && node activate.js SEU-TOKEN && npm start</code></div>
     </div>
 
-    <p>Aguarde terminar. Vai aparecer algo como:</p>
+    <p style="margin-top:16px">Substitua <span class="inline-code">SEU-TOKEN</span> pelo token que recebeu. Exemplo:</p>
+
+    <div class="code-wrapper">
+      <div class="code-header">
+        <div class="code-dots"><span></span><span></span><span></span></div>
+        <button class="copy-btn" onclick="copyCode(this)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+          Copiar
+        </button>
+      </div>
+      <div class="code-block"><code>git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install && node activate.js TRIAL-D4E95CCA-CBD0-41A5 && npm start</code></div>
+    </div>
+
+    <p style="margin-top:20px">O terminal vai mostrar todo o processo:</p>
 
     <div class="terminal">
       <div class="terminal-bar">
         <span></span><span></span><span></span>
         <div class="title">Terminal</div>
       </div>
-      <div class="terminal-body"><span class="prompt">$</span> <span class="cmd">git clone https://github.com/Shelbyys/zaya-plus.git</span>
+      <div class="terminal-body"><span class="prompt">$</span> <span class="cmd">git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install && node activate.js TRIAL-D4E95CCA && npm start</span>
 Cloning into 'zaya-plus'...
-remote: Enumerating objects: 200, done.
-<span class="success">Resolving deltas: 100%, done.</span></div>
+<span class="success">Resolving deltas: 100%, done.</span>
+
+added 677 packages in 4s
+
+<span class="bold">ZAYA PLUS</span> <span class="label">— Ativando licenca...</span>
+<span class="success">&#10003; Licenca ativada com sucesso!</span>
+<span class="success">&#10003; Plano: ENTERPRISE</span>
+
+<span class="line">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+  <span class="bold">ZAYA PLUS</span>  <span class="success">&#9679; ONLINE</span>
+  <span class="cmd">http://localhost:3001</span>
+<span class="line">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span></div>
+    </div>
+
+    <div style="margin-top:20px;padding:16px;background:rgba(108,92,231,0.08);border:1px solid rgba(108,92,231,0.2);border-radius:12px">
+      <p style="font-size:0.85rem;color:var(--accent-light)"><strong>Se preferir fazer passo a passo:</strong></p>
+      <div style="display:grid;gap:8px;margin-top:10px;font-size:0.8rem;color:var(--text-dim)">
+        <div><span class="inline-code">1.</span> <span class="inline-code">git clone https://github.com/Shelbyys/zaya-plus.git</span></div>
+        <div><span class="inline-code">2.</span> <span class="inline-code">cd zaya-plus</span></div>
+        <div><span class="inline-code">3.</span> <span class="inline-code">npm install</span></div>
+        <div><span class="inline-code">4.</span> <span class="inline-code">node activate.js SEU-TOKEN</span></div>
+        <div><span class="inline-code">5.</span> <span class="inline-code">npm start</span></div>
+      </div>
     </div>
   </div>
 
@@ -704,121 +739,6 @@ remote: Enumerating objects: 200, done.
   <div class="card">
     <div class="step-header">
       <div class="step-number">3</div>
-      <div class="step-title">Entrar na pasta</div>
-    </div>
-
-    <div class="code-wrapper">
-      <div class="code-header">
-        <div class="code-dots"><span></span><span></span><span></span></div>
-        <button class="copy-btn" onclick="copyCode(this)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Copiar
-        </button>
-      </div>
-      <div class="code-block"><code>cd zaya-plus</code></div>
-    </div>
-  </div>
-
-  <!-- PASSO 4 -->
-  <div class="card">
-    <div class="step-header">
-      <div class="step-number">4</div>
-      <div class="step-title">Ativar sua licenca</div>
-    </div>
-    <p>Voce recebeu um <strong>token por email</strong> apos a compra. Primeiro, instale as dependencias:</p>
-
-    <div class="code-wrapper">
-      <div class="code-header">
-        <div class="code-dots"><span></span><span></span><span></span></div>
-        <button class="copy-btn" onclick="copyCode(this)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Copiar
-        </button>
-      </div>
-      <div class="code-block"><code>npm install</code></div>
-    </div>
-
-    <p>Aguarde instalar (pode demorar 1-2 minutos). Depois, ative sua licenca:</p>
-
-    <div class="code-wrapper">
-      <div class="code-header">
-        <div class="code-dots"><span></span><span></span><span></span></div>
-        <button class="copy-btn" onclick="copyCode(this)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Copiar
-        </button>
-      </div>
-      <div class="code-block"><code>node activate.js SEU-TOKEN-AQUI</code></div>
-    </div>
-
-    <p>Exemplo:</p>
-
-    <div class="code-wrapper">
-      <div class="code-header">
-        <div class="code-dots"><span></span><span></span><span></span></div>
-        <button class="copy-btn" onclick="copyCode(this)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-          Copiar
-        </button>
-      </div>
-      <div class="code-block"><code>node activate.js TRIAL-D4E95CCA-CBD0-41A5</code></div>
-    </div>
-
-    <p>Vai aparecer:</p>
-
-    <div class="terminal">
-      <div class="terminal-bar">
-        <span></span><span></span><span></span>
-        <div class="title">Terminal</div>
-      </div>
-      <div class="terminal-body"><span class="bold">ZAYA PLUS</span> <span class="label">— Ativando licenca...</span>
-
-<span class="success">&#10003; Licenca ativada com sucesso!</span>
-<span class="success">&#10003; Plano: ENTERPRISE</span>
-
-Agora rode: <span class="cmd">npm start</span></div>
-    </div>
-  </div>
-
-  <!-- PASSO 5 -->
-  <div class="card">
-    <div class="step-header">
-      <div class="step-number">5</div>
-      <div class="step-title">Iniciar a Zaya</div>
-    </div>
-
-    <div class="code-wrapper">
-      <div class="code-header">
-        <div class="code-dots"><span></span><span></span><span></span></div>
-        <button class="copy-btn" onclick="copyCode(this)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012-2v1"/></svg>
-          Copiar
-        </button>
-      </div>
-      <div class="code-block"><code>npm start</code></div>
-    </div>
-
-    <p>Vai aparecer:</p>
-
-    <div class="terminal">
-      <div class="terminal-bar">
-        <span></span><span></span><span></span>
-        <div class="title">Terminal</div>
-      </div>
-      <div class="terminal-body"><span class="line">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
-
-  <span class="bold">ZAYA PLUS</span>  <span class="success">&#9679; ONLINE</span>
-
-  <span class="cmd">http://localhost:3001</span>
-
-<span class="line">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span></div>
-    </div>
-  </div>
-
-  <!-- PASSO 6 -->
-  <div class="card">
-    <div class="step-header">
-      <div class="step-number">6</div>
       <div class="step-title">Abrir no navegador</div>
     </div>
     <p>Abra o Google Chrome e acesse:</p>
