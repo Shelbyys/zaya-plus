@@ -975,9 +975,18 @@
         <div class="checklist" id="checklist"></div>
 
         <button class="btn-activate" id="activateBtn" onclick="activateZaya()">
-            <span class="spinner" id="activateSpinner" style="width:20px;height:20px;border-width:2.5px;"></span>
             Ativar Zaya!
         </button>
+    </div>
+
+    <!-- ACTIVATION CINEMATIC OVERLAY -->
+    <div id="activationOverlay" style="display:none;position:fixed;inset:0;background:#0a0a0f;z-index:9999;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.8s">
+        <canvas id="activation-orb" style="width:250px;height:250px;margin-bottom:20px"></canvas>
+        <div id="activationText" style="font-size:1.1rem;color:#a29bfe;font-weight:600;text-align:center;min-height:30px;transition:all 0.5s"></div>
+        <div id="activationSub" style="font-size:0.85rem;color:#8888a0;margin-top:10px;text-align:center;min-height:24px;transition:all 0.5s"></div>
+        <div id="activationProgress" style="width:280px;height:4px;background:rgba(255,255,255,0.06);border-radius:4px;margin-top:30px;overflow:hidden">
+            <div id="activationBar" style="width:0%;height:100%;background:linear-gradient(90deg,#6c5ce7,#a29bfe,#00d4ff);border-radius:4px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
+        </div>
     </div>
 
 </div>
@@ -1302,23 +1311,70 @@
 
     async function activateZaya() {
         const btn = document.getElementById('activateBtn');
-        const spinner = document.getElementById('activateSpinner');
         btn.disabled = true;
-        spinner.style.display = 'inline-block';
-        btn.innerHTML = '';
-        btn.appendChild(spinner);
-        btn.append(' Ativando...');
+        btn.textContent = 'Ativando...';
 
+        // Save config
         try {
             await fetch('/api/setup/complete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(config)
             });
-        } catch (e) { /* offline */ }
+        } catch (e) {}
 
-        // Small delay for effect
+        // Show cinematic overlay
+        const overlay = document.getElementById('activationOverlay');
+        overlay.style.display = 'flex';
+        requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+
+        // Init orb
+        let orb;
+        try {
+            orb = new JarvisOrb('activation-orb');
+            orb.setState('processing');
+        } catch(e) {}
+
+        const textEl = document.getElementById('activationText');
+        const subEl = document.getElementById('activationSub');
+        const bar = document.getElementById('activationBar');
+        const userName = config.identity.name || 'voce';
+
+        // Sequence of messages
+        const steps = [
+            { text: 'Iniciando sistemas...', sub: 'Preparando ambiente', pct: '10%', state: 'processing', delay: 1200 },
+            { text: 'Configurando mente...', sub: config.ai.provider === 'openai' ? 'Conectando ao ChatGPT' : config.ai.provider === 'groq' ? 'Conectando ao Groq' : 'Conectando ao Claude', pct: '25%', state: 'processing', delay: 1500 },
+            { text: `Prazer, ${userName}!`, sub: 'Aprendendo sobre voce...', pct: '40%', state: 'listening', delay: 1800 },
+            { text: 'Ativando modulos...', sub: 'Carregando funcionalidades', pct: '55%', state: 'processing', delay: 1500 },
+            { text: 'Calibrando inteligencia...', sub: 'Otimizando respostas', pct: '70%', state: 'processing', delay: 1200 },
+            { text: 'Quase la...', sub: 'Ultimos ajustes', pct: '85%', state: 'speaking', delay: 1000 },
+            { text: `Zaya viva para ser sua assistente, ${userName}!`, sub: '', pct: '100%', state: 'speaking', delay: 2500 },
+        ];
+
+        for (const step of steps) {
+            textEl.style.opacity = '0';
+            subEl.style.opacity = '0';
+            await new Promise(r => setTimeout(r, 300));
+
+            textEl.textContent = step.text;
+            subEl.textContent = step.sub;
+            bar.style.width = step.pct;
+            if (orb) { orb.setState(step.state); orb.setAudioLevel(Math.random() * 0.6 + 0.2); }
+
+            textEl.style.opacity = '1';
+            subEl.style.opacity = '1';
+            await new Promise(r => setTimeout(r, step.delay));
+        }
+
+        // Final glow
+        if (orb) { orb.setState('idle'); orb.setAudioLevel(0); }
+        bar.style.background = 'linear-gradient(90deg, #00e676, #00d4ff)';
+
         await new Promise(r => setTimeout(r, 1500));
+
+        // Fade out and redirect
+        overlay.style.opacity = '0';
+        await new Promise(r => setTimeout(r, 800));
         window.location.href = '/';
     }
 
@@ -1333,6 +1389,7 @@
         document.getElementById(id).classList.toggle('show', show);
     }
 </script>
+<script src="/orb.js"></script>
 
 </body>
 </html>
