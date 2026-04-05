@@ -424,6 +424,22 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
 .setup-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--w2);letter-spacing:0.5px;}
 .setup-desc{font-size:8px;color:var(--od);margin-top:2px;}
 .setup-status{font-size:16px;font-weight:bold;min-width:20px;text-align:center;}
+.setup-header{display:flex;align-items:center;gap:12px;cursor:pointer;padding:2px 0;}
+.setup-detail{padding:10px 0 4px 40px;border-top:1px solid rgba(255,255,255,0.04);margin-top:8px;}
+.setup-steps{margin-bottom:10px;}
+.setup-step{display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;font-size:9px;color:var(--w2);font-family:'Space Mono',monospace;}
+.setup-step-num{min-width:18px;height:18px;display:flex;align-items:center;justify-content:center;border-radius:50%;background:var(--od);color:#000;font-size:8px;font-weight:700;flex-shrink:0;}
+.setup-links{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.setup-link{font-family:'Space Mono',monospace;font-size:8px;color:var(--od);border:1px solid var(--od);padding:3px 8px;border-radius:3px;text-decoration:none;transition:all .2s;}
+.setup-link:hover{background:var(--od);color:#000;}
+.setup-form{margin-top:4px;}
+.setup-field{display:block;margin-bottom:8px;}
+.setup-field span{display:block;font-family:'Space Mono',monospace;font-size:8px;color:var(--od);letter-spacing:0.5px;margin-bottom:3px;}
+.setup-field input,.setup-field select{width:100%;background:#1a1a25;border:1px solid var(--w3);color:var(--w);font-family:'Space Mono',monospace;font-size:9px;padding:6px 8px;border-radius:3px;outline:none;box-sizing:border-box;}
+.setup-field input:focus,.setup-field select:focus{border-color:var(--od);}
+.setup-save-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:1px;padding:6px 16px;background:var(--od);color:#000;border:none;border-radius:3px;cursor:pointer;font-weight:700;transition:all .2s;}
+.setup-save-btn:hover{background:var(--o);}
+.setup-save-msg{font-family:'Space Mono',monospace;font-size:8px;display:flex;align-items:center;}
 .wa-default-badge{font-size:7px;letter-spacing:1px;color:var(--o);border:1px solid var(--o);padding:1px 5px;margin-left:4px;}
 .wa-input{
   width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--w3);color:var(--w);
@@ -3600,16 +3616,152 @@ async function reconnectWaInstance(name){
 
 // === SETUP / PENDENCIAS ===
 const SETUP_MODULES = [
-  { id:'ai', label:'Inteligencia Artificial', desc:'Chave da OpenAI ou Anthropic para a IA funcionar', keys:['mind'], required:true, icon:'🧠', help:'Obtenha em platform.openai.com ou console.anthropic.com' },
-  { id:'identity', label:'Identidade', desc:'Nome do admin e configuracoes basicas', keys:['identity'], required:true, icon:'👤', help:'Configure pelo onboarding ou .env' },
-  { id:'whatsapp', label:'WhatsApp', desc:'Conexao local via QR Code ou WaSender API', keys:['whatsapp'], required:false, icon:'💬', help:'Conecte pelo painel WhatsApp no dashboard' },
-  { id:'voice', label:'Voz / TTS', desc:'ElevenLabs para voz premium da Zaya', keys:['voice'], required:false, icon:'🔊', help:'Obtenha em elevenlabs.io' },
-  { id:'twilio', label:'Ligacoes (Twilio)', desc:'Fazer e receber ligacoes telefonicas', keys:['twilio'], required:false, icon:'📞', help:'Obtenha em console.twilio.com' },
-  { id:'meta', label:'Meta (Instagram/Facebook)', desc:'Postar, gerenciar Ads, DMs do Instagram', keys:['meta'], required:false, icon:'📱', help:'Obtenha em developers.facebook.com' },
-  { id:'supabase', label:'Supabase (Nuvem)', desc:'Banco de dados e storage na nuvem', keys:['supabase'], required:false, icon:'☁️', help:'Obtenha em supabase.com' },
-  { id:'firecrawl', label:'Pesquisa Web', desc:'Pesquisas profundas na internet', keys:['firecrawl'], required:false, icon:'🔍', help:'Obtenha em firecrawl.dev' },
-  { id:'google_ai', label:'Google AI Studio', desc:'Geracao de imagens com Gemini', keys:['google_ai'], required:false, icon:'🎨', help:'Obtenha em aistudio.google.com/apikey' },
-  { id:'freepik', label:'Video IA (Freepik)', desc:'Geracao de videos com Kling AI', keys:['freepik'], required:false, icon:'🎬', help:'Obtenha em freepik.com/api/keys' },
+  { id:'ai', label:'Inteligencia Artificial', desc:'Motor de IA para todas as funcoes', required:true, icon:'🧠',
+    steps:[
+      'Escolha um provedor: OpenAI, Anthropic ou Groq',
+      'Acesse o site do provedor e crie uma conta',
+      'Gere uma API Key no painel do provedor',
+      'Cole a chave no campo abaixo e clique em Salvar',
+    ],
+    fields:[
+      {key:'_provider',type:'select',label:'Provedor',options:[{v:'openai',l:'OpenAI (GPT-4o)'},{v:'anthropic',l:'Anthropic (Claude)'},{v:'groq',l:'Groq (Llama — gratuito)'}]},
+      {key:'key',type:'password',label:'API Key',placeholder:'sk-...'},
+      {key:'baseUrl',type:'text',label:'Base URL (apenas Groq)',placeholder:'https://api.groq.com/openai/v1',condition:'_provider=groq'},
+    ],
+    links:[{url:'https://platform.openai.com/api-keys',label:'OpenAI'},{url:'https://console.anthropic.com/settings/keys',label:'Anthropic'},{url:'https://console.groq.com/keys',label:'Groq (gratis)'}],
+    saveEndpoint:'/api/setup/save-mind',
+    buildPayload(f){ return {provider:f._provider,key:f.key,baseUrl:f.baseUrl||undefined}; }
+  },
+  { id:'identity', label:'Identidade', desc:'Nome do admin e telefone principal', required:true, icon:'👤',
+    steps:[
+      'Informe seu nome (como a Zaya vai te chamar)',
+      'Informe seu telefone com DDD',
+    ],
+    fields:[
+      {key:'name',type:'text',label:'Seu Nome',placeholder:'Ex: Alisson'},
+      {key:'phone',type:'text',label:'Telefone com DDD',placeholder:'5579999999999'},
+    ],
+    saveEndpoint:'/api/setup/save-identity',
+    buildPayload(f){ return {name:f.name,phone:f.phone}; }
+  },
+  { id:'whatsapp', label:'WhatsApp', desc:'Conexao local via QR Code', required:false, icon:'💬',
+    steps:[
+      'Clique no botao WHATSAPP na barra lateral',
+      'Preencha o nome da instancia e seu telefone',
+      'Clique em CONECTAR VIA QR CODE',
+      'Escaneie o QR Code pelo WhatsApp do celular',
+      'Aguarde a confirmacao de conexao',
+    ],
+    noForm:true,
+    action:{label:'ABRIR PAINEL WHATSAPP',fn:'toggleSetupPanel();toggleWaPanel()'}
+  },
+  { id:'voice', label:'Voz / TTS', desc:'ElevenLabs para voz premium', required:false, icon:'🔊',
+    steps:[
+      'Crie uma conta em elevenlabs.io',
+      'Acesse Profile Settings > API Keys',
+      'Copie sua API Key',
+      'Escolha uma voz na biblioteca do ElevenLabs',
+      'Copie o Voice ID da voz escolhida',
+    ],
+    fields:[
+      {key:'ELEVENLABS_API_KEY',type:'password',label:'API Key ElevenLabs',placeholder:'xi-...'},
+      {key:'ELEVENLABS_VOICE_ID',type:'text',label:'Voice ID',placeholder:'21m00Tcm4TlvDq8ikWAM'},
+    ],
+    links:[{url:'https://elevenlabs.io/app/settings/api-keys',label:'ElevenLabs API Keys'},{url:'https://elevenlabs.io/app/voice-library',label:'Biblioteca de Vozes'}],
+    saveEndpoint:'/api/setup/save-module',
+    buildPayload(f){ return {module:'voice',config:f}; }
+  },
+  { id:'twilio', label:'Ligacoes (Twilio)', desc:'Fazer e receber ligacoes telefonicas', required:false, icon:'📞',
+    steps:[
+      'Crie uma conta em twilio.com',
+      'Acesse Console > Account Info',
+      'Copie Account SID e Auth Token',
+      'Compre um numero de telefone no Twilio',
+      'Configure o dominio ngrok para webhooks',
+    ],
+    fields:[
+      {key:'TWILIO_ACCOUNT_SID',type:'text',label:'Account SID',placeholder:'AC...'},
+      {key:'TWILIO_AUTH_TOKEN',type:'password',label:'Auth Token',placeholder:'...'},
+      {key:'TWILIO_PHONE_NUMBER',type:'text',label:'Numero Twilio',placeholder:'+15551234567'},
+      {key:'TWILIO_NGROK_DOMAIN',type:'text',label:'Dominio ngrok',placeholder:'seu-dominio.ngrok-free.app'},
+    ],
+    links:[{url:'https://console.twilio.com',label:'Console Twilio'},{url:'https://dashboard.ngrok.com',label:'ngrok Dashboard'}],
+    saveEndpoint:'/api/setup/save-module',
+    buildPayload(f){ return {module:'twilio',config:f}; }
+  },
+  { id:'meta', label:'Meta (Instagram/Facebook)', desc:'Postar, Ads, DMs do Instagram', required:false, icon:'📱',
+    steps:[
+      'Acesse developers.facebook.com e crie um App',
+      'Adicione o produto "Instagram Graph API"',
+      'Gere um Access Token de longa duracao',
+      'Copie os IDs da Pagina, Instagram e Conta de Ads',
+    ],
+    fields:[
+      {key:'FACEBOOK_ACCESS_TOKEN',type:'password',label:'Access Token',placeholder:'EAA...'},
+      {key:'META_PAGE_ID',type:'text',label:'Page ID',placeholder:'123456789'},
+      {key:'META_IG_ID',type:'text',label:'Instagram ID',placeholder:'17841...'},
+      {key:'META_AD_ACCOUNT_ID',type:'text',label:'Ad Account ID',placeholder:'act_123...'},
+    ],
+    links:[{url:'https://developers.facebook.com/apps',label:'Meta Developers'},{url:'https://developers.facebook.com/tools/explorer',label:'Graph API Explorer'}],
+    saveEndpoint:'/api/setup/save-module',
+    buildPayload(f){ return {module:'meta',config:f}; }
+  },
+  { id:'supabase', label:'Supabase (Nuvem)', desc:'Banco de dados e storage na nuvem', required:false, icon:'☁️',
+    steps:[
+      'Crie uma conta em supabase.com',
+      'Crie um novo projeto',
+      'Acesse Settings > API',
+      'Copie a Project URL e a anon/public key',
+    ],
+    fields:[
+      {key:'SUPABASE_URL',type:'text',label:'Project URL',placeholder:'https://xxx.supabase.co'},
+      {key:'SUPABASE_KEY',type:'password',label:'anon/public Key',placeholder:'eyJ...'},
+    ],
+    links:[{url:'https://supabase.com/dashboard',label:'Supabase Dashboard'}],
+    saveEndpoint:'/api/setup/save-module',
+    buildPayload(f){ return {module:'supabase',config:f}; }
+  },
+  { id:'firecrawl', label:'Pesquisa Web', desc:'Pesquisas profundas na internet com IA', required:false, icon:'🔍',
+    steps:[
+      'Acesse firecrawl.dev e crie uma conta',
+      'Acesse o Dashboard e copie sua API Key',
+      'Cole no campo abaixo',
+    ],
+    fields:[
+      {key:'FIRECRAWL_API_KEY',type:'password',label:'API Key',placeholder:'fc-...'},
+    ],
+    links:[{url:'https://firecrawl.dev',label:'Firecrawl'}],
+    saveEndpoint:'/api/setup/save-module',
+    buildPayload(f){ return {module:'firecrawl',config:f}; }
+  },
+  { id:'google_ai', label:'Google AI Studio', desc:'Geracao de imagens realistas com Gemini', required:false, icon:'🎨',
+    steps:[
+      'Acesse aistudio.google.com',
+      'Clique em "Get API Key"',
+      'Crie ou selecione um projeto',
+      'Copie a API Key gerada',
+    ],
+    fields:[
+      {key:'GOOGLE_AI_STUDIO_KEY',type:'password',label:'API Key',placeholder:'AIza...'},
+    ],
+    links:[{url:'https://aistudio.google.com/apikey',label:'Google AI Studio'}],
+    saveEndpoint:'/api/setup/save-module',
+    buildPayload(f){ return {module:'google_ai',config:f}; }
+  },
+  { id:'freepik', label:'Video IA (Freepik)', desc:'Geracao de videos com Kling AI', required:false, icon:'🎬',
+    steps:[
+      'Acesse freepik.com e crie uma conta',
+      'Acesse freepik.com/api/keys',
+      'Gere uma nova API Key',
+      'Cole no campo abaixo',
+    ],
+    fields:[
+      {key:'FREEPIK_API_KEY',type:'password',label:'API Key',placeholder:'...'},
+    ],
+    links:[{url:'https://www.freepik.com/api/keys',label:'Freepik API Keys'}],
+    saveEndpoint:'/api/setup/save-module',
+    buildPayload(f){ return {module:'freepik',config:f}; }
+  },
 ];
 
 let _setupStatus = null;
@@ -3646,7 +3798,6 @@ function renderSetupPanel(status, pubCfg){
   const pending = SETUP_MODULES.filter(m => !isModuleActive(m, status, pubCfg));
   const active = SETUP_MODULES.filter(m => isModuleActive(m, status, pubCfg));
 
-  // Atualiza badge
   const badge = document.getElementById('setupBadge');
   if(badge){
     badge.textContent = pending.length;
@@ -3654,8 +3805,6 @@ function renderSetupPanel(status, pubCfg){
   }
 
   let html = '';
-
-  // Header com resumo
   const pct = Math.round(active.length / SETUP_MODULES.length * 100);
   html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
     <div style="flex:1">
@@ -3666,38 +3815,133 @@ function renderSetupPanel(status, pubCfg){
     <span style="font-family:'Space Mono';font-size:10px;color:${pct===100?'#25d366':'var(--od)'};min-width:40px;text-align:right">${pct}%</span>
   </div>`;
 
-  // Pendencias
   if(pending.length > 0){
     html += '<div class="wa-config-section" style="color:var(--red)">PENDENTE ('+pending.length+')</div>';
-    for(const m of pending){
-      html += `<div class="setup-item pending" onclick="this.querySelector('.setup-help').style.display=this.querySelector('.setup-help').style.display==='none'?'block':'none'">
-        <div class="setup-icon">${m.icon}</div>
-        <div class="setup-info">
-          <div class="setup-label">${m.label} ${m.required?'<span style="color:var(--red);font-size:7px">OBRIGATORIO</span>':''}</div>
-          <div class="setup-desc">${m.desc}</div>
-          <div class="setup-help" style="display:none;margin-top:6px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:3px;font-size:8px;color:var(--od)">${m.help}</div>
-        </div>
-        <div class="setup-status" style="color:var(--red)">&#10007;</div>
-      </div>`;
-    }
+    for(const m of pending) html += renderSetupModule(m, false);
   }
-
-  // Ativos
   if(active.length > 0){
     html += '<div class="wa-config-section" style="color:#25d366">ATIVO ('+active.length+')</div>';
-    for(const m of active){
-      html += `<div class="setup-item active">
-        <div class="setup-icon">${m.icon}</div>
-        <div class="setup-info">
-          <div class="setup-label">${m.label}</div>
-          <div class="setup-desc">${m.desc}</div>
-        </div>
-        <div class="setup-status" style="color:#25d366">&#10003;</div>
-      </div>`;
-    }
+    for(const m of active) html += renderSetupModule(m, true);
   }
 
   $('setupContent').innerHTML = html;
+}
+
+function renderSetupModule(m, isActive){
+  const statusIcon = isActive
+    ? '<div class="setup-status" style="color:#25d366">&#10003;</div>'
+    : '<div class="setup-status" style="color:var(--red)">&#10007;</div>';
+
+  // Passos
+  let stepsHtml = '';
+  if(m.steps){
+    stepsHtml = '<div class="setup-steps">';
+    m.steps.forEach((s,i) => {
+      stepsHtml += `<div class="setup-step"><span class="setup-step-num">${i+1}</span><span>${s}</span></div>`;
+    });
+    stepsHtml += '</div>';
+  }
+
+  // Links
+  let linksHtml = '';
+  if(m.links?.length){
+    linksHtml = '<div class="setup-links">';
+    m.links.forEach(l => {
+      linksHtml += `<a href="${l.url}" target="_blank" rel="noopener" class="setup-link">${l.label} &#8599;</a>`;
+    });
+    linksHtml += '</div>';
+  }
+
+  // Formulario
+  let formHtml = '';
+  if(!m.noForm && m.fields?.length){
+    formHtml = `<div class="setup-form" id="setupForm_${m.id}">`;
+    m.fields.forEach(f => {
+      const cond = f.condition ? ` data-condition="${f.condition}"` : '';
+      if(f.type==='select'){
+        formHtml += `<label class="setup-field"${cond}><span>${f.label}</span><select data-key="${f.key}" onchange="setupFieldChange('${m.id}')">`;
+        f.options.forEach(o => { formHtml += `<option value="${o.v}">${o.l}</option>`; });
+        formHtml += '</select></label>';
+      }else{
+        formHtml += `<label class="setup-field"${cond}><span>${f.label}</span><input type="${f.type}" data-key="${f.key}" placeholder="${f.placeholder||''}"></label>`;
+      }
+    });
+    formHtml += `<div style="display:flex;gap:8px;margin-top:8px">
+      <button class="setup-save-btn" onclick="saveSetupModule('${m.id}')">SALVAR</button>
+      <span class="setup-save-msg" id="setupMsg_${m.id}"></span>
+    </div></div>`;
+  }
+
+  // Acao especial (ex: abrir painel WA)
+  let actionHtml = '';
+  if(m.action){
+    actionHtml = `<button class="setup-save-btn" style="margin-top:8px" onclick="${m.action.fn}">${m.action.label}</button>`;
+  }
+
+  return `<div class="setup-item ${isActive?'active':'pending'}">
+    <div class="setup-header" onclick="toggleSetupDetail('${m.id}')">
+      <div class="setup-icon">${m.icon}</div>
+      <div class="setup-info">
+        <div class="setup-label">${m.label} ${m.required&&!isActive?'<span style="color:var(--red);font-size:7px">OBRIGATORIO</span>':''}</div>
+        <div class="setup-desc">${m.desc}</div>
+      </div>
+      ${statusIcon}
+    </div>
+    <div class="setup-detail" id="setupDetail_${m.id}" style="display:none">
+      ${stepsHtml}${linksHtml}${formHtml}${actionHtml}
+    </div>
+  </div>`;
+}
+
+function toggleSetupDetail(id){
+  const el=document.getElementById('setupDetail_'+id);
+  if(el) el.style.display=el.style.display==='none'?'block':'none';
+}
+
+function setupFieldChange(modId){
+  const form=document.getElementById('setupForm_'+modId);
+  if(!form)return;
+  const selects=form.querySelectorAll('select');
+  const vals={};
+  selects.forEach(s=>{vals[s.dataset.key]=s.value;});
+  // Mostrar/esconder campos condicionais
+  form.querySelectorAll('[data-condition]').forEach(el=>{
+    const [k,v]=el.dataset.condition.split('=');
+    el.style.display=vals[k]===v?'':'none';
+  });
+}
+
+async function saveSetupModule(modId){
+  const mod=SETUP_MODULES.find(m=>m.id===modId);
+  if(!mod||!mod.saveEndpoint)return;
+  const form=document.getElementById('setupForm_'+modId);
+  const msg=document.getElementById('setupMsg_'+modId);
+  if(!form)return;
+
+  // Coletar valores
+  const fields={};
+  form.querySelectorAll('input,select').forEach(el=>{
+    if(el.dataset.key && el.value.trim()) fields[el.dataset.key]=el.value.trim();
+    // Esconder campos condicionais que estao ocultos
+    const label=el.closest('.setup-field');
+    if(label&&label.style.display==='none') delete fields[el.dataset.key];
+  });
+
+  const payload=mod.buildPayload?mod.buildPayload(fields):fields;
+
+  if(msg)msg.textContent='Salvando...';
+  try{
+    const r=await fetch(mod.saveEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json();
+    if(d.success||d.ok){
+      if(msg){msg.textContent='Salvo!';msg.style.color='#25d366';}
+      setTimeout(()=>loadSetupStatus(),1500);
+    }else{
+      if(msg){msg.textContent=d.error||'Erro';msg.style.color='var(--red)';}
+    }
+  }catch(e){
+    if(msg){msg.textContent='Erro: '+e.message;msg.style.color='var(--red)';}
+  }
 }
 
 // Carregar badge na inicializacao
