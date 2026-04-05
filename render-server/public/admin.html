@@ -841,9 +841,19 @@
                     <button class="btn btn-copy btn-sm" onclick="copyGeneratedToken()">Copiar Token</button>
 
                     <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
-                        <div class="token-label">Comando de Ativacao (envie para o cliente)</div>
-                        <div class="token-value" id="activateCommand" style="font-size:0.7rem;color:#00e676"></div>
-                        <button class="btn btn-copy btn-sm" onclick="copyActivateCommand()" style="background:linear-gradient(135deg,#00b894,#00e676)">Copiar Comando</button>
+                        <div class="token-label">Comando 1 — Instalar (envie primeiro)</div>
+                        <div class="token-value" id="installCommand" style="font-size:0.65rem;color:#00d4ff">git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install</div>
+                        <button class="btn btn-copy btn-sm" onclick="copyText('git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install')" style="background:linear-gradient(135deg,#0984e3,#00d4ff)">Copiar Comando 1</button>
+                    </div>
+                    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
+                        <div class="token-label">Comando 2 — Ativar e Iniciar (envie depois)</div>
+                        <div class="token-value" id="activateCommand" style="font-size:0.65rem;color:#00e676"></div>
+                        <button class="btn btn-copy btn-sm" onclick="copyActivateCommand()" style="background:linear-gradient(135deg,#00b894,#00e676)">Copiar Comando 2</button>
+                    </div>
+                    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
+                        <div class="token-label">Tudo em 1 comando (alternativa)</div>
+                        <div class="token-value" id="fullCommand" style="font-size:0.6rem;color:#a29bfe"></div>
+                        <button class="btn btn-copy btn-sm" onclick="copyFullCommand()" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)">Copiar Comando Completo</button>
                     </div>
                 </div>
             </div>
@@ -891,9 +901,9 @@
                     <div class="token-label">Token Trial Gerado</div>
                     <div class="token-value" id="trialToken" style="color:#ffd740"></div>
                     <div style="font-size:0.75rem;color:#8888a0;margin:8px 0" id="trialExpiry"></div>
-                    <div style="display:flex;gap:8px">
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
                         <button class="btn btn-copy btn-sm" onclick="copyTrialToken()">Copiar Token</button>
-                        <button class="btn btn-copy btn-sm" onclick="copyTrialCommand()" style="background:linear-gradient(135deg,#00b894,#00e676)">Copiar Comando</button>
+                        <button class="btn btn-copy btn-sm" onclick="copyTrialFull()" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)">Copiar Comando Completo</button>
                     </div>
                 </div>
             </div>
@@ -1030,7 +1040,8 @@
 
                 generatedToken = data.token || data.license?.token || '';
                 document.getElementById('tokenValue').textContent = generatedToken;
-                document.getElementById('activateCommand').textContent = `cd ~/zaya-plus && node activate.js ${generatedToken}`;
+                document.getElementById('activateCommand').textContent = `cd ~/zaya-plus && node activate.js ${generatedToken} && npm start`;
+                document.getElementById('fullCommand').textContent = `git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install && node activate.js ${generatedToken} && npm start`;
                 document.getElementById('tokenDisplay').classList.add('visible');
 
                 showToast('Licenca gerada com sucesso!', 'success');
@@ -1051,12 +1062,20 @@
             });
         }
 
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Comando copiado!', 'success');
+            });
+        }
+
         function copyActivateCommand() {
             if (!generatedToken) return;
-            const cmd = `cd ~/zaya-plus && node activate.js ${generatedToken}`;
-            navigator.clipboard.writeText(cmd).then(() => {
-                showToast('Comando copiado! Envie para o cliente.', 'success');
-            });
+            copyText(`cd ~/zaya-plus && node activate.js ${generatedToken} && npm start`);
+        }
+
+        function copyFullCommand() {
+            if (!generatedToken) return;
+            copyText(`git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install && node activate.js ${generatedToken} && npm start`);
         }
 
         // ═══════ Trial ═══════
@@ -1095,9 +1114,9 @@
             navigator.clipboard.writeText(trialToken).then(() => showToast('Token trial copiado!', 'success'));
         }
 
-        function copyTrialCommand() {
+        function copyTrialFull() {
             if (!trialToken) return;
-            navigator.clipboard.writeText(`cd ~/zaya-plus && node activate.js ${trialToken}`).then(() => showToast('Comando trial copiado!', 'success'));
+            copyText(`git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install && node activate.js ${trialToken} && npm start`);
         }
 
         // ═══════ Timer countdown para trials na tabela ═══════
