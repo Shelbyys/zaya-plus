@@ -413,6 +413,8 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
 .wa-add-row input{flex:1;margin:0!important;}
 .wa-add-row button{font-family:'Space Mono',monospace;font-size:8px;background:var(--o);color:#fff;border:none;padding:4px 10px;border-radius:3px;cursor:pointer;}
 .wa-config-saved{color:#25d366;font-size:8px;opacity:0;transition:opacity 0.3s;margin-left:8px;}
+.wa-config-section{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--od);border-bottom:1px solid var(--od);padding:10px 0 4px;margin:14px 0 6px;text-transform:uppercase;}
+.wa-config-section:first-child{margin-top:0;}
 .wa-default-badge{font-size:7px;letter-spacing:1px;color:var(--o);border:1px solid var(--o);padding:1px 5px;margin-left:4px;}
 .wa-input{
   width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--w3);color:var(--w);
@@ -3595,16 +3597,70 @@ function renderBotConfig(){
     <button style="float:right;font-family:'Space Mono';font-size:7px;background:transparent;border:1px solid var(--w3);color:var(--w2);padding:2px 8px;cursor:pointer;border-radius:2px" onclick="$('waBotConfig').style.display='none'">FECHAR</button>
   </div>
   <div class="wa-config">
+
+    <!-- ═══ IDENTIDADE ═══ -->
+    <div class="wa-config-section">IDENTIDADE</div>
+
+    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
+      <div class="wa-config-label">Nome do Bot</div>
+      <input class="wa-input" value="${c.botName||'ZAYA'}" onchange="cfgSet('botName',this.value)" style="margin-top:4px">
+    </div>
+
+    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
+      <div class="wa-config-label">Mensagem de Boas-vindas</div>
+      <div class="wa-config-desc">Enviada quando um novo contato interage pela primeira vez</div>
+      <textarea placeholder="Vazio = sem boas-vindas" onchange="cfgSet('welcomeMessage',this.value)" style="margin-top:4px">${c.welcomeMessage||''}</textarea>
+    </div>
+
+    <!-- ═══ CONTROLE GERAL ═══ -->
+    <div class="wa-config-section">CONTROLE GERAL</div>
+
     <div class="wa-config-row"><div><div class="wa-config-label">Bot Ativo</div><div class="wa-config-desc">Responder mensagens automaticamente</div></div><label class="wa-toggle"><input type="checkbox" ${c.botActive?'checked':''} onchange="cfgSet('botActive',this.checked)"><span class="sl"></span></label></div>
-    <div class="wa-config-row"><div><div class="wa-config-label">Auto-login Admin</div><div class="wa-config-desc">Admins nao precisam /login</div></div><label class="wa-toggle"><input type="checkbox" ${c.autoLoginAdmin?'checked':''} onchange="cfgSet('autoLoginAdmin',this.checked)"><span class="sl"></span></label></div>
-    <div class="wa-config-row"><div><div class="wa-config-label">Marcar como Lido</div><div class="wa-config-desc">Envia confirmacao de leitura</div></div><label class="wa-toggle"><input type="checkbox" ${c.readReceipts?'checked':''} onchange="cfgSet('readReceipts',this.checked)"><span class="sl"></span></label></div>
-    <div class="wa-config-row"><div><div class="wa-config-label">Responder em Grupos</div></div><label class="wa-toggle"><input type="checkbox" ${c.replyGroups?'checked':''} onchange="cfgSet('replyGroups',this.checked)"><span class="sl"></span></label></div>
-    <div class="wa-config-row"><div><div class="wa-config-label">Transcrever Audios</div></div><label class="wa-toggle"><input type="checkbox" ${c.transcribeAudio?'checked':''} onchange="cfgSet('transcribeAudio',this.checked)"><span class="sl"></span></label></div>
-    <div class="wa-config-row"><div><div class="wa-config-label">Analisar Imagens</div></div><label class="wa-toggle"><input type="checkbox" ${c.analyzeImages?'checked':''} onchange="cfgSet('analyzeImages',this.checked)"><span class="sl"></span></label></div>
-    <div class="wa-config-row"><div><div class="wa-config-label">Editar Videos</div></div><label class="wa-toggle"><input type="checkbox" ${c.editVideos?'checked':''} onchange="cfgSet('editVideos',this.checked)"><span class="sl"></span></label></div>
+    <div class="wa-config-row"><div><div class="wa-config-label">Auto-login Admin</div><div class="wa-config-desc">Admins nao precisam digitar /login</div></div><label class="wa-toggle"><input type="checkbox" ${c.autoLoginAdmin?'checked':''} onchange="cfgSet('autoLoginAdmin',this.checked)"><span class="sl"></span></label></div>
+    <div class="wa-config-row"><div><div class="wa-config-label">Marcar como Lido</div><div class="wa-config-desc">Envia confirmacao de leitura (tique azul)</div></div><label class="wa-toggle"><input type="checkbox" ${c.readReceipts?'checked':''} onchange="cfgSet('readReceipts',this.checked)"><span class="sl"></span></label></div>
+    <div class="wa-config-row"><div><div class="wa-config-label">Responder em Grupos</div><div class="wa-config-desc">Bot responde mensagens em grupos</div></div><label class="wa-toggle"><input type="checkbox" ${c.replyGroups?'checked':''} onchange="cfgSet('replyGroups',this.checked)"><span class="sl"></span></label></div>
+
+    <!-- ═══ FUNCIONALIDADES ═══ -->
+    <div class="wa-config-section">FUNCIONALIDADES</div>
+
+    <div class="wa-config-row"><div><div class="wa-config-label">Transcrever Audios</div><div class="wa-config-desc">Converte audio em texto com Whisper</div></div><label class="wa-toggle"><input type="checkbox" ${c.transcribeAudio?'checked':''} onchange="cfgSet('transcribeAudio',this.checked)"><span class="sl"></span></label></div>
+    <div class="wa-config-row"><div><div class="wa-config-label">Analisar Imagens</div><div class="wa-config-desc">Analisa fotos com GPT-4 Vision</div></div><label class="wa-toggle"><input type="checkbox" ${c.analyzeImages?'checked':''} onchange="cfgSet('analyzeImages',this.checked)"><span class="sl"></span></label></div>
+    <div class="wa-config-row"><div><div class="wa-config-label">Editar Videos</div><div class="wa-config-desc">Edita videos com instrucoes de IA</div></div><label class="wa-toggle"><input type="checkbox" ${c.editVideos?'checked':''} onchange="cfgSet('editVideos',this.checked)"><span class="sl"></span></label></div>
+
+    <!-- ═══ INTELIGENCIA ARTIFICIAL ═══ -->
+    <div class="wa-config-section">INTELIGENCIA ARTIFICIAL</div>
+
+    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
+      <div class="wa-config-label">Modelo IA</div>
+      <div class="wa-config-desc">Modelo usado para processar mensagens</div>
+      <select onchange="cfgSet('aiModel',this.value)" style="margin-top:4px">
+        <option value="gpt-4o-mini" ${c.aiModel==='gpt-4o-mini'?'selected':''}>GPT-4o Mini (rapido)</option>
+        <option value="gpt-4o" ${c.aiModel==='gpt-4o'?'selected':''}>GPT-4o (avancado)</option>
+        <option value="gpt-4.1-mini" ${c.aiModel==='gpt-4.1-mini'?'selected':''}>GPT-4.1 Mini</option>
+        <option value="gpt-4.1" ${c.aiModel==='gpt-4.1'?'selected':''}>GPT-4.1</option>
+        <option value="claude-sonnet-4-20250514" ${c.aiModel==='claude-sonnet-4-20250514'?'selected':''}>Claude Sonnet 4</option>
+        <option value="claude-haiku-4-5-20251001" ${c.aiModel==='claude-haiku-4-5-20251001'?'selected':''}>Claude Haiku 4.5 (rapido)</option>
+        <option value="llama-3.3-70b-versatile" ${c.aiModel==='llama-3.3-70b-versatile'?'selected':''}>Llama 3.3 70B (Groq)</option>
+        <option value="llama-3.1-8b-instant" ${c.aiModel==='llama-3.1-8b-instant'?'selected':''}>Llama 3.1 8B (Groq rapido)</option>
+        <option value="gemini-2.0-flash" ${c.aiModel==='gemini-2.0-flash'?'selected':''}>Gemini 2.0 Flash</option>
+      </select>
+    </div>
+
+    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
+      <div class="wa-config-label">Max Tokens</div>
+      <div class="wa-config-desc">Limite de tokens na resposta da IA (128 a 4096)</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <input type="range" min="128" max="4096" step="128" value="${c.maxTokens||1024}" oninput="document.getElementById('cfgTokensVal').textContent=this.value" onchange="cfgSet('maxTokens',parseInt(this.value))" style="flex:1;accent-color:var(--od)">
+        <span id="cfgTokensVal" style="min-width:36px;text-align:right;font-family:'Space Mono';font-size:10px;color:var(--od)">${c.maxTokens||1024}</span>
+      </div>
+    </div>
+
+    <!-- ═══ PERMISSOES ═══ -->
+    <div class="wa-config-section">PERMISSOES</div>
 
     <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
       <div class="wa-config-label">Modo de Resposta</div>
+      <div class="wa-config-desc">Quem pode interagir com o bot</div>
       <select onchange="cfgSet('replyMode',this.value)" style="margin-top:4px">
         <option value="admin_only" ${c.replyMode==='admin_only'?'selected':''}>Apenas Admins</option>
         <option value="whitelist" ${c.replyMode==='whitelist'?'selected':''}>Contatos Selecionados</option>
@@ -3614,32 +3670,30 @@ function renderBotConfig(){
 
     <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
       <div class="wa-config-label">Numeros Admin</div>
+      <div class="wa-config-desc">Controle total sobre o bot</div>
       <div id="cfgAdminTags">${(c.adminNumbers||[]).map(n=>'<span class="wa-tag">'+n+'<span class="x" onclick="cfgRemoveAdmin(\''+n+'\')">&times;</span></span>').join('')}</div>
       <div class="wa-add-row"><input type="text" id="cfgNewAdmin" placeholder="5511999999999"><button onclick="cfgAddAdmin()">+</button></div>
     </div>
 
     <div class="wa-config-row" style="flex-direction:column;align-items:stretch;${c.replyMode==='whitelist'?'':'display:none'}" id="cfgWhitelistRow">
       <div class="wa-config-label">Contatos Autorizados</div>
+      <div class="wa-config-desc">Numeros que podem usar o bot (modo whitelist)</div>
       <div id="cfgWlTags">${(c.whitelist||[]).map(n=>'<span class="wa-tag">'+n+'<span class="x" onclick="cfgRemoveWl(\''+n+'\')">&times;</span></span>').join('')}</div>
       <div class="wa-add-row"><input type="text" id="cfgNewWl" placeholder="5511999999999"><button onclick="cfgAddWl()">+</button></div>
     </div>
 
     <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
       <div class="wa-config-label">Resposta para nao autorizados</div>
-      <textarea placeholder="Vazio = ignora silenciosamente" onchange="cfgSet('unauthorizedReply',this.value)">${c.unauthorizedReply||''}</textarea>
+      <div class="wa-config-desc">Mensagem enviada quando alguem sem permissao tenta usar o bot</div>
+      <textarea placeholder="Vazio = ignora silenciosamente" onchange="cfgSet('unauthorizedReply',this.value)" style="margin-top:4px">${c.unauthorizedReply||''}</textarea>
     </div>
 
-    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
-      <div class="wa-config-label">Modelo IA</div>
-      <select onchange="cfgSet('aiModel',this.value)" style="margin-top:4px">
-        <option value="gpt-4o-mini" ${c.aiModel==='gpt-4o-mini'?'selected':''}>GPT-4o Mini</option>
-        <option value="gpt-4o" ${c.aiModel==='gpt-4o'?'selected':''}>GPT-4o</option>
-      </select>
-    </div>
+    <!-- ═══ MONITORAMENTO ═══ -->
+    <div class="wa-config-section">MONITORAMENTO</div>
 
     <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
-      <div class="wa-config-label">Numeros Monitorados (avisa quando mandarem msg)</div>
-      <div class="wa-config-desc" style="margin-bottom:6px">Quando esses numeros enviarem mensagem, voce recebe alerta</div>
+      <div class="wa-config-label">Numeros Monitorados</div>
+      <div class="wa-config-desc">Quando esses numeros enviarem mensagem, todos os admins recebem alerta com nome, telefone e conteudo</div>
       <div id="cfgWatchTags">${(c.watchNumbers||[]).map(w=>'<span class="wa-tag">'+w.nome+' ('+w.numero+')'+(w.notify?' ✅':' ❌')+'<span class="x" onclick="cfgRemoveWatch(\''+w.numero+'\')">&times;</span></span>').join('')}</div>
       <div class="wa-add-row" style="gap:4px">
         <input type="text" id="cfgWatchNum" placeholder="5511999999999" style="flex:1">
@@ -3650,6 +3704,7 @@ function renderBotConfig(){
 
     <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
       <div class="wa-config-label">Modo de Notificacao</div>
+      <div class="wa-config-desc">Como voce quer ser avisado sobre numeros monitorados</div>
       <select onchange="cfgSet('watchNotifyMode',this.value)" style="margin-top:4px">
         <option value="both" ${c.watchNotifyMode==='both'?'selected':''}>WhatsApp + Voz (ambos)</option>
         <option value="whatsapp" ${c.watchNotifyMode==='whatsapp'?'selected':''}>Apenas WhatsApp</option>
