@@ -1111,7 +1111,10 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
     <input class="wa-input" id="waPairName" placeholder="Nome da inst&acirc;ncia (ex: Pessoal)">
     <input class="wa-input" id="waPairPhone" placeholder="Telefone com DDD (ex: 5511999999999)">
     <input class="wa-input" id="waPairLabel" placeholder="Label (opcional)">
-    <button class="wa-pair-btn" id="waQrBtn" onclick="pairWhatsAppQR()">CONECTAR VIA QR CODE</button>
+    <div style="display:flex;gap:8px">
+      <button class="wa-pair-btn" id="waQrBtn" onclick="pairWhatsAppQR()" style="flex:1">CONECTAR VIA QR CODE</button>
+      <button class="wa-pair-btn" id="waPairBtn" onclick="pairWhatsApp()" style="flex:1;background:transparent;border-color:var(--od);color:var(--od)">CODIGO NUMERICO</button>
+    </div>
     <div id="waPairResult"></div>
   </div>
 </div>
