@@ -4140,12 +4140,10 @@ function mobileSend(){
   else sendTextInput();
 }
 function mobileVoice(){
-  if(!zayaOn){activateZaya();return;}
-  const btn=document.getElementById('mobileMicBtn');
-  if(btn.classList.contains('recording')){
-    btn.classList.remove('recording');
+  if(!zayaOn){
+    activateZaya();
   }else{
-    btn.classList.add('recording');
+    deactivateZaya();
   }
 }
 // Mobile input: Enter envia

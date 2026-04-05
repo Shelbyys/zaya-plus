@@ -151,7 +151,6 @@ router.post('/vr/ask', upload.single('audio'), async (req, res) => {
       const fd = new FormData();
       fd.append('file', blob, 'audio.webm');
       fd.append('model', 'whisper-1');
-      fd.append('language', 'pt');
       fd.append('response_format', 'json');
 
       const whisperRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {

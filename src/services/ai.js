@@ -372,6 +372,10 @@ export const voiceTools = [
 // ================================================================
 async function monitorCallStatus(callSid, numero) {
   if (!callSid) return;
+  if (!process.env.TWILIO_ACCOUNT_SID || !process.env.TWILIO_AUTH_TOKEN) {
+    log.ai.warn('monitorCallStatus: Twilio não configurado');
+    return;
+  }
   const twilio = (await import('twilio')).default;
   const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
@@ -397,19 +401,24 @@ async function monitorCallStatus(callSid, numero) {
         clearInterval(interval);
         log.ai.info({ callSid, duracao: call.duration, numero }, 'Ligação completada');
 
-        // Busca histórico da ligação no Supabase
-        await new Promise(r => setTimeout(r, 3000)); // espera save
-        const { createClient: cc } = await import('@supabase/supabase-js');
-        const { SUPABASE_URL: SU, SUPABASE_KEY: SK } = await import('../config.js');
-        const sb = cc(SU, SK);
-        const { data } = await sb.from('activity_log')
-          .select('details')
-          .eq('action', 'ligacao')
-          .order('created_at', { ascending: false })
-          .limit(1);
-
-        const det = data?.[0]?.details || {};
-        const transcricao = det.transcricao || '';
+        // Busca histórico da ligação no Supabase (se configurado)
+        let transcricao = '';
+        try {
+          const { SUPABASE_URL: SU, SUPABASE_KEY: SK } = await import('../config.js');
+          if (SU && SK) {
+            await new Promise(r => setTimeout(r, 3000));
+            const { createClient: cc } = await import('@supabase/supabase-js');
+            const sb = cc(SU, SK);
+            const { data } = await sb.from('activity_log')
+              .select('details')
+              .eq('action', 'ligacao')
+              .order('created_at', { ascending: false })
+              .limit(1);
+            transcricao = data?.[0]?.details?.transcricao || '';
+          }
+        } catch (e) {
+          log.ai.warn({ err: e.message }, 'Supabase não disponível para relatório de ligação');
+        }
 
         if (transcricao) {
           // Gera relatório da ligação

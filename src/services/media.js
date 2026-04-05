@@ -184,7 +184,15 @@ export async function editVideo(videoBuffer, mimetype, instruction, statusCallba
 // ================================================================
 // IMAGE GENERATION (DALL-E 3)
 // ================================================================
+let _imageGenActive = 0;
+const MAX_CONCURRENT_IMAGES = 2;
+
 export async function generateImage(prompt) {
+  if (_imageGenActive >= MAX_CONCURRENT_IMAGES) {
+    console.warn(`DALL-E: limite de ${MAX_CONCURRENT_IMAGES} gerações simultâneas atingido`);
+    return null;
+  }
+  _imageGenActive++;
   try {
     const response = await openai.images.generate({ model: 'dall-e-3', prompt, n: 1, size: '1024x1024' });
     const imageUrl = response.data[0].url;
@@ -195,6 +203,8 @@ export async function generateImage(prompt) {
   } catch (e) {
     console.error('Erro DALL-E:', e.message);
     return null;
+  } finally {
+    _imageGenActive--;
   }
 }
 
