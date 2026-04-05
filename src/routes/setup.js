@@ -91,7 +91,7 @@ router.get('/status', (req, res) => {
         identity: hasIdentity,
         voice: hasVoice,
         modules: {
-          whatsapp: !!env.WASENDER_API_KEY,
+          whatsapp: !!(env.WASENDER_API_KEY || env.WHATSAPP_LOCAL === 'true' || true),
           twilio: !!env.TWILIO_ACCOUNT_SID,
           meta: !!env.FACEBOOK_ACCESS_TOKEN,
           supabase: !!env.SUPABASE_URL,

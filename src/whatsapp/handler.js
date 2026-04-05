@@ -3,7 +3,7 @@ import { writeFileSync, unlinkSync } from 'fs';
 import { ADMIN_NAME, SENHA, TMP_DIR, FFMPEG, AI_MODEL_MINI } from '../config.js';
 import { videoSessions, processingQueue } from '../state.js';
 import { openai } from '../state.js';
-import { isAuthenticated, loginSession, logoutSession } from '../services/messaging.js';
+import { isAuthenticated, loginSession, logoutSession, sendWhatsApp } from '../services/messaging.js';
 import { chatHistories, saveHistory, addToHistory } from '../services/chat-history.js';
 import { processWithAI } from '../services/ai.js';
 import { editVideo, startVideoSession, processVideoAnswer, buildInstruction, whisperTranscribe } from '../services/media.js';
@@ -47,6 +47,19 @@ export function setupMessageHandler(client, instanceName) {
 
       // Verifica se é admin
       const isAdmin = config.adminNumbers.some(n => phone === n || phone.endsWith(n));
+
+      // Alerta de números monitorados
+      if (config.watchNumbers?.length > 0 && !isAdmin) {
+        const watched = config.watchNumbers.find(w => w.notify && (phone === w.numero || phone.endsWith(w.numero)));
+        if (watched) {
+          const body = msg.body || (msg.hasMedia ? `[${msg.type}]` : '[mensagem]');
+          const alertMsg = `🔔 *ALERTA MONITORAMENTO*\n\n👤 *${watched.nome || phone}*\n📱 ${phone}\n💬 ${body.substring(0, 500)}`;
+          log.wa.info({ phone, watchName: watched.nome }, 'Watched number detected');
+          for (const adminNum of config.adminNumbers) {
+            sendWhatsApp(adminNum, alertMsg).catch(e => log.wa.error({ err: e.message }, 'Watch alert failed'));
+          }
+        }
+      }
 
       // Filtragem por modo de resposta
       if (config.replyMode === 'admin_only' && !isAdmin) {
