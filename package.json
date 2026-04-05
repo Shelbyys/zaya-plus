@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "setup": "cp -n .env.example .env 2>/dev/null; node server.js",
+    "build": "node build.js",
     "dev": "node --watch server.js",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -38,6 +39,7 @@
     "whatsapp-web.js": "^1.34.6"
   },
   "devDependencies": {
+    "javascript-obfuscator": "^5.4.1",
     "vitest": "^4.1.2"
   }
 }

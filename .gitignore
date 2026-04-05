@@ -21,3 +21,4 @@ data/voice-profiles/
 music/
 .license
 licenses.json
+dist/
