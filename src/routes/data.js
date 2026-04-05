@@ -13,10 +13,22 @@ const router = Router();
 // PUBLIC CONFIG — retorna config publica para o frontend
 // ================================================================
 router.get('/public-config', (req, res) => {
-  res.json({
-    adminName: ADMIN_NAME,
-    metaAccessToken: META_ACCESS_TOKEN,
-  });
+  // Reler .env em tempo real para pegar valores salvos pelo setup
+  let name = ADMIN_NAME;
+  let metaToken = META_ACCESS_TOKEN;
+  try {
+    const { readFileSync } = require('fs');
+    const { join } = require('path');
+    const content = readFileSync(join(process.cwd(), '.env'), 'utf-8');
+    content.split('\n').forEach(line => {
+      const m = line.match(/^([^#=]+)=(.*)$/);
+      if (m) {
+        if (m[1].trim() === 'ADMIN_NAME' && m[2].trim()) name = m[2].trim();
+        if (m[1].trim() === 'FACEBOOK_ACCESS_TOKEN' && m[2].trim()) metaToken = m[2].trim();
+      }
+    });
+  } catch {}
+  res.json({ adminName: name, metaAccessToken: metaToken });
 });
 
 // ================================================================
