@@ -217,8 +217,18 @@ app.use('/api/setup', setupRoutes);
 
 // License guard — bloqueia TODOS os /api/* (exceto license e setup) sem licença ativa
 function licenseGuard(req, res, next) {
+  // Double check: both isLicensed() AND direct file verification
   if (!isLicensed()) {
     return res.status(401).json({ error: 'Licenca nao ativada' });
+  }
+  // Redundant check: read .license directly
+  try {
+    const lf = join(__dirname, '.license');
+    if (!existsSync(lf)) return res.status(401).json({ error: 'Licenca nao ativada' });
+    const d = JSON.parse(readFileSync(lf, 'utf-8'));
+    if (!d.signature || !d.fingerprint || !d.token) return res.status(401).json({ error: 'Licenca invalida' });
+  } catch {
+    return res.status(401).json({ error: 'Licenca corrompida' });
   }
   next();
 }
