@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0d0b09">
-<title>Z.A.Y.A. — Zaya</title>
+<title>ZAYA PLUS</title>
 <link rel="icon" type="image/png" href="logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&family=DM+Sans:wght@200;400;500&display=swap" rel="stylesheet">
 <style>
@@ -637,7 +637,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
     <div class="topbar-sep"></div>
     <div class="topbar-item">UP <span id="uptime">00:00</span></div>
     <div class="topbar-sep"></div>
-    <div class="topbar-item">SISTEMA ZAYA — <span>V6.8</span></div>
+    <div class="topbar-item">SISTEMA ZAYA PLUS — <span>V1.0</span></div>
     <div class="topbar-sep"></div>
     <div class="topbar-item">HORA ESTELAR: <span id="footerDate">--/--/----</span></div>
     <div class="topbar-sep"></div>
@@ -659,7 +659,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
   <!-- MAIN TOP: header + terminal + input + tags -->
   <div class="main-top main-area">
     <div class="main-header">
-      <div class="main-title">Z.A.Y.A.</div>
+      <div class="main-title">ZAYA PLUS</div>
       <div class="main-subtitle">IA INTERATIVA</div>
     </div>
     <div class="main-stats">
@@ -845,7 +845,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
 
   <!-- FOOTER BAR -->
   <div class="footer-bar">
-    <span>&#9632;</span> TERMINAL INTEGRADO ZAYA 2202 v6.8
+    <span>&#9632;</span> ZAYA PLUS v1.0
     <span>|</span> HORA ESTELAR: <span id="footerDate2">--/--/----</span>
     <span>|</span> STATUS: <span>&Oacute;PTIMO</span>
     <span>|</span> LOCALIZA&Ccedil;&Atilde;O: <span>&Oacute;RBITA DE TIT&Atilde;</span>
@@ -853,7 +853,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
 
   <!-- TICKER -->
   <div class="ticker-bar">
-    <span id="ticker">ZAYA v6.8 — SISTEMA ATIVO — SR. ALISSON —</span>
+    <span id="ticker">ZAYA PLUS v1.0 — SISTEMA ATIVO — ${_adminName || ''} —</span>
   </div>
 
   <!-- MOBILE INPUT BAR (visível só no mobile) -->
@@ -1214,7 +1214,7 @@ const t0=Date.now();
 setInterval(()=>{const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('pt-BR',{hour12:false});document.getElementById('footerDate').textContent=n.toLocaleDateString('pt-BR');const e=Math.floor((Date.now()-t0)/1000);document.getElementById('uptime').textContent=`${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`;},1000);
 
 // ===== TICKER =====
-let tickOff=0;const tickBase='SISTEMA ATIVO — SR. ALISSON — VOZ — VISAO — TERMINAL — ZAYA v6.8 — CORTEX QUANTICO — ';
+let tickOff=0;const tickBase='SISTEMA ATIVO — ${_adminName || ''} — VOZ — VISAO — TERMINAL — ZAYA PLUS v1.0 — CORTEX QUANTICO — ';
 setInterval(()=>{tickOff++;document.getElementById('ticker').textContent=tickBase.repeat(3).slice(tickOff%tickBase.length);},80);
 
 // ===== TAGS =====
@@ -1806,11 +1806,11 @@ function linkify(text){
 function out(t,type){
   const el=$('termText');
   const cls=type==='user'?'user-text':'ai-text';
-  const prefix=type==='user'?'SR. ALISSON':'ZAYA';
+  const prefix=type==='user'?'${_adminName || ''}':'ZAYA';
   el.innerHTML=`<span class="${cls}">${prefix} &gt; ${linkify(t)}</span>`;
   el.parentElement.scrollTop=el.parentElement.scrollHeight;
   if(typeof chatLog==='function'){
-    const label=type==='user'?'SR. ALISSON':'ZAYA';
+    const label=type==='user'?'${_adminName || ''}':'ZAYA';
     chatLog(t, type==='user'?'user':'ai', label);
   }
   const oq=$('orbQuote');if(oq)oq.textContent=t.slice(0,80);
@@ -1819,7 +1819,7 @@ function out(t,type){
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
 // ============================================================
-// SISTEMA ZAYA v6 — Tipo Alexa
+// SISTEMA ZAYA PLUS v6 — Tipo Alexa
 // Mic sempre aberto. Diz "Zaya" para ativar. Conversa natural.
 // ============================================================
 
