@@ -391,6 +391,57 @@
     }
 
     // ───── Typing Effect ─────
+    // Falar texto usando TTS com orb reagindo ao audio em tempo real
+    let audioCtx = null;
+    let analyser = null;
+
+    async function speak(text) {
+        try {
+            const res = await fetch('/api/speak', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text })
+            });
+            if (!res.ok) return;
+
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+
+            // Criar AudioContext para analisar frequencias em tempo real
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const source = audioCtx.createMediaElementSource(audio);
+            analyser = audioCtx.createAnalyser();
+            analyser.fftSize = 256;
+            source.connect(analyser);
+            analyser.connect(audioCtx.destination);
+
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            if (orb) orb.setState('speaking');
+
+            // Loop de animacao sincronizado com o audio
+            let animFrame;
+            function updateOrb() {
+                analyser.getByteFrequencyData(dataArray);
+                // Calcular volume medio (0-1)
+                let sum = 0;
+                for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
+                const avg = sum / dataArray.length / 255;
+                if (orb) orb.setAudioLevel(avg * 1.5);
+                animFrame = requestAnimationFrame(updateOrb);
+            }
+            updateOrb();
+
+            audio.play();
+            audio.onended = () => {
+                cancelAnimationFrame(animFrame);
+                if (orb) { orb.setState('idle'); orb.setAudioLevel(0); }
+                URL.revokeObjectURL(url);
+            };
+        } catch(e) { /* sem voz configurada */ }
+    }
+
     async function typeText(text, speed = 40) {
         msgEl.innerHTML = '';
         const cursor = document.createElement('span');
@@ -398,6 +449,9 @@
         const textNode = document.createTextNode('');
         msgEl.appendChild(textNode);
         msgEl.appendChild(cursor);
+
+        // Falar ao mesmo tempo que digita
+        speak(text);
 
         for (const char of text) {
             textNode.textContent += char;
