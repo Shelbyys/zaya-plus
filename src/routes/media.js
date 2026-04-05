@@ -41,11 +41,13 @@ router.post('/speak', async (req, res) => {
     const text = req.body.text;
     if (!text) return res.status(400).json({ error: 'text obrigatorio' });
 
-    // OpenAI TTS (se ElevenLabs não configurado ou se explicitamente escolhido)
-    const useOpenAI = !process.env.ELEVENLABS_API_KEY || process.env.TTS_PROVIDER === 'openai';
+    // OpenAI TTS (so funciona com OpenAI real, nao Groq/outros)
+    const isGroq = (process.env.OPENAI_BASE_URL || '').includes('groq');
+    const isRealOpenAI = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'sk-placeholder' && !isGroq;
+    const useOpenAI = isRealOpenAI && (!process.env.ELEVENLABS_API_KEY || process.env.TTS_PROVIDER === 'openai');
 
-    if (useOpenAI && process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'sk-placeholder') {
-      const openaiBase = process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1';
+    if (useOpenAI) {
+      const openaiBase = 'https://api.openai.com/v1';
       const response = await fetch(`${openaiBase}/audio/speech`, {
         method: 'POST',
         headers: {
