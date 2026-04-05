@@ -311,16 +311,21 @@ export const contactsDB = {
   },
 
   syncFromWhatsApp(contacts) {
+    let synced = 0, failed = 0;
     const tx = db.transaction((list) => {
       for (const c of list) {
-        if (!c.id?.user) continue;
-        const nome = c.name || c.pushname || c.shortName || c.id.user;
-        const phone = c.id.user;
-        const jid = c.id._serialized;
-        stmts.upsertContact.run(nome, phone, jid);
+        try {
+          if (!c.id?.user) { failed++; continue; }
+          const nome = c.name || c.pushname || c.shortName || c.id.user;
+          const phone = c.id.user;
+          const jid = c.id._serialized;
+          stmts.upsertContact.run(nome, phone, jid);
+          synced++;
+        } catch { failed++; }
       }
     });
     tx(contacts);
+    return { synced, failed };
   },
 };
 

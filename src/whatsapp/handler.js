@@ -17,9 +17,20 @@ const PROCESSING_MSGS = ['Processando...', 'Pensando...', 'Analisando...', 'Um m
 let msgIdx = 0;
 function getProcessingMsg() { return PROCESSING_MSGS[msgIdx++ % PROCESSING_MSGS.length]; }
 
+// Limpeza periódica do processingQueue (a cada 30min, remove entradas > 1h)
+setInterval(() => {
+  const now = Date.now();
+  for (const jid of Object.keys(processingQueue)) {
+    if (processingQueue[jid]._lastActivity && now - processingQueue[jid]._lastActivity > 3600000) {
+      delete processingQueue[jid];
+    }
+  }
+}, 1800000);
+
 async function enqueue(jid, fn) {
   if (!processingQueue[jid]) processingQueue[jid] = Promise.resolve();
   processingQueue[jid] = processingQueue[jid].then(fn).catch(e => log.wa.error({ err: e.message }, 'Queue error'));
+  processingQueue[jid]._lastActivity = Date.now();
   return processingQueue[jid];
 }
 
@@ -29,6 +40,12 @@ export function setupMessageHandler(client, instanceName) {
   client.on('message', async (msg) => {
     try {
       const config = getBotConfig();
+
+      // Validação de config
+      if (!config || !Array.isArray(config.adminNumbers)) {
+        log.wa.error('Bot config inválida ou adminNumbers não é array');
+        return;
+      }
 
       // Bot desativado
       if (!config.botActive) return;
@@ -79,7 +96,7 @@ export function setupMessageHandler(client, instanceName) {
       }
 
       if (config.replyMode === 'whitelist' && !isAdmin) {
-        const inWhitelist = config.whitelist.some(n => phone === n || phone.endsWith(n));
+        const inWhitelist = (config.whitelist || []).some(n => phone === n || phone.endsWith(n));
         if (!inWhitelist) {
           if (config.unauthorizedReply) {
             await client.sendMessage(jid, config.unauthorizedReply);
@@ -287,7 +304,6 @@ export function setupMessageHandler(client, instanceName) {
       if (text === '/limpar') { delete chatHistories[jid]; saveHistory(); await sendText('Histórico limpo!'); return; }
 
       if (!isAuthenticated(jid)) { await sendText('Faça login primeiro: /login <senha>'); return; }
-      loginSession(jid);
 
       // ========== IA ==========
       await enqueue(jid, async () => {

@@ -7,7 +7,7 @@ export function setIO(socketIO) { io = socketIO; }
 // API Token
 export const API_TOKEN = process.env.API_TOKEN || crypto.randomBytes(32).toString('hex');
 
-// WhatsApp connections (Baileys sockets)
+// WhatsApp connections (whatsapp-web.js clients)
 export const waConnections = {};
 
 // Voice conversation history (dashboard/voz)

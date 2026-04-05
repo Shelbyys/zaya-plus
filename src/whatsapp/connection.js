@@ -23,7 +23,7 @@ export function createClient(name) {
     puppeteer: {
       headless: true,
       args: PUPPETEER_ARGS,
-      protocolTimeout: 120_000, // 2min (evita "Runtime.callFunctionOn timed out")
+      protocolTimeout: 120_000,
     },
     restartOnAuthFail: true,
     webVersionCache: { type: 'remote', remotePath: 'https://raw.githubusercontent.com/nicol4s0/nicol4s0/refs/heads/main/nicol4s0' },
@@ -39,13 +39,20 @@ export async function waConnect(name) {
 
   // WaSender: não precisa de conexão local (gerenciado pela API)
   if (inst.type === 'wasender') {
-    waConnections[name] = { client: null, status: 'connected' };
+    waConnections[name] = { client: null, status: 'connected', handlerSetup: false };
     log.wa.info({ instance: name }, 'WaSender — conexão gerenciada pela API');
     return;
   }
 
-  if (!waConnections[name]) waConnections[name] = { client: null, status: 'connecting' };
-  waConnections[name].status = 'connecting';
+  // Limpa client anterior se existir (evita memory leak de listeners)
+  if (waConnections[name]?.client) {
+    try {
+      waConnections[name].client.removeAllListeners();
+      await waConnections[name].client.destroy();
+    } catch {}
+  }
+
+  waConnections[name] = { client: null, status: 'connecting', handlerSetup: false };
 
   try {
     log.wa.info({ instance: name }, 'Conectando...');
@@ -59,13 +66,18 @@ export async function waConnect(name) {
       waConnections[name].status = 'connected';
       waConnections[name].client = client;
       log.wa.info({ instance: name }, 'Conectado com sucesso!');
-      setupMessageHandler(client, name);
+
+      // Registra handler apenas uma vez
+      if (!waConnections[name].handlerSetup) {
+        setupMessageHandler(client, name);
+        waConnections[name].handlerSetup = true;
+      }
 
       // Sync contatos do WhatsApp para o banco local
       try {
         const contacts = await client.getContacts();
-        contactsDB.syncFromWhatsApp(contacts);
-        log.wa.info({ instance: name, count: contacts.length }, 'Contatos sincronizados');
+        const result = contactsDB.syncFromWhatsApp(contacts);
+        log.wa.info({ instance: name, synced: result.synced, failed: result.failed }, 'Contatos sincronizados');
       } catch (e) {
         log.wa.error({ instance: name, err: e.message }, 'Erro ao sincronizar contatos');
       }
@@ -83,11 +95,14 @@ export async function waConnect(name) {
     client.on('disconnected', async (reason) => {
       log.wa.warn({ instance: name, reason }, 'Desconectado');
       waConnections[name].status = 'disconnected';
-      // Destroy client limpo (fecha Chrome)
+      waConnections[name].handlerSetup = false;
+
+      // Remove todos os listeners antes de destruir (evita memory leak)
+      client.removeAllListeners();
       try { await client.destroy(); } catch {}
       waConnections[name].client = null;
 
-      // Reconecta após 10 segundos (dá tempo do Chrome fechar)
+      // Reconecta após 10 segundos
       if (reason !== 'LOGOUT') {
         setTimeout(() => {
           log.wa.info({ instance: name }, 'Reconectando...');
@@ -100,11 +115,11 @@ export async function waConnect(name) {
       log.wa.debug({ instance: name, state }, 'Estado mudou');
     });
 
-    waConnections[name].client = client;
+    // Inicializa ANTES de atribuir ao waConnections (evita uso de client não-pronto)
     await client.initialize();
   } catch (e) {
     log.wa.error({ instance: name, err: e.message }, 'Erro fatal na conexão');
-    waConnections[name] = { client: null, status: 'error' };
+    waConnections[name] = { client: null, status: 'error', handlerSetup: false };
   }
 }
 

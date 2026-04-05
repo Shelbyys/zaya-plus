@@ -18,12 +18,17 @@ export function normalizeJid(jid) {
 
 export function normalizeBRPhone(phone) {
   let p = phone.replace(/\D/g, '');
-  if (p.startsWith('55') && p.length === 12) {
-    p = p.slice(0, 4) + '9' + p.slice(4);
-    log.wa.debug({ from: phone, to: p }, 'Número corrigido (adicionado 9)');
-  }
   if (!p.startsWith('55') && p.length <= 11) {
     p = '55' + p;
+  }
+  // Celular BR: 55 + DDD(2) + 9 + número(8) = 13 dígitos
+  // Se tem 12 dígitos (falta o 9) e DDD é válido (11-99), adiciona o 9
+  if (p.startsWith('55') && p.length === 12) {
+    const ddd = parseInt(p.slice(2, 4));
+    if (ddd >= 11 && ddd <= 99) {
+      p = p.slice(0, 4) + '9' + p.slice(4);
+      log.wa.debug({ from: phone, to: p }, 'Número corrigido (adicionado 9)');
+    }
   }
   return p;
 }

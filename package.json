@@ -17,7 +17,6 @@
     "@fal-ai/client": "^1.9.5",
     "@google/genai": "^1.48.0",
     "@supabase/supabase-js": "^2.101.1",
-    "baileys": "^6.7.16",
     "better-sqlite3": "^12.8.0",
     "clsx": "^2.1.1",
     "dotenv": "^16.4.7",

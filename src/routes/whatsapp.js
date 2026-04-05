@@ -55,10 +55,10 @@ router.post('/pair', async (req, res) => {
   if (config.instances[name]) return res.status(400).json({ error: 'Instância já existe' });
   const cleanPhone = normalizeBRPhone(phone);
 
-  let responded = false;
+  let client;
 
   try {
-    const client = createClient(name);
+    client = createClient(name);
 
     client.on('ready', () => {
       log.wa.info({ name, phone: cleanPhone }, 'PAREADO COM SUCESSO via código!');
@@ -66,32 +66,32 @@ router.post('/pair', async (req, res) => {
       config.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true };
       if (!config.defaultInstance) config.defaultInstance = name;
       waSaveConfig(config);
-      waConnections[name] = { client, status: 'connected' };
+      waConnections[name] = { client, status: 'connected', handlerSetup: true };
       setupMessageHandler(client, name);
-      if (!responded) { responded = true; res.json({ success: true, paired: true }); }
+      if (!res.headersSent) res.json({ success: true, paired: true });
     });
 
     client.on('auth_failure', (msg) => {
       log.wa.error({ name, err: msg }, 'Auth falhou');
-      if (!responded) { responded = true; res.status(500).json({ error: 'Falha na autenticação: ' + msg }); }
+      if (!res.headersSent) res.status(500).json({ error: 'Falha na autenticação: ' + msg });
     });
 
     client.on('disconnected', (reason) => {
       log.wa.warn({ name, reason }, 'Desconectado durante pairing');
-      if (!responded) { responded = true; res.status(500).json({ error: 'Desconectado: ' + reason }); }
+      if (!res.headersSent) res.status(500).json({ error: 'Desconectado: ' + reason });
     });
 
     // Espera o QR event para saber que está pronto, depois pede o código
     client.on('qr', async () => {
-      if (responded) return;
+      if (res.headersSent) return;
       try {
         log.wa.info({ name, phone: cleanPhone }, 'Solicitando código de pareamento');
         const code = await client.requestPairingCode(cleanPhone);
         log.wa.info({ name, code }, 'Código gerado');
-        if (!responded) { responded = true; res.json({ success: true, code }); }
+        if (!res.headersSent) res.json({ success: true, code });
       } catch (err) {
         log.wa.error({ err: err.message, name }, 'Erro ao gerar código');
-        if (!responded) { responded = true; res.status(500).json({ error: err.message }); }
+        if (!res.headersSent) res.status(500).json({ error: err.message });
       }
     });
 
@@ -99,14 +99,14 @@ router.post('/pair', async (req, res) => {
 
     // Timeout 2 minutos
     setTimeout(() => {
-      if (!responded) {
-        responded = true;
-        try { client.destroy(); } catch {}
+      if (!res.headersSent) {
+        try { client.removeAllListeners(); client.destroy(); } catch {}
         res.json({ success: false, message: 'Timeout — tente novamente' });
       }
     }, 120_000);
   } catch (e) {
-    if (!responded) { responded = true; res.status(500).json({ error: e.message }); }
+    if (client) try { client.removeAllListeners(); client.destroy(); } catch {}
+    if (!res.headersSent) res.status(500).json({ error: e.message });
   }
 });
 
@@ -135,6 +135,7 @@ router.get('/pair-qr', async (req, res) => {
 
   let closed = false;
   let qrCount = 0;
+  let client;
   req.on('close', () => { closed = true; });
 
   const heartbeat = setInterval(() => {
@@ -143,7 +144,7 @@ router.get('/pair-qr', async (req, res) => {
   }, 15_000);
 
   try {
-    const client = createClient(name);
+    client = createClient(name);
 
     client.on('qr', async (qr) => {
       if (closed) return;
@@ -157,7 +158,7 @@ router.get('/pair-qr', async (req, res) => {
       if (qrCount >= 15) {
         send('timeout', { message: 'Muitas tentativas. Recarregue.' });
         clearInterval(heartbeat);
-        try { client.destroy(); } catch {}
+        try { client.removeAllListeners(); client.destroy(); } catch {}
         try { res.end(); } catch {}
       }
     });
@@ -168,7 +169,7 @@ router.get('/pair-qr', async (req, res) => {
       config.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true };
       if (!config.defaultInstance) config.defaultInstance = name;
       waSaveConfig(config);
-      waConnections[name] = { client, status: 'connected' };
+      waConnections[name] = { client, status: 'connected', handlerSetup: true };
       setupMessageHandler(client, name);
       send('connected', { name, phone: cleanPhone });
       clearInterval(heartbeat);
@@ -179,6 +180,7 @@ router.get('/pair-qr', async (req, res) => {
       log.wa.error({ name, err: msg }, 'QR auth falhou');
       send('error', { message: 'Falha na autenticação: ' + msg });
       clearInterval(heartbeat);
+      try { client.removeAllListeners(); client.destroy(); } catch {}
       try { res.end(); } catch {}
     });
 
@@ -197,12 +199,13 @@ router.get('/pair-qr', async (req, res) => {
       if (!closed && !res.writableEnded) {
         send('timeout', { message: 'Timeout — tente novamente' });
         clearInterval(heartbeat);
-        try { client.destroy(); } catch {}
+        try { client.removeAllListeners(); client.destroy(); } catch {}
         try { res.end(); } catch {}
       }
     }, 180_000);
   } catch (e) {
     log.wa.error({ err: e.message, name }, 'Erro no QR pairing');
+    if (client) try { client.removeAllListeners(); client.destroy(); } catch {}
     send('error', { message: e.message });
     clearInterval(heartbeat);
     try { res.end(); } catch {}
@@ -230,7 +233,12 @@ router.delete('/instances/:name', async (req, res) => {
   const name = req.params.name;
   const config = waLoadConfig();
   if (!config.instances[name]) return res.status(404).json({ error: 'Não encontrada' });
-  if (waConnections[name]?.client) try { await waConnections[name].client.destroy(); } catch {}
+  if (waConnections[name]?.client) {
+    try {
+      waConnections[name].client.removeAllListeners();
+      await waConnections[name].client.destroy();
+    } catch {}
+  }
   delete waConnections[name];
   // Limpa auth
   const authDir = join(WA_DIR, 'wwebjs', `session-${name}`);
@@ -251,7 +259,10 @@ router.post('/default/:name', (req, res) => {
 
 router.post('/reconnect/:name', async (req, res) => {
   if (waConnections[req.params.name]?.client) {
-    try { await waConnections[req.params.name].client.destroy(); } catch {}
+    try {
+      waConnections[req.params.name].client.removeAllListeners();
+      await waConnections[req.params.name].client.destroy();
+    } catch {}
   }
   await waConnect(req.params.name);
   res.json({ ok: true, status: waConnections[req.params.name]?.status });
