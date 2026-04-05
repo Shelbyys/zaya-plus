@@ -80,7 +80,9 @@ export function getSystemPrompt() {
   const professionContext = profession ? `O usuario trabalha com: ${profession}.` : '';
   const expectationsContext = expectations ? `Ele espera mais ajuda com: ${expectations.replace(/,/g, ', ')}.` : '';
 
-  return `Voce e a ZAYA, assistente de IA pessoal de ${callName}. Voce e DELE/DELA. Disponivel 24h, proativa, atenta a tudo.
+  const botName = botCfg.botName || 'ZAYA';
+
+  return `Voce e a ${botName}, assistente de IA pessoal de ${callName}. Voce e DELE/DELA. Disponivel 24h, proativa, atenta a tudo.
 
 === QUEM VOCE E ===
 Feminina, carismatica, inteligente e adaptavel. Voce e uma assistente de confianca que sabe TUDO e resolve TUDO.
@@ -1653,7 +1655,7 @@ export async function processVoiceChat(message, statusCallback) {
 
   try {
     let response = await openai.chat.completions.create({
-      model: AI_MODEL, max_tokens: 1024,
+      model: AI_MODEL, max_tokens: getBotConfig().maxTokens || 1024,
       messages, tools: voiceTools, tool_choice: 'auto',
     });
 
@@ -1689,7 +1691,7 @@ export async function processVoiceChat(message, statusCallback) {
       }
 
       response = await openai.chat.completions.create({
-        model: AI_MODEL, max_tokens: 1024,
+        model: AI_MODEL, max_tokens: getBotConfig().maxTokens || 1024,
         messages, tools: voiceTools, tool_choice: toolRounds >= MAX_ROUNDS - 1 ? 'none' : 'auto',
       });
       assistantMsg = response.choices[0].message;
@@ -1747,7 +1749,7 @@ export async function processVoiceVision(image, message) {
 
   try {
     let response = await openai.chat.completions.create({
-      model: AI_MODEL, max_tokens: 1024,
+      model: AI_MODEL, max_tokens: getBotConfig().maxTokens || 1024,
       messages, tools: voiceTools, tool_choice: 'auto',
     });
 
@@ -1761,7 +1763,7 @@ export async function processVoiceVision(image, message) {
         messages.push({ role: 'tool', tool_call_id: tc.id, content: String(result).slice(0, 8000) });
       }
       response = await openai.chat.completions.create({
-        model: AI_MODEL, max_tokens: 1024,
+        model: AI_MODEL, max_tokens: getBotConfig().maxTokens || 1024,
         messages, tools: voiceTools, tool_choice: 'auto',
       });
       assistantMsg = response.choices[0].message;

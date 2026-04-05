@@ -36,9 +36,9 @@ router.post('/voice', (req, res) => {
   res.json({ ok: true, current: currentVoiceId });
 });
 
-router.post('/speak', async (req, res) => {
+router.all('/speak', async (req, res) => {
   try {
-    const text = req.body.text;
+    const text = req.body?.text || req.query?.text;
     if (!text) return res.status(400).json({ error: 'text obrigatorio' });
 
     // Reler .env para pegar config atualizada pelo setup

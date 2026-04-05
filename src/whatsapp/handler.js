@@ -62,11 +62,14 @@ export function setupMessageHandler(client, instanceName) {
       const jid = msg.from;
       const phone = jid.replace('@c.us', '').replace('@g.us', '');
 
-      // Sync incremental do contato
+      // Sync incremental do contato + detectar primeiro contato
+      let isNewContact = false;
       try {
+        const existing = contactsDB.getByJid(jid);
         const contact = await msg.getContact();
         if (contact) {
           const nome = contact.name || contact.pushname || contact.shortName || phone;
+          if (!existing) isNewContact = true;
           contactsDB.upsert(nome, phone, jid);
         }
       } catch {}
@@ -103,6 +106,11 @@ export function setupMessageHandler(client, instanceName) {
           }
           return;
         }
+      }
+
+      // Mensagem de boas-vindas para novos contatos
+      if (isNewContact && config.welcomeMessage) {
+        try { await client.sendMessage(jid, config.welcomeMessage); } catch {}
       }
 
       // Read receipts

@@ -495,8 +495,12 @@ const DEFAULT_BOT_CONFIG = {
 };
 
 export function getBotConfig() {
-  const saved = settingsDB.getJSON('bot_config', null);
-  return { ...DEFAULT_BOT_CONFIG, ...saved };
+  try {
+    const saved = settingsDB.getJSON('bot_config', null);
+    return { ...DEFAULT_BOT_CONFIG, ...saved };
+  } catch {
+    return { ...DEFAULT_BOT_CONFIG };
+  }
 }
 
 export function saveBotConfig(config) {
