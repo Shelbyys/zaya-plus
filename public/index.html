@@ -415,6 +415,15 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
 .wa-config-saved{color:#25d366;font-size:8px;opacity:0;transition:opacity 0.3s;margin-left:8px;}
 .wa-config-section{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:2px;color:var(--od);border-bottom:1px solid var(--od);padding:10px 0 4px;margin:14px 0 6px;text-transform:uppercase;}
 .wa-config-section:first-child{margin-top:0;}
+.setup-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--w3);border-radius:4px;margin-bottom:6px;cursor:pointer;transition:all .2s;}
+.setup-item:hover{border-color:var(--od);}
+.setup-item.pending{border-color:rgba(255,50,50,0.2);background:rgba(255,50,50,0.03);}
+.setup-item.active{border-color:rgba(37,211,102,0.2);background:rgba(37,211,102,0.03);cursor:default;}
+.setup-icon{font-size:18px;min-width:28px;text-align:center;}
+.setup-info{flex:1;min-width:0;}
+.setup-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--w2);letter-spacing:0.5px;}
+.setup-desc{font-size:8px;color:var(--od);margin-top:2px;}
+.setup-status{font-size:16px;font-weight:bold;min-width:20px;text-align:center;}
 .wa-default-badge{font-size:7px;letter-spacing:1px;color:var(--o);border:1px solid var(--o);padding:1px 5px;margin-left:4px;}
 .wa-input{
   width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--w3);color:var(--w);
@@ -791,6 +800,11 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
       META
     </button>
+    <button class="btn-ctrl" id="setupBtn" onclick="toggleSetupPanel()">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      SETUP
+      <span class="badge" id="setupBadge" style="background:var(--red)">0</span>
+    </button>
     <button class="btn-ctrl" id="resetBtn">
       <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
       RESET
@@ -1098,6 +1112,15 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- OVERLAY: SETUP / PENDENCIAS -->
+<div class="overlay-panel" id="setupPanel">
+  <div class="overlay-content" style="max-width:700px">
+    <button class="overlay-close" onclick="toggleSetupPanel()">FECHAR</button>
+    <div class="overlay-title">SETUP</div>
+    <div id="setupContent"><div class="wa-empty">Carregando...</div></div>
   </div>
 </div>
 
@@ -3574,6 +3597,119 @@ async function reconnectWaInstance(name){
   await fetch(`/api/whatsapp/reconnect/${name}`,{method:'POST'});
   setTimeout(()=>loadWaInstances(),2000);
 }
+
+// === SETUP / PENDENCIAS ===
+const SETUP_MODULES = [
+  { id:'ai', label:'Inteligencia Artificial', desc:'Chave da OpenAI ou Anthropic para a IA funcionar', keys:['mind'], required:true, icon:'🧠', help:'Obtenha em platform.openai.com ou console.anthropic.com' },
+  { id:'identity', label:'Identidade', desc:'Nome do admin e configuracoes basicas', keys:['identity'], required:true, icon:'👤', help:'Configure pelo onboarding ou .env' },
+  { id:'whatsapp', label:'WhatsApp', desc:'Conexao local via QR Code ou WaSender API', keys:['whatsapp'], required:false, icon:'💬', help:'Conecte pelo painel WhatsApp no dashboard' },
+  { id:'voice', label:'Voz / TTS', desc:'ElevenLabs para voz premium da Zaya', keys:['voice'], required:false, icon:'🔊', help:'Obtenha em elevenlabs.io' },
+  { id:'twilio', label:'Ligacoes (Twilio)', desc:'Fazer e receber ligacoes telefonicas', keys:['twilio'], required:false, icon:'📞', help:'Obtenha em console.twilio.com' },
+  { id:'meta', label:'Meta (Instagram/Facebook)', desc:'Postar, gerenciar Ads, DMs do Instagram', keys:['meta'], required:false, icon:'📱', help:'Obtenha em developers.facebook.com' },
+  { id:'supabase', label:'Supabase (Nuvem)', desc:'Banco de dados e storage na nuvem', keys:['supabase'], required:false, icon:'☁️', help:'Obtenha em supabase.com' },
+  { id:'firecrawl', label:'Pesquisa Web', desc:'Pesquisas profundas na internet', keys:['firecrawl'], required:false, icon:'🔍', help:'Obtenha em firecrawl.dev' },
+  { id:'google_ai', label:'Google AI Studio', desc:'Geracao de imagens com Gemini', keys:['google_ai'], required:false, icon:'🎨', help:'Obtenha em aistudio.google.com/apikey' },
+  { id:'freepik', label:'Video IA (Freepik)', desc:'Geracao de videos com Kling AI', keys:['freepik'], required:false, icon:'🎬', help:'Obtenha em freepik.com/api/keys' },
+];
+
+let _setupStatus = null;
+
+function toggleSetupPanel(){
+  const p=$('setupPanel');
+  p.classList.toggle('open');
+  if(p.classList.contains('open')) loadSetupStatus();
+}
+
+async function loadSetupStatus(){
+  try{
+    const [statusR, configR] = await Promise.all([
+      fetch('/api/setup/status'),
+      fetch('/api/public-config')
+    ]);
+    _setupStatus = await statusR.json();
+    const pubCfg = await configR.json();
+    renderSetupPanel(_setupStatus, pubCfg);
+  }catch(e){
+    $('setupContent').innerHTML='<div class="wa-empty" style="color:var(--red)">Erro: '+e.message+'</div>';
+  }
+}
+
+function isModuleActive(mod, status, pubCfg){
+  if(mod.id==='ai') return status.steps?.mind;
+  if(mod.id==='identity') return status.steps?.identity;
+  if(mod.id==='voice') return status.steps?.voice || pubCfg?.openaiTts;
+  if(mod.id==='whatsapp') return status.steps?.modules?.whatsapp;
+  return status.steps?.modules?.[mod.id] || false;
+}
+
+function renderSetupPanel(status, pubCfg){
+  const pending = SETUP_MODULES.filter(m => !isModuleActive(m, status, pubCfg));
+  const active = SETUP_MODULES.filter(m => isModuleActive(m, status, pubCfg));
+
+  // Atualiza badge
+  const badge = document.getElementById('setupBadge');
+  if(badge){
+    badge.textContent = pending.length;
+    badge.style.display = pending.length > 0 ? 'inline' : 'none';
+  }
+
+  let html = '';
+
+  // Header com resumo
+  const pct = Math.round(active.length / SETUP_MODULES.length * 100);
+  html += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+    <div style="flex:1">
+      <div style="background:rgba(255,255,255,0.05);border-radius:4px;height:6px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${pct===100?'#25d366':'var(--od)'};transition:width .5s"></div>
+      </div>
+    </div>
+    <span style="font-family:'Space Mono';font-size:10px;color:${pct===100?'#25d366':'var(--od)'};min-width:40px;text-align:right">${pct}%</span>
+  </div>`;
+
+  // Pendencias
+  if(pending.length > 0){
+    html += '<div class="wa-config-section" style="color:var(--red)">PENDENTE ('+pending.length+')</div>';
+    for(const m of pending){
+      html += `<div class="setup-item pending" onclick="this.querySelector('.setup-help').style.display=this.querySelector('.setup-help').style.display==='none'?'block':'none'">
+        <div class="setup-icon">${m.icon}</div>
+        <div class="setup-info">
+          <div class="setup-label">${m.label} ${m.required?'<span style="color:var(--red);font-size:7px">OBRIGATORIO</span>':''}</div>
+          <div class="setup-desc">${m.desc}</div>
+          <div class="setup-help" style="display:none;margin-top:6px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:3px;font-size:8px;color:var(--od)">${m.help}</div>
+        </div>
+        <div class="setup-status" style="color:var(--red)">&#10007;</div>
+      </div>`;
+    }
+  }
+
+  // Ativos
+  if(active.length > 0){
+    html += '<div class="wa-config-section" style="color:#25d366">ATIVO ('+active.length+')</div>';
+    for(const m of active){
+      html += `<div class="setup-item active">
+        <div class="setup-icon">${m.icon}</div>
+        <div class="setup-info">
+          <div class="setup-label">${m.label}</div>
+          <div class="setup-desc">${m.desc}</div>
+        </div>
+        <div class="setup-status" style="color:#25d366">&#10003;</div>
+      </div>`;
+    }
+  }
+
+  $('setupContent').innerHTML = html;
+}
+
+// Carregar badge na inicializacao
+(async()=>{
+  try{
+    const [sR,cR]=await Promise.all([fetch('/api/setup/status'),fetch('/api/public-config')]);
+    const st=await sR.json(), pc=await cR.json();
+    const pending=SETUP_MODULES.filter(m=>!isModuleActive(m,st,pc));
+    const badge=document.getElementById('setupBadge');
+    if(badge){badge.textContent=pending.length;badge.style.display=pending.length>0?'inline':'none';}
+  }catch{}
+})();
 
 // === BOT CONFIG ===
 let _botCfg={};
