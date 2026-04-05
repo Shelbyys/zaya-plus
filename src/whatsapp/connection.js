@@ -6,6 +6,7 @@ import { waConnections } from '../state.js';
 import { waLoadConfig, waSaveConfig } from './utils.js';
 import { setupMessageHandler } from './handler.js';
 import { log } from '../logger.js';
+import { contactsDB } from '../database.js';
 
 const PUPPETEER_ARGS = [
   '--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu',
@@ -54,11 +55,20 @@ export async function waConnect(name) {
       log.wa.info({ instance: name }, 'QR gerado (auto-connect)');
     });
 
-    client.on('ready', () => {
+    client.on('ready', async () => {
       waConnections[name].status = 'connected';
       waConnections[name].client = client;
       log.wa.info({ instance: name }, 'Conectado com sucesso!');
       setupMessageHandler(client, name);
+
+      // Sync contatos do WhatsApp para o banco local
+      try {
+        const contacts = await client.getContacts();
+        contactsDB.syncFromWhatsApp(contacts);
+        log.wa.info({ instance: name, count: contacts.length }, 'Contatos sincronizados');
+      } catch (e) {
+        log.wa.error({ instance: name, err: e.message }, 'Erro ao sincronizar contatos');
+      }
     });
 
     client.on('authenticated', () => {

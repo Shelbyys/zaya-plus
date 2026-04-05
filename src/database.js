@@ -50,6 +50,7 @@ db.exec(`
   );
 
   CREATE INDEX IF NOT EXISTS idx_contacts_nome ON contacts(nome COLLATE NOCASE);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_jid ON contacts(jid);
 
   CREATE TABLE IF NOT EXISTS migrations (
     name TEXT PRIMARY KEY,
@@ -215,6 +216,8 @@ const stmts = {
   // Contacts
   getContacts: db.prepare('SELECT * FROM contacts ORDER BY nome'),
   searchContacts: db.prepare('SELECT * FROM contacts WHERE nome LIKE ? ORDER BY nome'),
+  upsertContact: db.prepare('INSERT INTO contacts (nome, telefone, jid) VALUES (?, ?, ?) ON CONFLICT(jid) DO UPDATE SET nome = excluded.nome, telefone = excluded.telefone'),
+  getContactByJid: db.prepare('SELECT * FROM contacts WHERE jid = ?'),
 
   // Settings
   getSetting: db.prepare('SELECT value FROM settings WHERE key = ?'),
@@ -296,6 +299,28 @@ export const contactsDB = {
 
   search(query) {
     return stmts.searchContacts.all(`%${query}%`);
+  },
+
+  upsert(nome, telefone, jid) {
+    if (!jid) return;
+    stmts.upsertContact.run(nome, telefone, jid);
+  },
+
+  getByJid(jid) {
+    return stmts.getContactByJid.get(jid);
+  },
+
+  syncFromWhatsApp(contacts) {
+    const tx = db.transaction((list) => {
+      for (const c of list) {
+        if (!c.id?.user) continue;
+        const nome = c.name || c.pushname || c.shortName || c.id.user;
+        const phone = c.id.user;
+        const jid = c.id._serialized;
+        stmts.upsertContact.run(nome, phone, jid);
+      }
+    });
+    tx(contacts);
   },
 };
 

@@ -9,7 +9,7 @@ import { processWithAI } from '../services/ai.js';
 import { editVideo, startVideoSession, processVideoAnswer, buildInstruction, whisperTranscribe } from '../services/media.js';
 import { exec } from 'child_process';
 import { log } from '../logger.js';
-import { getBotConfig } from '../database.js';
+import { getBotConfig, contactsDB } from '../database.js';
 import { processarRespostaMissao } from '../services/missions.js';
 import { verifyVoice, getVoiceIdStatus } from '../services/voice-id.js';
 
@@ -44,6 +44,15 @@ export function setupMessageHandler(client, instanceName) {
 
       const jid = msg.from;
       const phone = jid.replace('@c.us', '').replace('@g.us', '');
+
+      // Sync incremental do contato
+      try {
+        const contact = await msg.getContact();
+        if (contact) {
+          const nome = contact.name || contact.pushname || contact.shortName || phone;
+          contactsDB.upsert(nome, phone, jid);
+        }
+      } catch {}
 
       // Verifica se é admin
       const isAdmin = config.adminNumbers.some(n => phone === n || phone.endsWith(n));

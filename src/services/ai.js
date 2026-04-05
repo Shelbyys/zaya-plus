@@ -1702,11 +1702,15 @@ export async function processVoiceChat(message, statusCallback) {
       log.ai.warn({ refusal, originalMsg: message }, 'Modelo recusou — tentando fallback');
       try {
         if (refusal.tool === 'enviar_whatsapp' && refusal.contact && refusal.message) {
-          const contact = await searchContact(refusal.contact);
-          if (contact?.telefone) {
-            const result = await sendWhatsApp(contact.telefone, refusal.message);
-            reply = `Pronto, mandei a mensagem pra ${refusal.contact}!`;
-            log.ai.info({ contact: refusal.contact, result }, 'Fallback: mensagem enviada com sucesso');
+          const contactResult = searchContact(refusal.contact);
+          if (contactResult?.success) {
+            const firstLine = contactResult.output.split('\n')[0];
+            const phone = firstLine.split('->')[1]?.trim();
+            if (phone) {
+              const result = await sendWhatsApp(phone, refusal.message);
+              reply = `Pronto, mandei a mensagem pra ${refusal.contact}!`;
+              log.ai.info({ contact: refusal.contact, result }, 'Fallback: mensagem enviada com sucesso');
+            }
           }
         }
       } catch (e) {
@@ -1913,11 +1917,15 @@ export async function processWithAI(text, jid, isAdmin) {
         log.ai.warn({ refusal, originalMsg: text }, 'WA: Modelo recusou — tentando fallback');
         try {
           if (refusal.tool === 'enviar_whatsapp' && refusal.contact && refusal.message) {
-            const contact = await searchContact(refusal.contact);
-            if (contact?.telefone) {
-              const result = await sendWhatsApp(contact.telefone, refusal.message);
-              reply = `Pronto, mandei a mensagem pra ${refusal.contact}!`;
-              log.ai.info({ contact: refusal.contact, result }, 'Fallback WA: mensagem enviada');
+            const contactResult = searchContact(refusal.contact);
+            if (contactResult?.success) {
+              const firstLine = contactResult.output.split('\n')[0];
+              const phone = firstLine.split('->')[1]?.trim();
+              if (phone) {
+                const result = await sendWhatsApp(phone, refusal.message);
+                reply = `Pronto, mandei a mensagem pra ${refusal.contact}!`;
+                log.ai.info({ contact: refusal.contact, result }, 'Fallback WA: mensagem enviada');
+              }
             }
           }
         } catch (e) {
