@@ -507,7 +507,7 @@ async function executeVoiceTool(name, args) {
     case 'enviar_whatsapp': {
       let num = args.numero.replace(/\D/g, '');
       if (num.length <= 11) num = '55' + num;
-      const result = sendWhatsApp(num, args.mensagem);
+      const result = await sendWhatsApp(num, args.mensagem);
       return result.output;
     }
 
