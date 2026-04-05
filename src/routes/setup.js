@@ -291,6 +291,7 @@ router.post('/validate-elevenlabs', async (req, res) => {
 // ─── POST /save-module ──────────────────────────────────────
 
 const MODULE_ENV_MAP = {
+  personality: ['ZAYA_CALL_NAME', 'ZAYA_STYLE', 'ZAYA_ACCENT', 'ZAYA_USER_PROFESSION', 'ZAYA_USER_EXPECTATIONS'],
   voice: ['TTS_PROVIDER', 'OPENAI_TTS_VOICE', 'ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID'],
   whatsapp: ['WASENDER_API_KEY', 'WASENDER_BASE_URL'],
   twilio: ['TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_PHONE_NUMBER', 'TWILIO_NGROK_DOMAIN'],

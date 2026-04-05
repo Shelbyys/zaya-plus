@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaya Plus — Conhecendo voce</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #0a0a0f;
+            --card: #12121a;
+            --card-hover: #1a1a28;
+            --card-active: #1f1f35;
+            --accent: #6c5ce7;
+            --accent-glow: rgba(108, 92, 231, 0.4);
+            --green: #00e676;
+            --green-dim: rgba(0, 230, 118, 0.15);
+            --text: #eeeeee;
+            --text-dim: #888899;
+            --border: #1e1e2e;
+            --radius: 14px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ───── Main Container ───── */
+        .onboarding {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* ───── Orb ───── */
+        .orb-wrap {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            flex-shrink: 0;
+            margin-bottom: 10px;
+        }
+
+        #zaya-orb {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* ───── Message Area ───── */
+        .message-area {
+            width: 100%;
+            min-height: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+
+        .zaya-message {
+            font-size: 1.25rem;
+            font-weight: 500;
+            line-height: 1.6;
+            color: var(--text);
+            min-height: 1.6em;
+            max-width: 500px;
+        }
+
+        .zaya-message .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.2em;
+            background: var(--accent);
+            margin-left: 2px;
+            vertical-align: text-bottom;
+            animation: cursorBlink 0.7s ease-in-out infinite;
+        }
+
+        @keyframes cursorBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* ───── Input Area ───── */
+        .input-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .input-area.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .text-input-wrap {
+            display: flex;
+            width: 100%;
+            max-width: 440px;
+            gap: 10px;
+        }
+
+        .text-input-wrap input {
+            flex: 1;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 18px;
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .text-input-wrap input::placeholder {
+            color: var(--text-dim);
+        }
+
+        .text-input-wrap input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        /* ───── Buttons ───── */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #8b5cf6);
+            color: #fff;
+            border: none;
+            border-radius: var(--radius);
+            padding: 14px 36px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ───── Option Cards ───── */
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .option-card {
+            background: var(--card);
+            border: 2px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            text-align: center;
+            user-select: none;
+        }
+
+        .option-card:hover {
+            background: var(--card-hover);
+            border-color: rgba(108, 92, 231, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .option-card.selected {
+            background: var(--card-active);
+            border-color: var(--accent);
+            box-shadow: 0 0 16px var(--accent-glow);
+        }
+
+        .option-card .emoji {
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .option-card .label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .option-card .desc {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        /* ───── Progress Dots ───── */
+        .progress-dots {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .progress-dots .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.4s ease;
+        }
+
+        .progress-dots .dot.active {
+            background: var(--accent);
+            box-shadow: 0 0 8px var(--accent-glow);
+            transform: scale(1.3);
+        }
+
+        .progress-dots .dot.done {
+            background: var(--green);
+        }
+
+        /* ───── Final Processing Messages ───── */
+        .processing-msg {
+            font-size: 0.95rem;
+            color: var(--text-dim);
+            min-height: 1.4em;
+            transition: opacity 0.3s ease;
+        }
+
+        /* ───── Fade transition ───── */
+        .fade-out {
+            animation: fadeOut 0.6s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateY(-10px); }
+        }
+
+        /* ───── Ambient Background ───── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(ellipse at 50% 40%, rgba(108, 92, 231, 0.04) 0%, transparent 60%),
+                        radial-gradient(ellipse at 30% 70%, rgba(0, 195, 255, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* ───── Mobile ───── */
+        @media (max-width: 600px) {
+            .orb-wrap {
+                width: 220px;
+                height: 220px;
+            }
+
+            .zaya-message {
+                font-size: 1.05rem;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .option-card {
+                padding: 14px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="onboarding" id="onboarding">
+    <!-- Orb -->
+    <div class="orb-wrap">
+        <canvas id="zaya-orb"></canvas>
+    </div>
+
+    <!-- Message -->
+    <div class="message-area">
+        <div class="zaya-message" id="zayaMsg"></div>
+    </div>
+
+    <!-- Input / Options (injected dynamically) -->
+    <div class="input-area" id="inputArea"></div>
+</div>
+
+<!-- Progress Dots -->
+<div class="progress-dots" id="progressDots"></div>
+
+<script src="/orb.js"></script>
+<script>
+(async () => {
+
+    // ───── Page Protection ─────
+    let adminName = '';
+    try {
+        const licRes = await fetch('/api/license/status');
+        const licData = await licRes.json();
+        if (!licData.licensed && !licData.active) {
+            window.location.href = '/license.html';
+            return;
+        }
+    } catch (e) {
+        console.error('Failed to check license', e);
+    }
+
+    try {
+        const res = await fetch('/api/public-config');
+        const cfg = await res.json();
+        adminName = cfg.adminName || cfg.ADMIN_NAME || '';
+    } catch (e) {
+        console.error('Failed to load config', e);
+    }
+
+    // ───── Orb ─────
+    const orb = new JarvisOrb('zaya-orb');
+    orb.setState('idle');
+
+    // ───── Elements ─────
+    const msgEl = document.getElementById('zayaMsg');
+    const inputArea = document.getElementById('inputArea');
+    const dotsContainer = document.getElementById('progressDots');
+
+    // ───── State ─────
+    const answers = {
+        callName: '',
+        communicationStyle: '',
+        accent: '',
+        profession: '',
+        expectations: [],
+    };
+
+    const TOTAL_STEPS = 7;
+
+    // Build progress dots
+    for (let i = 0; i < TOTAL_STEPS; i++) {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dotsContainer.appendChild(dot);
+    }
+
+    function setStep(n) {
+        const dots = dotsContainer.querySelectorAll('.dot');
+        dots.forEach((d, i) => {
+            d.className = 'dot';
+            if (i < n) d.classList.add('done');
+            if (i === n) d.classList.add('active');
+        });
+    }
+
+    // ───── Typing Effect ─────
+    async function typeText(text, speed = 40) {
+        msgEl.innerHTML = '';
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        const textNode = document.createTextNode('');
+        msgEl.appendChild(textNode);
+        msgEl.appendChild(cursor);
+
+        for (const char of text) {
+            textNode.textContent += char;
+            await sleep(speed);
+        }
+        // Remove cursor after typing
+        await sleep(300);
+        cursor.remove();
+    }
+
+    async function typeMultiple(lines, speed = 40) {
+        for (let i = 0; i < lines.length; i++) {
+            if (i > 0) {
+                await sleep(600);
+                msgEl.innerHTML = '';
+            }
+            await typeText(lines[i], speed);
+            if (i < lines.length - 1) await sleep(800);
+        }
+    }
+
+    function sleep(ms) {
+        return new Promise(r => setTimeout(r, ms));
+    }
+
+    function clearInput() {
+        inputArea.classList.remove('visible');
+        inputArea.innerHTML = '';
+    }
+
+    function showInput() {
+        requestAnimationFrame(() => {
+            inputArea.classList.add('visible');
+        });
+    }
+
+    // ───── UI Builders ─────
+
+    function createButton(text, onClick) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-primary';
+        btn.textContent = text;
+        btn.addEventListener('click', onClick);
+        return btn;
+    }
+
+    function createTextInput(placeholder, btnText) {
+        return new Promise(resolve => {
+            const wrap = document.createElement('div');
+            wrap.className = 'text-input-wrap';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = placeholder;
+            input.autocomplete = 'off';
+
+            const btn = createButton(btnText, () => {
+                const val = input.value.trim();
+                if (val) resolve(val);
+            });
+            btn.disabled = true;
+
+            input.addEventListener('input', () => {
+                btn.disabled = !input.value.trim();
+            });
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter' && input.value.trim()) resolve(input.value.trim());
+            });
+
+            wrap.appendChild(input);
+            wrap.appendChild(btn);
+            inputArea.appendChild(wrap);
+            showInput();
+
+            // Auto focus
+            setTimeout(() => input.focus(), 100);
+        });
+    }
+
+    function createSingleSelect(options) {
+        return new Promise(resolve => {
+            const grid = document.createElement('div');
+            grid.className = 'options-grid';
+
+            options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.innerHTML = `
+                    <span class="emoji">${opt.emoji}</span>
+                    <div class="label">${opt.label}</div>
+                    <div class="desc">${opt.desc}</div>
+                `;
+                card.addEventListener('click', () => {
+                    grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    setTimeout(() => resolve(opt.value), 350);
+                });
+                grid.appendChild(card);
+            });
+
+            inputArea.appendChild(grid);
+            showInput();
+        });
+    }
+
+    function createMultiSelect(options) {
+        return new Promise(resolve => {
+            const grid = document.createElement('div');
+            grid.className = 'options-grid';
+            const selected = new Set();
+
+            options.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'option-card';
+                card.innerHTML = `
+                    <span class="emoji">${opt.emoji}</span>
+                    <div class="label">${opt.label}</div>
+                    <div class="desc">${opt.desc}</div>
+                `;
+                card.addEventListener('click', () => {
+                    if (selected.has(opt.value)) {
+                        selected.delete(opt.value);
+                        card.classList.remove('selected');
+                    } else {
+                        selected.add(opt.value);
+                        card.classList.add('selected');
+                    }
+                    confirmBtn.disabled = selected.size === 0;
+                });
+                grid.appendChild(card);
+            });
+
+            const confirmBtn = createButton('Proximo', () => {
+                if (selected.size > 0) resolve([...selected]);
+            });
+            confirmBtn.disabled = true;
+            confirmBtn.style.marginTop = '8px';
+
+            inputArea.appendChild(grid);
+            inputArea.appendChild(confirmBtn);
+            showInput();
+        });
+    }
+
+    // ───── Question Flow ─────
+
+    async function q1_intro() {
+        setStep(0);
+        orb.setState('idle');
+        orb.setAudioLevel(0);
+
+        await typeMultiple([
+            'Ola! Eu sou a Zaya, sua nova assistente pessoal.',
+            'Vou precisar te conhecer um pouquinho para me adaptar a voce.',
+        ]);
+
+        clearInput();
+        await sleep(300);
+
+        return new Promise(resolve => {
+            const btn = createButton('Vamos la!', () => resolve());
+            inputArea.appendChild(btn);
+            showInput();
+        });
+    }
+
+    async function q2_callName() {
+        setStep(1);
+        clearInput();
+        orb.setState('listening');
+        orb.setAudioLevel(0.2);
+
+        const nameDisplay = adminName || 'voce';
+        await typeText(`Vi que seu nome e ${nameDisplay}. Como voce prefere que eu te chame?`);
+
+        await sleep(200);
+        const val = await createTextInput('Ex: Alisson, Sr. Silva, Chefe, Boss...', 'Proximo');
+        answers.callName = val;
+    }
+
+    async function q3_communicationStyle() {
+        setStep(2);
+        clearInput();
+        orb.setState('idle');
+        orb.setAudioLevel(0);
+
+        await typeText('Como voce quer que eu fale com voce?');
+        await sleep(200);
+
+        const val = await createSingleSelect([
+            { emoji: '\uD83E\uDD1D', label: 'Formal', desc: 'Senhor/Senhora, linguagem profissional', value: 'formal' },
+            { emoji: '\uD83D\uDE04', label: 'Informal', desc: 'De boa, descontraido, com girias', value: 'informal' },
+            { emoji: '\uD83C\uDFAF', label: 'Direto', desc: 'Sem enrolacao, objetivo e rapido', value: 'direto' },
+            { emoji: '\uD83E\uDD17', label: 'Amigavel', desc: 'Como uma amiga proxima, carinhosa', value: 'amigavel' },
+        ]);
+        answers.communicationStyle = val;
+    }
+
+    async function q4_accent() {
+        setStep(3);
+        clearInput();
+        orb.setState('idle');
+        orb.setAudioLevel(0.1);
+
+        await typeText('Quer que eu tenha algum sotaque ou jeito de falar?');
+        await sleep(200);
+
+        const val = await createSingleSelect([
+            { emoji: '\uD83C\uDDE7\uD83C\uDDF7', label: 'Neutro', desc: 'Portugues brasileiro padrao', value: 'neutro' },
+            { emoji: '\uD83C\uDF34', label: 'Nordestino', desc: 'Oxe, arretado, visse', value: 'nordestino' },
+            { emoji: '\u2615', label: 'Paulista', desc: 'Mano, tipo, da hora', value: 'paulista' },
+            { emoji: '\uD83C\uDFD4\uFE0F', label: 'Mineiro', desc: 'Uai, trem bao, ne', value: 'mineiro' },
+            { emoji: '\uD83C\uDFD6\uFE0F', label: 'Carioca', desc: 'Cara, muito maneiro', value: 'carioca' },
+            { emoji: '\uD83C\uDF0E', label: 'Sem preferencia', desc: 'Fala como quiser', value: 'sem_preferencia' },
+        ]);
+        answers.accent = val;
+    }
+
+    async function q5_profession() {
+        setStep(4);
+        clearInput();
+        orb.setState('listening');
+        orb.setAudioLevel(0.15);
+
+        await typeText('Me conta um pouco sobre voce. O que voce faz?');
+        await sleep(200);
+
+        const val = await createTextInput('Ex: Sou empreendedor, trabalho com marketing digital...', 'Proximo');
+        answers.profession = val;
+    }
+
+    async function q6_expectations() {
+        setStep(5);
+        clearInput();
+        orb.setState('idle');
+        orb.setAudioLevel(0);
+
+        await typeText('O que voce mais espera da Zaya? No que posso te ajudar mais?');
+        await sleep(200);
+
+        const val = await createMultiSelect([
+            { emoji: '\uD83D\uDCAC', label: 'Responder clientes', desc: 'WhatsApp, Instagram, atendimento', value: 'responder_clientes' },
+            { emoji: '\uD83D\uDCCA', label: 'Gerenciar redes sociais', desc: 'Posts, stories, ads', value: 'gerenciar_redes' },
+            { emoji: '\uD83D\uDCDD', label: 'Organizar minha rotina', desc: 'Agenda, lembretes, tarefas', value: 'organizar_rotina' },
+            { emoji: '\uD83C\uDFA8', label: 'Criar conteudo', desc: 'Imagens, videos, textos', value: 'criar_conteudo' },
+            { emoji: '\uD83D\uDD0D', label: 'Pesquisar informacoes', desc: 'Buscar dados, analisar', value: 'pesquisar_info' },
+            { emoji: '\uD83E\uDD16', label: 'Ser minha assistente geral', desc: 'Um pouco de tudo', value: 'assistente_geral' },
+        ]);
+        answers.expectations = val;
+    }
+
+    async function q7_final() {
+        setStep(6);
+        clearInput();
+
+        // ───── Save personality via API ─────
+        const configPayload = {
+            module: 'personality',
+            config: {
+                ZAYA_CALL_NAME: answers.callName,
+                ZAYA_STYLE: answers.communicationStyle,
+                ZAYA_ACCENT: answers.accent,
+                ZAYA_USER_PROFESSION: answers.profession,
+                ZAYA_USER_EXPECTATIONS: answers.expectations.join(','),
+            }
+        };
+
+        try {
+            await fetch('/api/setup/save-module', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(configPayload),
+            });
+        } catch (e) {
+            console.error('Failed to save personality module', e);
+        }
+
+        // ───── Save personality to memories via chat ─────
+        const styleLabels = {
+            formal: 'formal e profissional',
+            informal: 'informal e descontraido',
+            direto: 'direto e objetivo',
+            amigavel: 'amigavel e carinhosa',
+        };
+        const accentLabels = {
+            neutro: 'portugues brasileiro padrao',
+            nordestino: 'sotaque nordestino',
+            paulista: 'sotaque paulista',
+            mineiro: 'sotaque mineiro',
+            carioca: 'sotaque carioca',
+            sem_preferencia: 'sem sotaque especifico',
+        };
+        const expectationLabels = {
+            responder_clientes: 'responder clientes',
+            gerenciar_redes: 'gerenciar redes sociais',
+            organizar_rotina: 'organizar rotina',
+            criar_conteudo: 'criar conteudo',
+            pesquisar_info: 'pesquisar informacoes',
+            assistente_geral: 'assistente geral',
+        };
+
+        const memoryMsg = [
+            `[MEMORIA DE PERSONALIDADE] Lembre-se destas preferencias do usuario para TODAS as conversas futuras:`,
+            `- Chamar o usuario de: "${answers.callName}"`,
+            `- Estilo de comunicacao: ${styleLabels[answers.communicationStyle] || answers.communicationStyle}`,
+            `- Sotaque/jeito de falar: ${accentLabels[answers.accent] || answers.accent}`,
+            `- Profissao do usuario: ${answers.profession}`,
+            `- O usuario espera ajuda com: ${answers.expectations.map(e => expectationLabels[e] || e).join(', ')}`,
+            `Adapte sua personalidade e linguagem a essas preferencias em todas as interacoes.`,
+        ].join('\n');
+
+        try {
+            await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: memoryMsg, role: 'system' }),
+            });
+        } catch (e) {
+            console.error('Failed to save personality to memories', e);
+        }
+
+        // ───── Final cinematic sequence ─────
+        orb.setState('speaking');
+        orb.setAudioLevel(0.4);
+        await typeText(`Perfeito, ${answers.callName}! Ja sei como me adaptar a voce.`);
+        await sleep(1200);
+
+        await typeText('Vou configurar minha personalidade agora...');
+        await sleep(800);
+
+        orb.setState('processing');
+        orb.setAudioLevel(0.6);
+
+        // Processing messages
+        const processingEl = document.createElement('div');
+        processingEl.className = 'processing-msg';
+        inputArea.innerHTML = '';
+        inputArea.appendChild(processingEl);
+        showInput();
+
+        const steps = [
+            { text: 'Ajustando linguagem...', delay: 1500 },
+            { text: 'Carregando personalidade...', delay: 1500 },
+            { text: 'Memorizando suas preferencias...', delay: 1500 },
+            { text: `Zaya pronta para ${answers.callName}!`, delay: 2000 },
+        ];
+
+        for (const step of steps) {
+            processingEl.style.opacity = '0';
+            await sleep(250);
+            processingEl.textContent = step.text;
+            processingEl.style.opacity = '1';
+
+            if (step === steps[steps.length - 1]) {
+                orb.setState('speaking');
+                orb.setAudioLevel(0.5);
+            }
+            await sleep(step.delay);
+        }
+
+        // Mark all dots done
+        dotsContainer.querySelectorAll('.dot').forEach(d => {
+            d.className = 'dot done';
+        });
+
+        await sleep(2000);
+
+        // Fade out and redirect
+        document.getElementById('onboarding').style.transition = 'opacity 0.8s ease';
+        document.getElementById('onboarding').style.opacity = '0';
+        dotsContainer.style.transition = 'opacity 0.8s ease';
+        dotsContainer.style.opacity = '0';
+
+        await sleep(900);
+        window.location.href = '/';
+    }
+
+    // ───── Run Flow ─────
+    try {
+        await q1_intro();
+        await q2_callName();
+        await q3_communicationStyle();
+        await q4_accent();
+        await q5_profession();
+        await q6_expectations();
+        await q7_final();
+    } catch (err) {
+        console.error('Onboarding error:', err);
+    }
+
+})();
+</script>
+
+</body>
+</html>

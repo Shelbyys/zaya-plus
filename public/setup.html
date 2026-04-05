@@ -1390,10 +1390,10 @@
 
         await new Promise(r => setTimeout(r, 1500));
 
-        // Fade out and redirect
+        // Fade out and redirect to onboarding
         overlay.style.opacity = '0';
         await new Promise(r => setTimeout(r, 800));
-        window.location.href = '/';
+        window.location.href = '/onboarding.html';
     }
 
     // ───── Helpers ─────

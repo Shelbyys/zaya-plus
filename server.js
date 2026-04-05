@@ -44,8 +44,8 @@ app.use((req, res, next) => {
   // Só protege páginas HTML (não API, não assets)
   if (!req.path.endsWith('.html') && req.path !== '/' && req.path !== '/index.html') return next();
 
-  // license.html e admin.html — sempre acessíveis
-  if (req.path === '/license.html' || req.path === '/admin.html') return next();
+  // license.html, admin.html, onboarding.html — sempre acessíveis
+  if (req.path === '/license.html' || req.path === '/admin.html' || req.path === '/onboarding.html') return next();
 
   // Página de login — sempre acessível
   if (req.path === '/login') return next();
