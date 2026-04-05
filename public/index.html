@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0d0b09">
 <title>ZAYA PLUS</title>
@@ -1214,7 +1214,7 @@ const t0=Date.now();
 setInterval(()=>{const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('pt-BR',{hour12:false});document.getElementById('footerDate').textContent=n.toLocaleDateString('pt-BR');const e=Math.floor((Date.now()-t0)/1000);document.getElementById('uptime').textContent=`${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`;},1000);
 
 // ===== TICKER =====
-let tickOff=0;const tickBase='SISTEMA ATIVO — ${_adminName || ''} — VOZ — VISAO — TERMINAL — ZAYA PLUS v1.0 — CORTEX QUANTICO — ';
+let tickOff=0;const tickBase=`SISTEMA ATIVO — ${_adminName || ''} — ZAYA PLUS v1.0 — CORTEX QUANTICO — `;
 setInterval(()=>{tickOff++;document.getElementById('ticker').textContent=tickBase.repeat(3).slice(tickOff%tickBase.length);},80);
 
 // ===== TAGS =====
@@ -1806,11 +1806,11 @@ function linkify(text){
 function out(t,type){
   const el=$('termText');
   const cls=type==='user'?'user-text':'ai-text';
-  const prefix=type==='user'?'${_adminName || ''}':'ZAYA';
+  const prefix=type==='user'?(_adminName || 'VOCE'):'ZAYA';
   el.innerHTML=`<span class="${cls}">${prefix} &gt; ${linkify(t)}</span>`;
   el.parentElement.scrollTop=el.parentElement.scrollHeight;
   if(typeof chatLog==='function'){
-    const label=type==='user'?'${_adminName || ''}':'ZAYA';
+    const label=type==='user'?(_adminName || 'VOCE'):'ZAYA';
     chatLog(t, type==='user'?'user':'ai', label);
   }
   const oq=$('orbQuote');if(oq)oq.textContent=t.slice(0,80);
