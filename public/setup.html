@@ -1127,10 +1127,16 @@
 
     async function saveStep1() {
         try {
-            await fetch('/api/setup/ai', {
+            await fetch('/api/setup/save-mind', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config.ai)
+                body: JSON.stringify({
+                    provider: config.ai.provider,
+                    key: config.ai.key,
+                    baseUrl: config.ai.provider === 'groq' ? 'https://api.groq.com/openai/v1' : undefined,
+                    model: config.ai.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o',
+                    modelMini: config.ai.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini'
+                })
             });
         } catch (e) { /* offline */ }
         goTo(2);
@@ -1147,10 +1153,13 @@
 
     async function saveStep2() {
         try {
-            await fetch('/api/setup/identity', {
+            await fetch('/api/setup/save-identity', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config.identity)
+                body: JSON.stringify({
+                    name: config.identity.name,
+                    phone: config.identity.phone
+                })
             });
         } catch (e) { /* offline */ }
         goTo(3);
