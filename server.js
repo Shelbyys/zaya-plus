@@ -215,9 +215,16 @@ import { isLicensed } from './src/services/license.js';
 app.use('/api/license', licenseRoutes);
 app.use('/api/setup', setupRoutes);
 
+// Integrity protection
+import { verifyIntegrity, isIntegrityValid } from './src/services/integrity.js';
+
 // License guard — bloqueia TODOS os /api/* (exceto license e setup) sem licença ativa
 function licenseGuard(req, res, next) {
-  // Double check: both isLicensed() AND direct file verification
+  // Integrity check — arquivos criticos nao foram modificados
+  if (!isIntegrityValid()) {
+    return res.status(403).json({ error: 'Integridade do sistema comprometida' });
+  }
+  // License check
   if (!isLicensed()) {
     return res.status(401).json({ error: 'Licenca nao ativada' });
   }
@@ -230,6 +237,8 @@ function licenseGuard(req, res, next) {
   } catch {
     return res.status(401).json({ error: 'Licenca corrompida' });
   }
+  // Periodic integrity verification
+  verifyIntegrity();
   next();
 }
 app.use('/api', licenseGuard);
