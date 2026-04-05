@@ -485,6 +485,13 @@ const DEFAULT_BOT_CONFIG = {
 
   // Como notificar: 'voice' (fala na Zaya), 'whatsapp' (manda pro admin), 'both'
   watchNotifyMode: 'both',
+
+  // Personalidade / Identidade
+  callName: '',
+  style: 'amigavel',
+  accent: 'neutro',
+  userProfession: '',
+  userExpectations: '',
 };
 
 export function getBotConfig() {

@@ -41,7 +41,8 @@ export function getSystemPrompt() {
   const loc = macLocation.city ? `${macLocation.city}, ${macLocation.region}, ${macLocation.country}` : 'desconhecida';
   const coords = macLocation.loc || 'desconhecidas';
 
-  // Personalidade configuravel — reler .env em tempo real
+  // Personalidade: prioriza banco (botConfig) > .env > defaults
+  const botCfg = getBotConfig();
   let envVars = {};
   try {
     const envPath = join(ROOT_DIR, '.env');
@@ -51,11 +52,11 @@ export function getSystemPrompt() {
       if (m) envVars[m[1].trim()] = m[2].trim();
     });
   } catch {}
-  const callName = envVars.ZAYA_CALL_NAME || process.env.ZAYA_CALL_NAME || ADMIN_NAME || 'voce';
-  const style = envVars.ZAYA_STYLE || process.env.ZAYA_STYLE || 'amigavel';
-  const accent = envVars.ZAYA_ACCENT || process.env.ZAYA_ACCENT || 'neutro';
-  const profession = envVars.ZAYA_USER_PROFESSION || process.env.ZAYA_USER_PROFESSION || '';
-  const expectations = envVars.ZAYA_USER_EXPECTATIONS || process.env.ZAYA_USER_EXPECTATIONS || '';
+  const callName = botCfg.callName || envVars.ZAYA_CALL_NAME || process.env.ZAYA_CALL_NAME || ADMIN_NAME || 'voce';
+  const style = botCfg.style || envVars.ZAYA_STYLE || process.env.ZAYA_STYLE || 'amigavel';
+  const accent = botCfg.accent || envVars.ZAYA_ACCENT || process.env.ZAYA_ACCENT || 'neutro';
+  const profession = botCfg.userProfession || envVars.ZAYA_USER_PROFESSION || process.env.ZAYA_USER_PROFESSION || '';
+  const expectations = botCfg.userExpectations || envVars.ZAYA_USER_EXPECTATIONS || process.env.ZAYA_USER_EXPECTATIONS || '';
 
   // Gerar instrucoes de estilo baseado na configuracao
   const styleMap = {

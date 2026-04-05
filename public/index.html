@@ -3607,9 +3607,54 @@ function renderBotConfig(){
     </div>
 
     <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
+      <div class="wa-config-label">Como chamar o usuario</div>
+      <div class="wa-config-desc">Nome que a Zaya usa para se referir ao dono (ex: Alisson, Chefe, Boss)</div>
+      <input class="wa-input" value="${c.callName||''}" placeholder="Deixe vazio para usar o nome do admin" onchange="cfgSet('callName',this.value)" style="margin-top:4px">
+    </div>
+
+    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
       <div class="wa-config-label">Mensagem de Boas-vindas</div>
       <div class="wa-config-desc">Enviada quando um novo contato interage pela primeira vez</div>
       <textarea placeholder="Vazio = sem boas-vindas" onchange="cfgSet('welcomeMessage',this.value)" style="margin-top:4px">${c.welcomeMessage||''}</textarea>
+    </div>
+
+    <!-- ═══ PERSONALIDADE ═══ -->
+    <div class="wa-config-section">PERSONALIDADE</div>
+
+    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
+      <div class="wa-config-label">Estilo de Comunicacao</div>
+      <div class="wa-config-desc">Como a Zaya se comunica com voce</div>
+      <select onchange="cfgSet('style',this.value)" style="margin-top:4px">
+        <option value="amigavel" ${(c.style||'amigavel')==='amigavel'?'selected':''}>Amigavel (amiga proxima, carinhosa)</option>
+        <option value="informal" ${c.style==='informal'?'selected':''}>Informal (descontraida, girias)</option>
+        <option value="direto" ${c.style==='direto'?'selected':''}>Direto (objetiva, sem enrolacao)</option>
+        <option value="formal" ${c.style==='formal'?'selected':''}>Formal (profissional, Senhor/Senhora)</option>
+      </select>
+    </div>
+
+    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
+      <div class="wa-config-label">Sotaque / Regionalismo</div>
+      <div class="wa-config-desc">Define expressoes regionais que a Zaya usa ao falar</div>
+      <select onchange="cfgSet('accent',this.value)" style="margin-top:4px">
+        <option value="neutro" ${(c.accent||'neutro')==='neutro'?'selected':''}>Neutro (portugues padrao)</option>
+        <option value="nordestino" ${c.accent==='nordestino'?'selected':''}>Nordestino (oxente, vixe, massa)</option>
+        <option value="paulista" ${c.accent==='paulista'?'selected':''}>Paulista (mano, tipo, da hora)</option>
+        <option value="mineiro" ${c.accent==='mineiro'?'selected':''}>Mineiro (uai, trem, bao demais)</option>
+        <option value="carioca" ${c.accent==='carioca'?'selected':''}>Carioca (cara, maneiro, sinistro)</option>
+        <option value="sem_preferencia" ${c.accent==='sem_preferencia'?'selected':''}>Sem preferencia (natural)</option>
+      </select>
+    </div>
+
+    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
+      <div class="wa-config-label">Profissao do Usuario</div>
+      <div class="wa-config-desc">Ajuda a Zaya adaptar respostas ao seu contexto de trabalho</div>
+      <input class="wa-input" value="${c.userProfession||''}" placeholder="Ex: Desenvolvedor, Advogado, Designer" onchange="cfgSet('userProfession',this.value)" style="margin-top:4px">
+    </div>
+
+    <div class="wa-config-row" style="flex-direction:column;align-items:stretch">
+      <div class="wa-config-label">O que espera da Zaya</div>
+      <div class="wa-config-desc">Areas em que a Zaya deve focar mais (separado por virgula)</div>
+      <input class="wa-input" value="${c.userExpectations||''}" placeholder="Ex: programacao, financas, organizacao" onchange="cfgSet('userExpectations',this.value)" style="margin-top:4px">
     </div>
 
     <!-- ═══ CONTROLE GERAL ═══ -->
