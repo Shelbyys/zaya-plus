@@ -424,6 +424,17 @@ router.post('/test-module', async (req, res) => {
 router.post('/complete', (req, res) => {
   try {
     updateEnv({ SETUP_COMPLETE: 'true' });
+
+    // Recarregar .env no process.env para o servidor pegar as mudanças
+    try {
+      const envPath = join(ROOT_DIR, '.env');
+      const content = require('fs').readFileSync(envPath, 'utf-8');
+      content.split('\n').forEach(line => {
+        const match = line.match(/^([^#=]+)=(.*)$/);
+        if (match) process.env[match[1].trim()] = match[2].trim();
+      });
+    } catch(e) {}
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

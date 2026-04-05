@@ -109,9 +109,21 @@ async function doLogin(){
 // SETUP WIZARD — redireciona se não configurado
 // ================================================================
 function isSetupNeeded() {
-  const key = process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || '';
-  const name = process.env.ADMIN_NAME || '';
-  return !key || !name;
+  // Reler .env a cada check pois o setup wizard escreve nele em runtime
+  try {
+    const envContent = require('fs').readFileSync(join(__dirname, '.env'), 'utf-8');
+    const envVars = {};
+    envContent.split('\n').forEach(line => {
+      const match = line.match(/^([^#=]+)=(.*)$/);
+      if (match) envVars[match[1].trim()] = match[2].trim();
+    });
+    if (envVars.SETUP_COMPLETE === 'true') return false;
+    const key = envVars.OPENAI_API_KEY || envVars.ANTHROPIC_API_KEY || '';
+    const name = envVars.ADMIN_NAME || '';
+    return !key || !name;
+  } catch {
+    return true;
+  }
 }
 
 app.get('/', (req, res, next) => {
