@@ -638,15 +638,6 @@ tr:hover td{background:var(--glass)}
 let ACCESS_TOKEN = '';
 const API_BASE = 'https://graph.facebook.com/v21.0';
 
-// Load token dynamically from server config
-(async () => {
-  try {
-    const res = await fetch('/api/public-config');
-    const cfg = await res.json();
-    if (cfg.metaAccessToken) ACCESS_TOKEN = cfg.metaAccessToken;
-  } catch (e) { console.warn('Falha ao carregar config:', e.message); }
-})();
-
 // Dynamic — populated from API
 let PAGE_ID = '';
 let IG_ID = '';
@@ -664,13 +655,104 @@ let dmRefreshTimer = null;
 
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
+  // Carregar token do servidor PRIMEIRO
+  try {
+    const res = await fetch('/api/public-config');
+    const cfg = await res.json();
+    if (cfg.metaAccessToken) ACCESS_TOKEN = cfg.metaAccessToken;
+  } catch (e) {}
+
   setupNavigation();
   await loadAccounts();
-  loadBotConfig();
+  if (ACCESS_TOKEN) loadBotConfig();
 });
+
+// ===== SETUP META (quando nao tem token) =====
+function showMetaSetup() {
+  document.getElementById('main').innerHTML = `
+    <div style="max-width:600px;margin:40px auto;text-align:center">
+      <h2 style="color:var(--accent2);margin-bottom:12px;font-family:'Space Mono',monospace">Configurar Meta</h2>
+      <p style="color:var(--text2);margin-bottom:30px">Para usar o Instagram e Facebook, voce precisa conectar sua conta Meta.</p>
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:left;margin-bottom:20px">
+        <h3 style="color:var(--accent2);font-size:13px;margin-bottom:16px;font-family:'Space Mono',monospace">PASSO A PASSO</h3>
+
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
+          <span style="background:var(--accent);color:#fff;min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">1</span>
+          <div>
+            <div style="font-weight:600;font-size:14px">Crie um app no Meta for Developers</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px">Acesse <a href="https://developers.facebook.com/apps/" target="_blank" style="color:var(--accent2)">developers.facebook.com/apps</a> e crie um novo app do tipo "Business"</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
+          <span style="background:var(--accent);color:#fff;min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">2</span>
+          <div>
+            <div style="font-weight:600;font-size:14px">Gere um token no Graph API Explorer</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px">Acesse <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent2)">Graph API Explorer</a>, selecione seu app e gere um token com as permissoes:<br>
+            <code style="font-size:11px;color:var(--green)">pages_show_list, pages_read_engagement, instagram_basic, instagram_manage_messages, instagram_content_publish, ads_management</code></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
+          <span style="background:var(--accent);color:#fff;min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">3</span>
+          <div>
+            <div style="font-weight:600;font-size:14px">Cole o token abaixo</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px">O token conecta sua conta do Facebook e Instagram</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px">
+        <input id="metaTokenInput" type="password" placeholder="Cole seu Facebook Access Token aqui" style="width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;margin-bottom:12px">
+        <button onclick="saveMetaToken()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Conectar Meta</button>
+        <div id="metaSetupMsg" style="margin-top:10px;font-size:12px"></div>
+      </div>
+    </div>
+  `;
+}
+
+async function saveMetaToken() {
+  const token = document.getElementById('metaTokenInput').value.trim();
+  const msg = document.getElementById('metaSetupMsg');
+  if (!token) { msg.innerHTML = '<span style="color:#ff5252">Cole o token primeiro</span>'; return; }
+
+  msg.innerHTML = '<span style="color:var(--accent2)">Testando token...</span>';
+
+  try {
+    // Testar o token
+    const r = await fetch('https://graph.facebook.com/v21.0/me/accounts?fields=id,name&access_token=' + token);
+    const data = await r.json();
+
+    if (data.error) {
+      msg.innerHTML = '<span style="color:#ff5252">Token invalido: ' + data.error.message + '</span>';
+      return;
+    }
+
+    // Salvar no servidor
+    await fetch('/api/setup/save-module', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module: 'meta', config: { FACEBOOK_ACCESS_TOKEN: token } })
+    });
+
+    ACCESS_TOKEN = token;
+    msg.innerHTML = '<span style="color:var(--green)">Conectado! ' + (data.data?.length || 0) + ' pagina(s) encontradas. Recarregando...</span>';
+
+    setTimeout(() => location.reload(), 1500);
+  } catch (e) {
+    msg.innerHTML = '<span style="color:#ff5252">Erro: ' + e.message + '</span>';
+  }
+}
 
 // ===== LOAD ALL ACCOUNTS =====
 async function loadAccounts() {
+  // Se nao tem token, mostrar setup
+  if (!ACCESS_TOKEN) {
+    showMetaSetup();
+    return;
+  }
+
   const statusEl = document.getElementById('connection-status');
   statusEl.textContent = 'Conectando...';
   statusEl.className = 'account-status';
