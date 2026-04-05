@@ -4,7 +4,8 @@ import { ADMIN_NAME } from '../config.js';
 import { log } from '../logger.js';
 
 const HOME = os.homedir();
-const CLAUDE_BIN = execSync('which claude', { encoding: 'utf-8', timeout: 5000 }).trim() || 'claude';
+let CLAUDE_BIN = 'claude';
+try { CLAUDE_BIN = execSync('which claude', { encoding: 'utf-8', timeout: 5000 }).trim() || 'claude'; } catch(e) {}
 
 export function runCommand(cmd) {
   try {

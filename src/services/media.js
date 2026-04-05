@@ -6,7 +6,8 @@ import { FFMPEG, FFPROBE, WHISPER_BIN, TMP_DIR, MUSIC_DIR, TOOLS_DIR } from '../
 import { openai } from '../state.js';
 
 const HOME = os.homedir();
-const CLAUDE_BIN = execSync('which claude', { encoding: 'utf-8', timeout: 5000 }).trim() || 'claude';
+let CLAUDE_BIN = 'claude';
+try { CLAUDE_BIN = execSync('which claude', { encoding: 'utf-8', timeout: 5000 }).trim() || 'claude'; } catch(e) {}
 
 // ================================================================
 // WHISPER / TRANSCRIÇÃO
