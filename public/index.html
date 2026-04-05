@@ -1214,7 +1214,7 @@ const t0=Date.now();
 setInterval(()=>{const n=new Date();document.getElementById('clock').textContent=n.toLocaleTimeString('pt-BR',{hour12:false});document.getElementById('footerDate').textContent=n.toLocaleDateString('pt-BR');const e=Math.floor((Date.now()-t0)/1000);document.getElementById('uptime').textContent=`${String(Math.floor(e/60)).padStart(2,'0')}:${String(e%60).padStart(2,'0')}`;},1000);
 
 // ===== TICKER =====
-let tickOff=0;const tickBase=`SISTEMA ATIVO — ${_adminName || ''} — ZAYA PLUS v1.0 — CORTEX QUANTICO — `;
+let tickOff=0;let tickBase='SISTEMA ATIVO — ZAYA PLUS v1.0 — CORTEX QUANTICO — ';
 setInterval(()=>{tickOff++;document.getElementById('ticker').textContent=tickBase.repeat(3).slice(tickOff%tickBase.length);},80);
 
 // ===== TAGS =====
@@ -1833,12 +1833,15 @@ let assistenteRodando=false; // loop principal ativo
 function stopRec(){if(rec){try{rec.abort();}catch(e){}try{rec.stop();}catch(e){}rec=null;}}
 
 // Nome do admin carregado dinamicamente
-let _adminName = '';
+var _adminName = '';
 (async () => {
   try {
     const res = await fetch('/api/public-config');
     const cfg = await res.json();
-    if (cfg.adminName) _adminName = cfg.adminName;
+    if (cfg.adminName) {
+      _adminName = cfg.adminName;
+      tickBase = `SISTEMA ATIVO — ${_adminName} — ZAYA PLUS v1.0 — CORTEX QUANTICO — `;
+    }
   } catch(e) {}
 })();
 
