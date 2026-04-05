@@ -1847,13 +1847,14 @@ function linkify(text){
   });
   return h;
 }
-function out(t,type){
+function out(t,type,addToLog){
   const el=$('termText');
   const cls=type==='user'?'user-text':'ai-text';
   const prefix=type==='user'?(_adminName || 'VOCE'):'ZAYA';
   el.innerHTML=`<span class="${cls}">${prefix} &gt; ${linkify(t)}</span>`;
   el.parentElement.scrollTop=el.parentElement.scrollHeight;
-  if(typeof chatLog==='function'){
+  // addToLog: true=sempre logar, false=nunca logar (interim), undefined=logar (default)
+  if(addToLog!==false && typeof chatLog==='function'){
     const label=type==='user'?(_adminName || 'VOCE'):'ZAYA';
     chatLog(t, type==='user'?'user':'ai', label);
   }
@@ -2044,69 +2045,72 @@ function escutarSR(){
     console.log('[SR] Iniciando SpeechRecognition (continuous)...');
     const r=new SR();
     r.lang='pt-BR';
-    r.continuous=true;       // NÃO para no primeiro silêncio
+    r.continuous=true;
     r.interimResults=true;
     r.maxAlternatives=1;
 
-    let textoFinal='',resolvido=false;
+    let finalParts=[],resolvido=false;
     let silenceTimer=null;
     let hadSpeech=false;
-    const SILENCE_DELAY=2500;  // 2.5s de silêncio após falar = fim
-    const MAX_TIME=60000;      // máximo 60s de escuta
+    const SILENCE_DELAY=2500;
+    const MAX_TIME=60000;
+
+    function getFullText(){
+      return finalParts.join(' ').trim();
+    }
 
     function fim(v){
       if(resolvido)return;
       resolvido=true;
       if(silenceTimer)clearTimeout(silenceTimer);
-      console.log('[SR] Resultado final:',v);
+      const result=v!==null&&v!==undefined?v:getFullText();
+      console.log('[SR] Resultado final:',result);
+      if(result) out(result,'user',true);
       try{r.stop();}catch(e){}
-      resolve(v||'');
+      resolve(result||'');
     }
 
-    // Cada vez que detecta fala, reseta o timer de silêncio
     function resetSilenceTimer(){
       if(silenceTimer)clearTimeout(silenceTimer);
       silenceTimer=setTimeout(()=>{
-        // 2.5s sem falar depois de ter falado = terminou
         if(hadSpeech&&!resolvido){
           console.log('[SR] Silêncio detectado, finalizando');
-          fim(textoFinal);
+          fim(getFullText());
         }
       },SILENCE_DELAY);
     }
 
     r.onresult=(ev)=>{
-      for(let i=ev.resultIndex;i<ev.results.length;i++){
-        const t=ev.results[i][0].transcript;
+      // Reconstruir texto completo: partes finais + interim atual
+      let interimText='';
+      finalParts=[];
+      for(let i=0;i<ev.results.length;i++){
         if(ev.results[i].isFinal){
-          textoFinal=t.trim();
-          hadSpeech=true;
-          out(textoFinal,'user');
-          resetSilenceTimer();
+          finalParts.push(ev.results[i][0].transcript.trim());
         }else{
-          // Interim — mostra e reseta timer (está falando)
-          hadSpeech=true;
-          out('... '+t,'user');
-          resetSilenceTimer();
+          interimText=ev.results[i][0].transcript;
         }
       }
+      hadSpeech=true;
+      // Mostra texto acumulado + interim (sem logar no chatLog)
+      const display=finalParts.join(' ')+(interimText?' '+interimText:'');
+      out(display.trim(),'user',false);
+      resetSilenceTimer();
     };
 
     r.onend=()=>{
-      // Chrome pode matar o SR — se tinha texto, retorna
-      console.log('[SR] onend, texto:',textoFinal);
-      if(!resolvido)fim(textoFinal);
+      console.log('[SR] onend, texto:',getFullText());
+      if(!resolvido)fim(getFullText());
     };
 
     r.onerror=(e)=>{
       console.log('[SR] erro:',e.error);
-      if(e.error==='not-allowed')out('Mic bloqueado!','ai');
+      if(e.error==='not-allowed')out('Mic bloqueado!','ai',true);
       if(!resolvido)fim(e.error==='no-speech'?'':null);
     };
 
     try{r.start();console.log('[SR] start() OK');}catch(e){console.log('[SR] start() falhou:',e.message);fim(null);}
 
-    // Timer de silêncio inicial: 8s sem falar nada = desiste
     silenceTimer=setTimeout(()=>{
       if(!hadSpeech&&!resolvido){
         console.log('[SR] Nenhuma fala em 8s');
@@ -2114,8 +2118,7 @@ function escutarSR(){
       }
     },8000);
 
-    // Timeout máximo de segurança
-    setTimeout(()=>{if(!resolvido){console.log('[SR] timeout máximo 60s');fim(textoFinal);}},MAX_TIME);
+    setTimeout(()=>{if(!resolvido){console.log('[SR] timeout máximo 60s');fim(getFullText());}},MAX_TIME);
   });
 }
 
@@ -2267,7 +2270,7 @@ async function startStandby(){
       wakeRec.onresult=(ev)=>{
         for(let i=ev.resultIndex;i<ev.results.length;i++){
           const txt=ev.results[i][0].transcript;
-          if(typeof chatLog==='function')chatLog(txt,'hear','MIC');
+          if(ev.results[i].isFinal && typeof chatLog==='function')chatLog(txt,'hear','MIC');
           if(isWakeWord(txt)){
             if(typeof chatLogSystem==='function')chatLogSystem('Wake word detectada! Ativando...');
             wakeRunning=false;
