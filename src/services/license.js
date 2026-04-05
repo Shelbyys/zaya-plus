@@ -249,7 +249,7 @@ export function isLicensed() {
 let lastCheck = 0;
 
 export async function periodicLicenseCheck() {
-  if (Date.now() - lastCheck < 30 * 60 * 1000) return;
+  if (Date.now() - lastCheck < 5 * 60 * 1000) return; // a cada 5 minutos
   lastCheck = Date.now();
 
   if (!fs.existsSync(LICENSE_FILE)) return;
@@ -262,10 +262,18 @@ export async function periodicLicenseCheck() {
       const remote = rows[0];
       if (remote.revoked || (remote.expires_at && new Date(remote.expires_at) < new Date())) {
         fs.unlinkSync(LICENSE_FILE);
-        log.server.warn('Licença revogada/expirada remotamente — acesso bloqueado');
+        log.server.warn('Licenca revogada/expirada remotamente — acesso BLOQUEADO');
+        // Forcar encerramento do servidor
+        setTimeout(() => {
+          console.log('\n  \x1b[31m\x1b[1m  LICENCA REVOGADA — Servidor encerrado\x1b[0m\n');
+          process.exit(1);
+        }, 2000);
       }
     }
   } catch (e) {
     // Sem internet — mantém cache local
   }
 }
+
+// Verificar na inicializacao
+periodicLicenseCheck();
