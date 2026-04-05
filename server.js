@@ -2,9 +2,10 @@ import 'dotenv/config';
 import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIO } from 'socket.io';
-import { join, resolve } from 'path';
+import { join, resolve, extname } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { existsSync } from 'fs';
 
 import { PORT } from './src/config.js';
 import { API_TOKEN, setIO, macLocation, waConnections } from './src/state.js';
@@ -108,10 +109,12 @@ async function doLogin(){
 // ================================================================
 // SETUP WIZARD — redireciona se não configurado
 // ================================================================
+import { readFileSync } from 'fs';
+
 function isSetupNeeded() {
   // Reler .env a cada check pois o setup wizard escreve nele em runtime
   try {
-    const envContent = require('fs').readFileSync(join(__dirname, '.env'), 'utf-8');
+    const envContent = readFileSync(join(__dirname, '.env'), 'utf-8');
     const envVars = {};
     envContent.split('\n').forEach(line => {
       const match = line.match(/^([^#=]+)=(.*)$/);
@@ -146,8 +149,7 @@ app.use(express.static(join(__dirname, 'public')));
 app.get('/files/*', (req, res) => {
   const safePath = resolve('/tmp', req.params[0]);
   if (!safePath.startsWith('/tmp/')) return res.status(403).send('Acesso negado');
-  const { existsSync } = require('fs');
-  const { extname } = require('path');
+  // existsSync e extname importados no topo
   if (!existsSync(safePath)) return res.status(404).send('Arquivo não encontrado');
   const mimes = {'.html':'text/html','.pdf':'application/pdf','.pptx':'application/vnd.openxmlformats-officedocument.presentationml.presentation','.mp4':'video/mp4','.mp3':'audio/mpeg','.jpg':'image/jpeg','.png':'image/png'};
   const ext = extname(safePath).toLowerCase();

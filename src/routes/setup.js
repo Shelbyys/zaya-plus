@@ -428,7 +428,7 @@ router.post('/complete', (req, res) => {
     // Recarregar .env no process.env para o servidor pegar as mudanças
     try {
       const envPath = join(ROOT_DIR, '.env');
-      const content = require('fs').readFileSync(envPath, 'utf-8');
+      const content = fs.readFileSync(envPath, 'utf-8');
       content.split('\n').forEach(line => {
         const match = line.match(/^([^#=]+)=(.*)$/);
         if (match) process.env[match[1].trim()] = match[2].trim();
