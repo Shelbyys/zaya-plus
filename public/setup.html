@@ -1223,11 +1223,20 @@
     async function saveStep3() {
         config.voice.voiceId = document.getElementById('voiceSelect')?.value || '';
         try {
-            await fetch('/api/setup/voice', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config.voice)
-            });
+            if (config.voice.provider === 'openai-tts') {
+                // Salvar TTS_PROVIDER=openai no .env
+                await fetch('/api/setup/save-module', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ module: 'voice', config: { TTS_PROVIDER: 'openai' } })
+                });
+            } else if (config.voice.provider === 'elevenlabs') {
+                await fetch('/api/setup/save-voice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config.voice)
+                });
+            }
         } catch (e) { /* offline */ }
         goTo(4);
     }

@@ -686,14 +686,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
         🔊
       </button>
     </div>
-    <div class="tags-row">
-      <div class="tag active">VOZ</div>
-      <div class="tag active">VIS&Atilde;O</div>
-      <div class="tag active">TERMINAL</div>
-      <div class="tag">SHRINKMP</div>
-      <div class="tag active">IA</div>
-      <div class="tag">ORB DIRECT</div>
-    </div>
+    <div class="tags-row" style="display:none"></div>
   </div>
 
   <!-- ORB AREA -->
@@ -809,6 +802,38 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
       RESET
     </button>
   </div>
+
+  <script>
+  // Desativar botões de módulos não configurados
+  (async () => {
+    try {
+      const r = await fetch('/api/public-config');
+      const cfg = await r.json();
+      const moduleMap = {
+        waBtn: 'WASENDER_API_KEY',
+        calBtn: true,
+        agentsBtn: true,
+        voiceBtn: 'ELEVENLABS_API_KEY',
+        pedidosBtn: true,
+      };
+      // Verificar quais env vars existem
+      const envR = await fetch('/api/setup/status').catch(() => null);
+      const env = envR ? await envR.json() : {};
+      const modules = env.steps?.modules || {};
+
+      // WhatsApp
+      if (!modules.whatsapp) {
+        const btn = document.getElementById('waBtn');
+        if (btn) { btn.style.opacity = '0.3'; btn.style.pointerEvents = 'none'; btn.title = 'WhatsApp nao configurado'; }
+      }
+      // Vozes
+      if (!modules.elevenlabs && !cfg.openaiTts) {
+        const btn = document.getElementById('voiceBtn');
+        if (btn) { btn.style.opacity = '0.3'; btn.style.pointerEvents = 'none'; btn.title = 'Voz nao configurada'; }
+      }
+    } catch(e) {}
+  })();
+  </script>
 
   <!-- SIDE RIGHT -->
   <div class="side-col right side-right">
