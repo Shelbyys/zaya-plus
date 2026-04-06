@@ -538,23 +538,56 @@ async function executeVoiceTool(name, args) {
 
     case 'enviar_whatsapp': {
       let num = args.numero.replace(/\D/g, '');
-      // Se o "numero" tem poucas ou nenhuma cifra, é um nome — busca na agenda
+
+      // Se tem poucas cifras, é um nome — resolve para número
       if (num.length < 8) {
+        let resolved = false;
+
+        // 1. Busca na agenda SQLite
         const contactResult = searchContact(args.numero);
         if (contactResult?.success) {
           const firstLine = contactResult.output.split('\n')[0];
           const phone = firstLine.split('->')[1]?.trim().replace(/\D/g, '');
           if (phone && phone.length >= 8) {
             num = phone;
-            log.ai.info({ name: args.numero, resolved: num }, 'enviar_whatsapp: nome resolvido para número');
-          } else {
-            return `Não encontrei o número de "${args.numero}" na agenda. Tente com o número completo.`;
+            resolved = true;
+            log.ai.info({ name: args.numero, resolved: num }, 'enviar_whatsapp: resolvido via agenda');
           }
-        } else {
-          return `Não encontrei "${args.numero}" na agenda. Tente com o número completo ou peça para buscar o contato primeiro.`;
+        }
+
+        // 2. Fallback: busca direto nos chats do WhatsApp conectado
+        if (!resolved) {
+          try {
+            const { waConnections } = await import('../state.js');
+            const { waLoadConfig } = await import('../whatsapp/utils.js');
+            const waConfig = waLoadConfig();
+            const instName = waConfig.defaultInstance || Object.keys(waConnections).find(k => waConnections[k]?.status === 'connected');
+            const conn = instName && waConnections[instName];
+            if (conn?.client && conn.status === 'connected') {
+              const chats = await conn.client.getChats();
+              const query = args.numero.toLowerCase();
+              const found = chats.find(c => {
+                const name = (c.name || c.pushname || '').toLowerCase();
+                return name.includes(query) || query.includes(name);
+              });
+              if (found?.id?.user) {
+                num = found.id.user;
+                resolved = true;
+                log.ai.info({ name: args.numero, resolved: num, chat: found.name }, 'enviar_whatsapp: resolvido via chat WA');
+              }
+            }
+          } catch (e) {
+            log.ai.warn({ err: e.message }, 'Busca chat WA falhou');
+          }
+        }
+
+        if (!resolved) {
+          return `Não encontrei "${args.numero}" nos contatos nem nos chats do WhatsApp. Tente com o número completo (ex: 5579999999999).`;
         }
       }
+
       if (num.length <= 11) num = '55' + num;
+      log.ai.info({ numero: num, msgLen: args.mensagem?.length }, 'enviar_whatsapp: enviando');
       const result = await sendWhatsApp(num, args.mensagem);
       return result.output;
     }
