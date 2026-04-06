@@ -158,18 +158,23 @@ const DAYS=['DOM','SEG','TER','QUA','QUI','SEX','SAB'];
 // DATA
 // ================================================================
 async function loadEvents(){
-  const y=currentDate.getFullYear(), m=currentDate.getMonth();
-  const start=new Date(y,m-1,1).toISOString().slice(0,10);
-  const end=new Date(y,m+2,0).toISOString().slice(0,10);
-  events=(await(await fetch(`/api/calendar/events?start=${start}&end=${end}`)).json())||[];
+  try{
+    const y=currentDate.getFullYear(), m=currentDate.getMonth();
+    const start=new Date(y,m-1,1).toISOString().slice(0,10);
+    const end=new Date(y,m+2,0).toISOString().slice(0,10);
+    events=(await(await fetch(`/api/calendar/events?start=${start}&end=${end}`)).json())||[];
+  }catch(e){events=[];console.warn('Erro ao carregar eventos:',e.message);}
 }
 
 async function loadCategories(){
-  categories=await(await fetch('/api/calendar/categories')).json();
+  try{
+    categories=await(await fetch('/api/calendar/categories')).json();
+  }catch(e){categories={};console.warn('Erro ao carregar categorias:',e.message);}
   renderCatFilters();
 }
 
 async function loadUpcoming(){
+  try{
   const upcoming=await(await fetch('/api/calendar/upcoming?limit=8')).json();
   $('upcoming').innerHTML=upcoming.length?upcoming.map(e=>{
     const d=new Date(e.start_at);
@@ -182,6 +187,7 @@ async function loadUpcoming(){
       <div class="ue-cat">${e.location||''} ${e.participants?'com '+e.participants:''}</div>
     </div>`;
   }).join(''):'<div style="color:#555;font-size:12px">Nenhum evento</div>';
+  }catch(e){console.warn('Erro ao carregar próximos:',e.message);}
 }
 
 function renderCatFilters(){
