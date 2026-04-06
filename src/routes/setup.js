@@ -530,31 +530,33 @@ router.get('/check-update', async (req, res) => {
 
 router.post('/update', async (req, res) => {
   try {
-    const { exec } = await import('child_process');
+    const { exec, spawn } = await import('child_process');
     const cwd = ROOT_DIR;
 
     res.json({ started: true, message: 'Atualizando... o servidor vai reiniciar em instantes.' });
 
-    // Executa update em background após responder
     setTimeout(() => {
       const cmd = [
-        'git checkout -- .',
-        'git clean -fd --exclude=.env --exclude=whatsapp-sessions --exclude="zaya.db*" --exclude=node_modules',
-        'git pull origin main --force',
+        'git fetch origin main',
+        'git reset --hard origin/main',
         'npm install --production --silent',
       ].join(' && ');
 
       exec(cmd, { cwd, timeout: 120000 }, (err) => {
         if (err) {
           console.error('Update falhou:', err.message);
-          // Tenta force reset como fallback
-          exec('git fetch origin main && git reset --hard origin/main && npm install --production --silent', { cwd, timeout: 120000 }, () => {
-            process.exit(0); // PM2/nodemon reinicia
-          });
         } else {
-          console.log('Update concluído! Reiniciando...');
-          process.exit(0); // PM2/nodemon reinicia
+          console.log('Update concluído! Reiniciando servidor...');
         }
+        // Reinicia o servidor: spawna novo processo e mata o atual
+        const child = spawn(process.argv[0], [path.join(cwd, 'server.js')], {
+          cwd,
+          detached: true,
+          stdio: 'inherit',
+          env: { ...process.env },
+        });
+        child.unref();
+        setTimeout(() => process.exit(0), 500);
       });
     }, 500);
   } catch (e) {
