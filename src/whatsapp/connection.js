@@ -1,8 +1,7 @@
-import pkg from 'whatsapp-web.js';
-const { Client, LocalAuth } = pkg;
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
 import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
-import { WA_DIR, ROOT_DIR, CHROME_PATH } from '../config.js';
+import { WA_DIR, ROOT_DIR } from '../config.js';
 import { waConnections } from '../state.js';
 import { waLoadConfig, waSaveConfig } from './utils.js';
 import { setupMessageHandler } from './handler.js';
@@ -10,35 +9,27 @@ import { log } from '../logger.js';
 import { contactsDB } from '../database.js';
 import { syncContactsBatchToSupabase, isSupabaseEnabled } from '../services/supabase.js';
 
-const PUPPETEER_ARGS = [
-  '--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu',
-  '--disable-dev-shm-usage', '--no-first-run', '--no-zygote',
-  '--disable-extensions',
-];
+export async function createClient(name) {
+  const authDir = join(WA_DIR, 'baileys', `session-${name}`);
+  if (!existsSync(authDir)) mkdirSync(authDir, { recursive: true });
 
-export function createClient(name) {
-  // Usa Chrome do sistema se encontrado, senão deixa puppeteer usar o Chromium bundled
-  const useChrome = CHROME_PATH && CHROME_PATH !== 'google-chrome' ? CHROME_PATH : undefined;
-  log.wa.info({ chrome: useChrome || 'puppeteer-bundled', instance: name }, 'Criando client WA');
+  const { state, saveCreds } = await useMultiFileAuthState(authDir);
+  const { version } = await fetchLatestBaileysVersion();
 
-  const puppeteerOpts = {
-    headless: true,
-    args: PUPPETEER_ARGS,
-    protocolTimeout: 120_000,
-  };
-  if (useChrome) puppeteerOpts.executablePath = useChrome;
-
-  const client = new Client({
-    authStrategy: new LocalAuth({
-      clientId: name,
-      dataPath: join(WA_DIR, 'wwebjs'),
-    }),
-    puppeteer: puppeteerOpts,
-    restartOnAuthFail: true,
-    webVersionCache: { type: 'none' },
+  const sock = makeWASocket({
+    version,
+    auth: state,
+    printQRInTerminal: true,
+    browser: ['ZAYA Plus', 'Chrome', '120.0.0'],
+    generateHighQualityLinkPreview: false,
+    syncFullHistory: false,
+    markOnlineOnConnect: false,
   });
 
-  return client;
+  // Salva credenciais quando atualizam
+  sock.ev.on('creds.update', saveCreds);
+
+  return sock;
 }
 
 export async function waConnect(name) {
@@ -46,116 +37,127 @@ export async function waConnect(name) {
   const inst = config.instances[name];
   if (!inst) return;
 
-  // WaSender: não precisa de conexão local (gerenciado pela API)
+  // WaSender: não precisa de conexão local
   if (inst.type === 'wasender') {
     waConnections[name] = { client: null, status: 'connected', handlerSetup: false };
     log.wa.info({ instance: name }, 'WaSender — conexão gerenciada pela API');
     return;
   }
 
-  // Limpa client anterior se existir (evita memory leak de listeners)
+  // Limpa conexão anterior
   if (waConnections[name]?.client) {
-    try {
-      waConnections[name].client.removeAllListeners();
-      await waConnections[name].client.destroy();
-    } catch {}
+    try { waConnections[name].client.end(); } catch {}
   }
 
   waConnections[name] = { client: null, status: 'connecting', handlerSetup: false };
 
   try {
-    log.wa.info({ instance: name }, 'Conectando...');
-    const client = createClient(name);
+    log.wa.info({ instance: name }, 'Conectando via Baileys...');
+    const sock = await createClient(name);
+    waConnections[name].client = sock;
 
-    client.on('qr', () => {
-      log.wa.info({ instance: name }, 'QR gerado (auto-connect)');
-    });
+    sock.ev.on('connection.update', async (update) => {
+      const { connection, lastDisconnect, qr } = update;
 
-    client.on('ready', async () => {
-      waConnections[name].status = 'connected';
-      waConnections[name].client = client;
-      log.wa.info({ instance: name }, 'Conectado com sucesso!');
-
-      // Registra handler apenas uma vez
-      if (!waConnections[name].handlerSetup) {
-        setupMessageHandler(client, name);
-        waConnections[name].handlerSetup = true;
+      if (qr) {
+        log.wa.info({ instance: name }, 'QR Code gerado');
+        // QR é emitido pelo evento — usado pelo pairing endpoint
+        waConnections[name].qr = qr;
       }
 
-      // Sync contatos do WhatsApp para o banco local + arquivo JSON
-      try {
-        const contacts = await client.getContacts();
-        const result = contactsDB.syncFromWhatsApp(contacts);
+      if (connection === 'open') {
+        waConnections[name].status = 'connected';
+        waConnections[name].qr = null;
+        log.wa.info({ instance: name }, 'Conectado com sucesso via Baileys!');
 
-        // Salva arquivo data/contatos.json
-        const dataDir = join(ROOT_DIR, 'data');
-        if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
-        const agenda = contacts
-          .filter(c => c.id?.user && (c.isMyContact || c.name || c.pushname))
-          .map(c => ({
-            nome: c.name || c.pushname || c.shortName || c.id.user,
-            telefone: c.id.user,
-            pushname: c.pushname || '',
-          }))
-          .sort((a, b) => a.nome.localeCompare(b.nome));
-        writeFileSync(join(dataDir, 'contatos.json'), JSON.stringify(agenda, null, 2), 'utf-8');
-
-        // Sync batch para Supabase (lotes de 500)
-        if (isSupabaseEnabled()) {
-          syncContactsBatchToSupabase(agenda).then(r => {
-            log.wa.info({ instance: name, synced: r.synced, errors: r.errors }, 'Contatos sincronizados com Supabase');
-          }).catch(e => {
-            log.wa.warn({ err: e.message }, 'Erro sync batch Supabase');
-          });
+        // Registra handler apenas uma vez
+        if (!waConnections[name].handlerSetup) {
+          setupMessageHandler(sock, name);
+          waConnections[name].handlerSetup = true;
         }
 
-        log.wa.info({ instance: name, synced: result.synced, file: agenda.length }, 'Contatos sincronizados + arquivo salvo');
-      } catch (e) {
-        log.wa.error({ instance: name, err: e.message }, 'Erro ao sincronizar contatos');
+        // Sync contatos
+        syncContacts(sock, name).catch(e => {
+          log.wa.error({ err: e.message }, 'Erro sync contatos');
+        });
+      }
+
+      if (connection === 'close') {
+        waConnections[name].status = 'disconnected';
+        waConnections[name].handlerSetup = false;
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+        const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+
+        log.wa.warn({ instance: name, statusCode, shouldReconnect }, 'Desconectado');
+
+        if (shouldReconnect) {
+          setTimeout(() => {
+            log.wa.info({ instance: name }, 'Reconectando...');
+            waConnect(name);
+          }, 5000);
+        } else {
+          log.wa.info({ instance: name }, 'Logout — não reconecta');
+        }
       }
     });
 
-    client.on('authenticated', () => {
-      log.wa.info({ instance: name }, 'Autenticado');
-    });
+    // Detectar contatos
+    sock.ev.on('contacts.set', ({ contacts: waContacts }) => {
+      if (waContacts?.length > 0) {
+        log.wa.info({ instance: name, count: waContacts.length }, 'Contatos recebidos do WhatsApp');
+        const agenda = waContacts
+          .filter(c => c.id && !c.id.includes('@g.us'))
+          .map(c => ({
+            nome: c.name || c.notify || c.id.split('@')[0],
+            telefone: c.id.split('@')[0],
+            jid: c.id,
+          }));
 
-    client.on('auth_failure', (msg) => {
-      log.wa.error({ instance: name, err: msg }, 'Falha na autenticação');
-      waConnections[name].status = 'auth_failed';
-    });
+        // Salva no SQLite
+        for (const c of agenda) {
+          contactsDB.upsert(c.nome, c.telefone, c.jid);
+        }
 
-    client.on('disconnected', async (reason) => {
-      log.wa.warn({ instance: name, reason }, 'Desconectado');
-      waConnections[name].status = 'disconnected';
-      waConnections[name].handlerSetup = false;
+        // Salva arquivo JSON
+        const dataDir = join(ROOT_DIR, 'data');
+        if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
+        writeFileSync(join(dataDir, 'contatos.json'), JSON.stringify(agenda.sort((a, b) => a.nome.localeCompare(b.nome)), null, 2), 'utf-8');
 
-      // Remove todos os listeners antes de destruir (evita memory leak)
-      client.removeAllListeners();
-      try { await client.destroy(); } catch {}
-      waConnections[name].client = null;
+        // Supabase batch
+        if (isSupabaseEnabled()) {
+          syncContactsBatchToSupabase(agenda).catch(() => {});
+        }
 
-      // Reconecta após 10 segundos
-      if (reason !== 'LOGOUT') {
-        setTimeout(() => {
-          log.wa.info({ instance: name }, 'Reconectando...');
-          waConnect(name);
-        }, 10000);
+        log.wa.info({ instance: name, saved: agenda.length }, 'Contatos sincronizados');
       }
     });
 
-    client.on('change_state', (state) => {
-      log.wa.debug({ instance: name, state }, 'Estado mudou');
-    });
-
-    // Inicializa com timeout de 60s
-    await Promise.race([
-      client.initialize(),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout ao inicializar Chrome (60s)')), 60000)),
-    ]);
   } catch (e) {
-    log.wa.error({ instance: name, err: e.message }, 'Erro fatal na conexão');
+    log.wa.error({ instance: name, err: e.message }, 'Erro fatal na conexão Baileys');
     waConnections[name] = { client: null, status: 'error', handlerSetup: false };
   }
+}
+
+async function syncContacts(sock, name) {
+  try {
+    const store = sock.store;
+    if (!store?.contacts) return;
+
+    const contacts = Object.values(store.contacts);
+    const agenda = contacts
+      .filter(c => c.id && !c.id.includes('@g.us'))
+      .map(c => ({
+        nome: c.name || c.notify || c.id.split('@')[0],
+        telefone: c.id.split('@')[0],
+        jid: c.id,
+      }));
+
+    for (const c of agenda) {
+      contactsDB.upsert(c.nome, c.telefone, c.jid);
+    }
+
+    log.wa.info({ instance: name, count: agenda.length }, 'Contatos synced do store');
+  } catch {}
 }
 
 export async function waAutoConnect() {

@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { existsSync, mkdirSync, rmSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
-import { execSync } from 'child_process';
 import QRCode from 'qrcode';
 import { WA_DIR, OUTBOX } from '../config.js';
 import { waConnections } from '../state.js';
@@ -10,23 +9,6 @@ import { normalizeBRPhone, sendWhatsApp } from '../services/messaging.js';
 import { waConnect, createClient } from '../whatsapp/connection.js';
 import { setupMessageHandler } from '../whatsapp/handler.js';
 import { log } from '../logger.js';
-
-// Mata processos Chrome órfãos de uma sessão específica
-function killOrphanChrome(sessionName) {
-  const sessionDir = join(WA_DIR, 'wwebjs', `session-${sessionName}`);
-  try {
-    // Remove o lock file do Chrome se existir
-    const lockFile = join(sessionDir, 'SingletonLock');
-    if (existsSync(lockFile)) unlinkSync(lockFile);
-  } catch {}
-  try {
-    // Mata processos chrome que usam esse userDataDir
-    if (process.platform === 'darwin' || process.platform === 'linux') {
-      execSync(`pkill -f "userDataDir=${sessionDir.replace(/\//g, '.')}" 2>/dev/null || true`, { timeout: 5000, stdio: 'pipe' });
-      execSync(`pkill -f "${sessionDir}" 2>/dev/null || true`, { timeout: 5000, stdio: 'pipe' });
-    }
-  } catch {}
-}
 
 const router = Router();
 
@@ -40,7 +22,6 @@ router.get('/instances', async (req, res) => {
   for (const [name, inst] of Object.entries(config.instances)) {
     let status = waConnections[name]?.status || 'offline';
 
-    // WaSender: checa status via API
     if (inst.type === 'wasender') {
       try {
         const { isWaSenderEnabled, getSessionStatus } = await import('../services/wasender.js');
@@ -63,104 +44,92 @@ router.get('/instances', async (req, res) => {
 });
 
 // ================================================================
-// PAIRING VIA CÓDIGO NUMÉRICO
+// PAIRING VIA CÓDIGO NUMÉRICO (Baileys)
 // ================================================================
 router.post('/pair', async (req, res) => {
   const { name: rawName, phone, label } = req.body;
   if (!rawName || !phone) return res.status(400).json({ error: 'name e phone obrigatórios' });
   const name = rawName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-  const config = waLoadConfig();
-  // Se instância já existe, permite re-conectar (limpeza feita abaixo)
   const cleanPhone = normalizeBRPhone(phone);
 
-  // Limpa qualquer Chrome órfão / instância anterior com esse nome
+  // Limpa instância anterior
   if (waConnections[name]?.client) {
-    try { waConnections[name].client.removeAllListeners(); await waConnections[name].client.destroy(); } catch {}
+    try { waConnections[name].client.end(); } catch {}
     delete waConnections[name];
   }
-  killOrphanChrome(name);
-  // Remove da config se já existia (permite re-tentar)
-  if (config.instances[name]) {
-    delete config.instances[name];
-    waSaveConfig(config);
-  }
-
-  let client;
+  const config = waLoadConfig();
+  if (config.instances[name]) { delete config.instances[name]; waSaveConfig(config); }
 
   try {
-    client = createClient(name);
+    const sock = await createClient(name);
+    waConnections[name] = { client: sock, status: 'connecting', handlerSetup: false };
 
-    client.on('ready', () => {
-      log.wa.info({ name, phone: cleanPhone }, 'PAREADO COM SUCESSO via código!');
-      const config = waLoadConfig();
-      config.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true, type: 'local' };
-      if (!config.defaultInstance) config.defaultInstance = name;
-      waSaveConfig(config);
-      waConnections[name] = { client, status: 'connected', handlerSetup: true };
-      setupMessageHandler(client, name);
-      if (!res.headersSent) res.json({ success: true, paired: true });
-    });
+    // Espera o pairing code
+    let responded = false;
 
-    client.on('auth_failure', (msg) => {
-      log.wa.error({ name, err: msg }, 'Auth falhou');
-      if (!res.headersSent) res.status(500).json({ error: 'Falha na autenticação: ' + msg });
-    });
+    sock.ev.on('connection.update', async (update) => {
+      if (responded) return;
+      const { connection } = update;
 
-    client.on('disconnected', (reason) => {
-      log.wa.warn({ name, reason }, 'Desconectado durante pairing');
-      if (!res.headersSent) res.status(500).json({ error: 'Desconectado: ' + reason });
-    });
+      if (connection === 'open') {
+        responded = true;
+        const cfg = waLoadConfig();
+        cfg.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true, type: 'local' };
+        if (!cfg.defaultInstance) cfg.defaultInstance = name;
+        waSaveConfig(cfg);
+        waConnections[name].status = 'connected';
+        setupMessageHandler(sock, name);
+        waConnections[name].handlerSetup = true;
+        if (!res.headersSent) res.json({ success: true, paired: true });
+      }
 
-    // Espera o QR event para saber que está pronto, depois pede o código
-    client.on('qr', async () => {
-      if (res.headersSent) return;
-      try {
-        log.wa.info({ name, phone: cleanPhone }, 'Solicitando código de pareamento');
-        const code = await client.requestPairingCode(cleanPhone);
-        log.wa.info({ name, code }, 'Código gerado');
-        if (!res.headersSent) res.json({ success: true, code });
-      } catch (err) {
-        log.wa.error({ err: err.message, name }, 'Erro ao gerar código');
-        if (!res.headersSent) res.status(500).json({ error: err.message });
+      if (connection === 'close' && !responded) {
+        responded = true;
+        if (!res.headersSent) res.status(500).json({ error: 'Conexão fechada. Tente novamente.' });
       }
     });
 
-    await client.initialize();
+    // Solicita código de pareamento
+    try {
+      const code = await sock.requestPairingCode(cleanPhone);
+      log.wa.info({ name, code }, 'Código de pareamento gerado');
+      if (!responded && !res.headersSent) {
+        res.json({ success: true, code: code.toUpperCase() });
+      }
+    } catch (err) {
+      log.wa.error({ err: err.message }, 'Erro ao gerar código de pareamento');
+      if (!responded && !res.headersSent) res.status(500).json({ error: err.message });
+    }
 
-    // Timeout 2 minutos
+    // Timeout
     setTimeout(() => {
-      if (!res.headersSent) {
-        try { client.removeAllListeners(); client.destroy(); } catch {}
-        res.json({ success: false, message: 'Timeout — tente novamente' });
+      if (!responded) {
+        responded = true;
+        try { sock.end(); } catch {}
+        if (!res.headersSent) res.json({ success: false, message: 'Timeout — tente novamente' });
       }
     }, 120_000);
   } catch (e) {
-    if (client) try { client.removeAllListeners(); client.destroy(); } catch {}
     if (!res.headersSent) res.status(500).json({ error: e.message });
   }
 });
 
 // ================================================================
-// PAIRING VIA QR CODE (SSE streaming)
+// PAIRING VIA QR CODE (SSE streaming com Baileys)
 // ================================================================
 router.get('/pair-qr', async (req, res) => {
   const { name: rawName, phone, label } = req.query;
   if (!rawName || !phone) return res.status(400).json({ error: 'name e phone obrigatórios' });
   const name = rawName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-  const config = waLoadConfig();
-  // Se instância já existe, permite re-conectar (limpeza feita abaixo)
   const cleanPhone = normalizeBRPhone(phone);
 
-  // Limpa Chrome órfão / instância anterior
+  // Limpa instância anterior
   if (waConnections[name]?.client) {
-    try { waConnections[name].client.removeAllListeners(); await waConnections[name].client.destroy(); } catch {}
+    try { waConnections[name].client.end(); } catch {}
     delete waConnections[name];
   }
-  killOrphanChrome(name);
-  if (config.instances[name]) {
-    delete config.instances[name];
-    waSaveConfig(config);
-  }
+  const config = waLoadConfig();
+  if (config.instances[name]) { delete config.instances[name]; waSaveConfig(config); }
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -176,7 +145,6 @@ router.get('/pair-qr', async (req, res) => {
 
   let closed = false;
   let qrCount = 0;
-  let client;
   req.on('close', () => { closed = true; });
 
   const heartbeat = setInterval(() => {
@@ -185,68 +153,60 @@ router.get('/pair-qr', async (req, res) => {
   }, 15_000);
 
   try {
-    client = createClient(name);
+    const sock = await createClient(name);
+    waConnections[name] = { client: sock, status: 'connecting', handlerSetup: false };
 
-    client.on('qr', async (qr) => {
-      if (closed) return;
-      qrCount++;
-      log.wa.info({ name, qrCount }, `QR #${qrCount} gerado`);
-      try {
-        const qrImage = await QRCode.toDataURL(qr, { width: 400, margin: 2 });
-        send('qr', { qr: qrImage, count: qrCount, maxCount: 15 });
-      } catch {}
+    sock.ev.on('connection.update', async (update) => {
+      const { connection, qr } = update;
 
-      if (qrCount >= 15) {
-        send('timeout', { message: 'Muitas tentativas. Recarregue.' });
+      if (qr && !closed) {
+        qrCount++;
+        log.wa.info({ name, qrCount }, `QR #${qrCount} gerado`);
+        try {
+          const qrImage = await QRCode.toDataURL(qr, { width: 400, margin: 2 });
+          send('qr', { qr: qrImage, count: qrCount, maxCount: 15 });
+        } catch {}
+
+        if (qrCount >= 15) {
+          send('timeout', { message: 'Muitas tentativas. Recarregue.' });
+          clearInterval(heartbeat);
+          try { sock.end(); } catch {}
+          try { res.end(); } catch {}
+        }
+      }
+
+      if (connection === 'open') {
+        log.wa.info({ name, phone: cleanPhone }, 'Conectado via QR (Baileys)!');
+        const cfg = waLoadConfig();
+        cfg.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true, type: 'local' };
+        if (!cfg.defaultInstance) cfg.defaultInstance = name;
+        waSaveConfig(cfg);
+        waConnections[name].status = 'connected';
+        setupMessageHandler(sock, name);
+        waConnections[name].handlerSetup = true;
+        send('connected', { name, phone: cleanPhone });
         clearInterval(heartbeat);
-        try { client.removeAllListeners(); client.destroy(); } catch {}
         try { res.end(); } catch {}
       }
-    });
 
-    client.on('ready', () => {
-      log.wa.info({ name, phone: cleanPhone }, 'Conectado via QR!');
-      const config = waLoadConfig();
-      config.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true, type: 'local' };
-      if (!config.defaultInstance) config.defaultInstance = name;
-      waSaveConfig(config);
-      waConnections[name] = { client, status: 'connected', handlerSetup: true };
-      setupMessageHandler(client, name);
-      send('connected', { name, phone: cleanPhone });
-      clearInterval(heartbeat);
-      try { res.end(); } catch {}
-    });
-
-    client.on('auth_failure', (msg) => {
-      log.wa.error({ name, err: msg }, 'QR auth falhou');
-      send('error', { message: 'Falha na autenticação: ' + msg });
-      clearInterval(heartbeat);
-      try { client.removeAllListeners(); client.destroy(); } catch {}
-      try { res.end(); } catch {}
-    });
-
-    client.on('disconnected', (reason) => {
-      if (!closed && !res.writableEnded) {
-        send('error', { message: 'Desconectado: ' + reason });
+      if (connection === 'close' && !closed) {
+        send('error', { message: 'Conexão fechada' });
         clearInterval(heartbeat);
         try { res.end(); } catch {}
       }
     });
-
-    await client.initialize();
 
     // Timeout 3 minutos
     setTimeout(() => {
       if (!closed && !res.writableEnded) {
         send('timeout', { message: 'Timeout — tente novamente' });
         clearInterval(heartbeat);
-        try { client.removeAllListeners(); client.destroy(); } catch {}
+        try { sock.end(); } catch {}
         try { res.end(); } catch {}
       }
     }, 180_000);
   } catch (e) {
-    log.wa.error({ err: e.message, name }, 'Erro no QR pairing');
-    if (client) try { client.removeAllListeners(); client.destroy(); } catch {}
+    log.wa.error({ err: e.message, name }, 'Erro no QR pairing Baileys');
     send('error', { message: e.message });
     clearInterval(heartbeat);
     try { res.end(); } catch {}
@@ -254,24 +214,7 @@ router.get('/pair-qr', async (req, res) => {
 });
 
 // ================================================================
-// SEND / DELETE / DEFAULT / RECONNECT
-// ================================================================
-router.post('/send', async (req, res) => {
-  const { instance, jid, message } = req.body;
-  if (!jid || !message) return res.status(400).json({ error: 'jid e message obrigatórios' });
-  const config = waLoadConfig();
-  const name = instance || config.defaultInstance;
-  const conn = waConnections[name];
-  if (!conn?.client || conn.status !== 'connected') return res.status(400).json({ error: 'Não conectado' });
-  try {
-    const chatId = jid.includes('@') ? jid : jid + '@c.us';
-    await conn.client.sendMessage(chatId, message);
-    res.json({ success: true });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
-// ================================================================
-// CONTATOS
+// CONTACTS
 // ================================================================
 router.get('/contacts', async (req, res) => {
   try {
@@ -289,34 +232,25 @@ router.post('/contacts/sync', async (req, res) => {
     if (!conn?.client || conn.status !== 'connected') {
       return res.status(400).json({ error: 'WhatsApp não conectado' });
     }
+    res.json({ success: true, message: 'Sync será feito automaticamente quando o WhatsApp conectar.' });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
 
-    const contacts = await conn.client.getContacts();
-    const { contactsDB } = await import('../database.js');
-    const result = contactsDB.syncFromWhatsApp(contacts);
-
-    // Salva arquivo JSON local legível
-    const { writeFileSync } = await import('fs');
-    const { join } = await import('path');
-    const { ROOT_DIR } = await import('../config.js');
-    const agenda = contacts
-      .filter(c => c.id?.user && c.isMyContact)
-      .map(c => ({
-        nome: c.name || c.pushname || c.shortName || c.id.user,
-        telefone: c.id.user,
-        pushname: c.pushname || '',
-        isGroup: c.isGroup || false,
-      }))
-      .sort((a, b) => a.nome.localeCompare(b.nome));
-
-    const filePath = join(ROOT_DIR, 'data', 'contatos.json');
-    writeFileSync(filePath, JSON.stringify(agenda, null, 2), 'utf-8');
-
-    log.wa.info({ synced: result.synced, file: agenda.length }, 'Contatos sincronizados + arquivo salvo');
-    res.json({ success: true, synced: result.synced, failed: result.failed, file: agenda.length, path: 'data/contatos.json' });
-  } catch (e) {
-    log.wa.error({ err: e.message }, 'Erro sync contatos');
-    res.status(500).json({ error: e.message });
-  }
+// ================================================================
+// SEND / DELETE / DEFAULT / RECONNECT
+// ================================================================
+router.post('/send', async (req, res) => {
+  const { instance, jid, message } = req.body;
+  if (!jid || !message) return res.status(400).json({ error: 'jid e message obrigatórios' });
+  const config = waLoadConfig();
+  const name = instance || config.defaultInstance;
+  const conn = waConnections[name];
+  if (!conn?.client || conn.status !== 'connected') return res.status(400).json({ error: 'Não conectado' });
+  try {
+    const chatJid = jid.includes('@') ? jid : jid + '@s.whatsapp.net';
+    await conn.client.sendMessage(chatJid, { text: message });
+    res.json({ success: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 router.delete('/instances/:name', async (req, res) => {
@@ -324,14 +258,10 @@ router.delete('/instances/:name', async (req, res) => {
   const config = waLoadConfig();
   if (!config.instances[name]) return res.status(404).json({ error: 'Não encontrada' });
   if (waConnections[name]?.client) {
-    try {
-      waConnections[name].client.removeAllListeners();
-      await waConnections[name].client.destroy();
-    } catch {}
+    try { waConnections[name].client.end(); } catch {}
   }
   delete waConnections[name];
-  // Limpa auth
-  const authDir = join(WA_DIR, 'wwebjs', `session-${name}`);
+  const authDir = join(WA_DIR, 'baileys', `session-${name}`);
   if (existsSync(authDir)) rmSync(authDir, { recursive: true });
   delete config.instances[name];
   if (config.defaultInstance === name) config.defaultInstance = Object.keys(config.instances)[0] || null;
@@ -349,10 +279,7 @@ router.post('/default/:name', (req, res) => {
 
 router.post('/reconnect/:name', async (req, res) => {
   if (waConnections[req.params.name]?.client) {
-    try {
-      waConnections[req.params.name].client.removeAllListeners();
-      await waConnections[req.params.name].client.destroy();
-    } catch {}
+    try { waConnections[req.params.name].client.end(); } catch {}
   }
   await waConnect(req.params.name);
   res.json({ ok: true, status: waConnections[req.params.name]?.status });
@@ -365,7 +292,7 @@ export function startOutboxMonitor() {
       try {
         const data = JSON.parse(readFileSync(OUTBOX, 'utf-8'));
         if (data.text && data.jid) {
-          sendWhatsApp(data.jid.replace('@c.us', ''), data.text);
+          sendWhatsApp(data.jid.replace('@c.us', '').replace('@s.whatsapp.net', ''), data.text);
           unlinkSync(OUTBOX);
         }
       } catch {}

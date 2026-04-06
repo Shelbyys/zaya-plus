@@ -4,8 +4,6 @@ import { extname } from 'path';
 import { waConnections } from '../state.js';
 import { waLoadConfig } from '../whatsapp/utils.js';
 import { log } from '../logger.js';
-import pkg from 'whatsapp-web.js';
-const { MessageMedia } = pkg;
 
 // ================================================================
 // WhatsApp utils
@@ -71,8 +69,8 @@ export async function sendWhatsApp(phone, message) {
     }
   }
 
-  // Fallback: whatsapp-web.js (local)
-  const chatId = cleanPhone + '@c.us';
+  // Fallback: Baileys (local)
+  const jid = cleanPhone + '@s.whatsapp.net';
   const config = waLoadConfig();
   let name = config.defaultInstance;
 
@@ -87,11 +85,11 @@ export async function sendWhatsApp(phone, message) {
 
   if (name && waConnections[name]?.status === 'connected' && waConnections[name]?.client) {
     try {
-      await waConnections[name].client.sendMessage(chatId, message);
-      log.wa.info({ chatId, instance: name }, 'WA local enviado');
+      await waConnections[name].client.sendMessage(jid, { text: message });
+      log.wa.info({ jid, instance: name }, 'WA Baileys enviado');
       return { success: true, output: `Mensagem enviada para ${phone}` };
     } catch (e) {
-      log.wa.error({ err: e.message, chatId, instance: name }, 'WA local erro');
+      log.wa.error({ err: e.message, jid, instance: name }, 'WA Baileys erro');
       return { success: false, output: `Erro ao enviar: ${e.message}` };
     }
   }
@@ -109,15 +107,25 @@ export async function sendWhatsAppMedia(jid, filePath, caption) {
     return result.success;
   }
 
-  // Fallback: whatsapp-web.js
+  // Fallback: Baileys
   const config = waLoadConfig();
-  const name = config.defaultInstance;
+  const name = config.defaultInstance || Object.keys(waConnections).find(k => waConnections[k]?.status === 'connected');
   if (!name || !waConnections[name]?.client) return false;
 
   try {
-    const chatId = jid.includes('@') ? jid : jid + '@c.us';
-    const media = MessageMedia.fromFilePath(filePath);
-    await waConnections[name].client.sendMessage(chatId, media, { caption: caption || '' });
+    const { readFileSync } = await import('fs');
+    const { extname } = await import('path');
+    const buffer = readFileSync(filePath);
+    const ext = extname(filePath).toLowerCase();
+    const chatJid = jid.includes('@') ? jid : jid + '@s.whatsapp.net';
+
+    if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+      await waConnections[name].client.sendMessage(chatJid, { image: buffer, caption: caption || '' });
+    } else if (['.mp4', '.mov'].includes(ext)) {
+      await waConnections[name].client.sendMessage(chatJid, { video: buffer, caption: caption || '' });
+    } else {
+      await waConnections[name].client.sendMessage(chatJid, { document: buffer, fileName: filePath.split('/').pop(), caption: caption || '' });
+    }
     return true;
   } catch (e) {
     log.wa.error({ err: e.message }, 'Erro enviando mídia');

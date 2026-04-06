@@ -13,12 +13,13 @@ import { getBotConfig, contactsDB } from '../database.js';
 import { processarRespostaMissao } from '../services/missions.js';
 import { verifyVoice, getVoiceIdStatus } from '../services/voice-id.js';
 import { syncContactToSupabase, saveToWaInbox } from '../services/supabase.js';
+import { downloadMediaMessage } from '@whiskeysockets/baileys';
 
 const PROCESSING_MSGS = ['Processando...', 'Pensando...', 'Analisando...', 'Um momento...', 'Trabalhando...', 'Consultando IA...'];
 let msgIdx = 0;
 function getProcessingMsg() { return PROCESSING_MSGS[msgIdx++ % PROCESSING_MSGS.length]; }
 
-// Limpeza periódica do processingQueue (a cada 30min, remove entradas > 1h)
+// Limpeza periódica do processingQueue
 setInterval(() => {
   const now = Date.now();
   for (const jid of Object.keys(processingQueue)) {
@@ -35,314 +36,231 @@ async function enqueue(jid, fn) {
   return processingQueue[jid];
 }
 
-export function setupMessageHandler(client, instanceName) {
-  log.wa.info({ instance: instanceName }, 'Message handler registrado');
+export function setupMessageHandler(sock, instanceName) {
+  log.wa.info({ instance: instanceName }, 'Message handler registrado (Baileys)');
 
-  client.on('message', async (msg) => {
-    try {
-      const config = getBotConfig();
+  sock.ev.on('messages.upsert', async ({ messages: msgs, type }) => {
+    if (type !== 'notify') return;
 
-      // Validação de config
-      if (!config || !Array.isArray(config.adminNumbers)) {
-        log.wa.error('Bot config inválida ou adminNumbers não é array');
-        return;
-      }
-
-      // Bot desativado
-      if (!config.botActive) return;
-
-      // Ignora mensagens próprias, broadcast, status
-      if (msg.fromMe) return;
-      if (msg.from === 'status@broadcast') return;
-
-      // Grupos
-      const isGroup = msg.from.endsWith('@g.us');
-      if (isGroup && !config.replyGroups) return;
-      if (!msg.from.endsWith('@c.us') && !isGroup) return;
-
-      const jid = msg.from;
-      const phone = jid.replace('@c.us', '').replace('@g.us', '');
-
-      // Sync incremental do contato + detectar primeiro contato
-      let isNewContact = false;
-      let contactName = phone;
+    for (const msg of msgs) {
       try {
-        const existing = contactsDB.getByJid(jid);
-        const contact = await msg.getContact();
-        if (contact) {
-          contactName = contact.name || contact.pushname || contact.shortName || phone;
+        const config = getBotConfig();
+        if (!config || !Array.isArray(config.adminNumbers)) return;
+        if (!config.botActive) return;
+
+        // Ignora mensagens próprias e status
+        if (msg.key.fromMe) return;
+        if (msg.key.remoteJid === 'status@broadcast') return;
+
+        const jid = msg.key.remoteJid;
+        const isGroup = jid.endsWith('@g.us');
+        if (isGroup && !config.replyGroups) return;
+        if (!jid.endsWith('@s.whatsapp.net') && !isGroup) return;
+
+        const phone = jid.split('@')[0];
+        const pushName = msg.pushName || phone;
+
+        // Sync incremental do contato
+        let isNewContact = false;
+        try {
+          const existing = contactsDB.getByJid(jid);
           if (!existing) isNewContact = true;
-          contactsDB.upsert(contactName, phone, jid);
-          syncContactToSupabase(contactName, phone, jid);
-        }
-      } catch {}
+          contactsDB.upsert(pushName, phone, jid);
+          syncContactToSupabase(pushName, phone, jid);
+        } catch {}
 
-      // Salva mensagem recebida no Supabase (marcada como processed — handler local já trata)
-      const msgBody = msg.body || (msg.hasMedia ? `[${msg.type}]` : '');
-      saveToWaInbox(phone, contactName, msgBody, msg.type || 'text', false, true);
+        // Extrair texto da mensagem
+        const text = msg.message?.conversation
+          || msg.message?.extendedTextMessage?.text
+          || msg.message?.imageMessage?.caption
+          || msg.message?.videoMessage?.caption
+          || '';
 
-      // Verifica se é admin
-      const isAdmin = config.adminNumbers.some(n => phone === n || phone.endsWith(n));
+        const hasAudio = !!(msg.message?.audioMessage);
+        const hasImage = !!(msg.message?.imageMessage);
+        const hasVideo = !!(msg.message?.videoMessage);
+        const msgType = hasAudio ? 'audio' : hasImage ? 'image' : hasVideo ? 'video' : 'text';
 
-      // Alerta de números monitorados
-      if (config.watchNumbers?.length > 0 && !isAdmin) {
-        const watched = config.watchNumbers.find(w => w.notify && (phone === w.numero || phone.endsWith(w.numero)));
-        if (watched) {
-          const body = msg.body || (msg.hasMedia ? `[${msg.type}]` : '[mensagem]');
-          const alertMsg = `🔔 *ALERTA MONITORAMENTO*\n\n👤 *${watched.nome || phone}*\n📱 ${phone}\n💬 ${body.substring(0, 500)}`;
-          log.wa.info({ phone, watchName: watched.nome }, 'Watched number detected');
-          for (const adminNum of config.adminNumbers) {
-            sendWhatsApp(adminNum, alertMsg).catch(e => log.wa.error({ err: e.message }, 'Watch alert failed'));
+        // Salva no Supabase
+        const msgBody = text || (msg.message ? `[${msgType}]` : '');
+        saveToWaInbox(phone, pushName, msgBody, msgType, false, true);
+
+        // Verifica se é admin
+        const isAdmin = config.adminNumbers.some(n => phone === n || phone.endsWith(n));
+
+        // Alerta de números monitorados
+        if (config.watchNumbers?.length > 0 && !isAdmin) {
+          const watched = config.watchNumbers.find(w => w.notify && (phone === w.numero || phone.endsWith(w.numero)));
+          if (watched) {
+            const body = text || `[${msgType}]`;
+            const alertMsg = `🔔 *ALERTA MONITORAMENTO*\n\n👤 *${watched.nome || phone}*\n📱 ${phone}\n💬 ${body.substring(0, 500)}`;
+            for (const adminNum of config.adminNumbers) {
+              sendWhatsApp(adminNum, alertMsg).catch(() => {});
+            }
           }
         }
-      }
 
-      // Filtragem por modo de resposta
-      if (config.replyMode === 'admin_only' && !isAdmin) {
-        if (config.unauthorizedReply) {
-          await client.sendMessage(jid, config.unauthorizedReply);
-        }
-        return;
-      }
-
-      if (config.replyMode === 'whitelist' && !isAdmin) {
-        const inWhitelist = (config.whitelist || []).some(n => phone === n || phone.endsWith(n));
-        if (!inWhitelist) {
-          if (config.unauthorizedReply) {
-            await client.sendMessage(jid, config.unauthorizedReply);
-          }
+        // Filtragem por modo de resposta
+        if (config.replyMode === 'admin_only' && !isAdmin) {
+          if (config.unauthorizedReply) await sock.sendMessage(jid, { text: config.unauthorizedReply });
           return;
         }
-      }
+        if (config.replyMode === 'whitelist' && !isAdmin) {
+          const inWhitelist = (config.whitelist || []).some(n => phone === n || phone.endsWith(n));
+          if (!inWhitelist) {
+            if (config.unauthorizedReply) await sock.sendMessage(jid, { text: config.unauthorizedReply });
+            return;
+          }
+        }
 
-      // Mensagem de boas-vindas para novos contatos
-      if (isNewContact && config.welcomeMessage) {
-        try { await client.sendMessage(jid, config.welcomeMessage); } catch {}
-      }
+        // Welcome message
+        if (isNewContact && config.welcomeMessage) {
+          try { await sock.sendMessage(jid, { text: config.welcomeMessage }); } catch {}
+        }
 
-      // Read receipts
-      if (config.readReceipts) {
-        try { await msg.getChat().then(c => c.sendSeen()); } catch {}
-      }
+        // Read receipts
+        if (config.readReceipts) {
+          try { await sock.readMessages([msg.key]); } catch {}
+        }
 
-      log.wa.info({ phone, type: msg.type, isAdmin, hasMedia: msg.hasMedia }, 'Message received');
+        log.wa.info({ phone, type: msgType, isAdmin, pushName }, 'Message received (Baileys)');
 
-      const text = msg.body || '';
-      const hasVideo = msg.type === 'video';
-      const hasAudio = msg.type === 'audio' || msg.type === 'ptt';
-      const hasImage = msg.type === 'image';
+        const sendText = async (txt) => {
+          try { await sock.sendMessage(jid, { text: txt }); } catch (e) { log.wa.error({ err: e.message, jid }, 'Send error'); }
+        };
 
-      const sendText = async (txt) => {
-        try { await client.sendMessage(jid, txt); } catch (e) { log.wa.error({ err: e.message, jid }, 'Send error'); }
-      };
-
-      const sendMedia = async (filePath, caption) => {
-        try {
-          const pkg = await import('whatsapp-web.js');
-          const media = pkg.MessageMedia.fromFilePath(filePath);
-          await client.sendMessage(jid, media, { caption: caption || '' });
-        } catch (e) { log.wa.error({ err: e.message }, 'Send media error'); }
-      };
-
-      // Auto-login para admins
-      if (isAdmin && config.autoLoginAdmin && !isAuthenticated(jid)) {
-        loginSession(jid);
-      }
-
-      // ========== VÍDEO ==========
-      if (hasVideo) {
-        if (!config.editVideos) { await sendText('Edição de vídeo desativada.'); return; }
-        if (!isAuthenticated(jid)) { await sendText('Faça login primeiro: /login <senha>'); return; }
-        try {
-          const media = await msg.downloadMedia();
-          const buffer = Buffer.from(media.data, 'base64');
-          const mimetype = media.mimetype || 'video/mp4';
-
-          if (text && text.trim().length > 5) {
-            await sendText(`Edição iniciada: "${text}"\nIsso pode levar alguns minutos...`);
-            const result = await editVideo(buffer, mimetype, text, async (s) => sendText(s));
-            if (result?.path) {
-              await sendMedia(result.path, 'Vídeo editado!');
-              try { unlinkSync(result.path); } catch {}
+        const sendMedia = async (filePath, caption) => {
+          try {
+            const { readFileSync } = await import('fs');
+            const { extname } = await import('path');
+            const buffer = readFileSync(filePath);
+            const ext = extname(filePath).toLowerCase();
+            if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+              await sock.sendMessage(jid, { image: buffer, caption: caption || '' });
+            } else if (['.mp4', '.mov', '.avi'].includes(ext)) {
+              await sock.sendMessage(jid, { video: buffer, caption: caption || '' });
             } else {
-              await sendText(`Erro na edição: ${result?.message || 'desconhecido'}`);
+              await sock.sendMessage(jid, { document: buffer, fileName: filePath.split('/').pop(), caption: caption || '' });
             }
-          } else {
-            const q = startVideoSession(jid, buffer, mimetype);
-            await sendText(q);
-          }
-        } catch (e) { await sendText(`Erro ao processar vídeo: ${e.message}`); }
-        return;
-      }
+          } catch (e) { log.wa.error({ err: e.message }, 'Send media error'); }
+        };
 
-      // ========== Questionário de vídeo ==========
-      if (videoSessions[jid] && text) {
-        if (/^(cancelar|sair|parar)$/i.test(text.trim())) {
-          delete videoSessions[jid];
-          await sendText('Edição cancelada.');
+        // Auto-login para admins
+        if (isAdmin && config.autoLoginAdmin && !isAuthenticated(jid)) {
+          loginSession(jid);
+        }
+
+        // ========== ÁUDIO ==========
+        if (hasAudio && !config.transcribeAudio) return;
+        if (hasAudio) {
+          await enqueue(jid, async () => {
+            await sendText(getProcessingMsg());
+            try {
+              const buffer = await downloadMediaMessage(msg, 'buffer', {});
+              const rawPath = join(TMP_DIR, `audio_${Date.now()}.ogg`);
+              writeFileSync(rawPath, buffer);
+              const wavPath = rawPath.replace('.ogg', '.wav');
+              await new Promise((resolve, reject) => {
+                exec(`${FFMPEG} -y -i "${rawPath}" -ar 16000 -ac 1 -c:a pcm_s16le "${wavPath}"`, { timeout: 30000 }, (err) => err ? reject(err) : resolve());
+              });
+              try { unlinkSync(rawPath); } catch {}
+              const transcription = await whisperTranscribe(wavPath, 'json');
+              const transcribedText = transcription?.text || '';
+              if (!transcribedText) { try { unlinkSync(wavPath); } catch {} await sendText('Não consegui transcrever o áudio.'); return; }
+
+              const vidStatus = await getVoiceIdStatus();
+              if (vidStatus.ready) {
+                const vr = await verifyVoice(wavPath);
+                if (!vr.verified) {
+                  try { unlinkSync(wavPath); } catch {}
+                  await sendText(`🔒 Voz não reconhecida. Apenas o ${ADMIN_NAME} pode interagir por áudio.`);
+                  return;
+                }
+              }
+              try { unlinkSync(wavPath); } catch {}
+
+              const aiResult = await processWithAI(transcribedText, jid, isAdmin && isAuthenticated(jid));
+              if (aiResult.text) await sendText(aiResult.text);
+              for (const img of aiResult.images) { await sendMedia(img); try { unlinkSync(img); } catch {} }
+            } catch (e) { await sendText(`Erro na transcrição: ${e.message}`); }
+          });
           return;
         }
-        const result = processVideoAnswer(jid, text.trim());
-        if (!result) { delete videoSessions[jid]; return; }
-        if (!result.done) { await sendText(result.question); return; }
 
-        const session = videoSessions[jid];
-        const instruction = buildInstruction(result.answers);
-        delete videoSessions[jid];
-
-        await sendText(`Editando: ${instruction}\nProcessando...`);
-        await enqueue(jid, async () => {
-          const editResult = await editVideo(session.videoBuffer, session.mimetype, instruction, async (s) => sendText(s));
-          if (editResult?.path) {
-            await sendMedia(editResult.path, 'Vídeo editado!');
-            try { unlinkSync(editResult.path); } catch {}
-          } else {
-            await sendText(`Erro: ${editResult?.message || 'desconhecido'}`);
-          }
-        });
-        return;
-      }
-
-      // ========== ÁUDIO ==========
-      if (hasAudio && !config.transcribeAudio) return;
-      if (hasAudio) {
-        await enqueue(jid, async () => {
-          await sendText(getProcessingMsg());
-          try {
-            const media = await msg.downloadMedia();
-            const buffer = Buffer.from(media.data, 'base64');
-            const rawPath = join(TMP_DIR, `audio_${Date.now()}.ogg`);
-            writeFileSync(rawPath, buffer);
-            const wavPath = rawPath.replace('.ogg', '.wav');
-            await new Promise((resolve, reject) => {
-              exec(`${FFMPEG} -y -i "${rawPath}" -ar 16000 -ac 1 -c:a pcm_s16le "${wavPath}"`, { timeout: 30000 }, (err) => err ? reject(err) : resolve());
-            });
-            try { unlinkSync(rawPath); } catch {}
-            const transcription = await whisperTranscribe(wavPath, 'json');
-            const transcribedText = transcription?.text || '';
-            if (!transcribedText) { try { unlinkSync(wavPath); } catch {} await sendText('Não consegui transcrever o áudio. Tente novamente.'); return; }
-            log.wa.info({ text: transcribedText.slice(0, 80) }, 'Áudio transcrito');
-
-            // Voice ID: verifica SEMPRE (inclusive admin)
-            const vidStatus = await getVoiceIdStatus();
-            if (vidStatus.ready) {
-              const vr = await verifyVoice(wavPath);
-              if (!vr.verified) {
-                log.wa.info({ confidence: vr.confidence }, 'Voice ID: voz não reconhecida');
-                try { unlinkSync(wavPath); } catch {}
-                await sendText(`🔒 Voz não reconhecida. Apenas o ${ADMIN_NAME} pode interagir por áudio.`);
-                return;
-              }
-              log.wa.info({ confidence: vr.confidence }, 'Voice ID: voz reconhecida ✓');
-            }
-            try { unlinkSync(wavPath); } catch {}
-
-            const aiResult = await processWithAI(transcribedText, jid, isAdmin && isAuthenticated(jid));
-            if (aiResult.text) await sendText(aiResult.text);
-            for (const img of aiResult.images) {
-              await sendMedia(img, 'Imagem gerada por IA');
-              try { unlinkSync(img); } catch {}
-            }
-            if (aiResult.files && aiResult.files.length > 0) {
-              for (const filePath of aiResult.files) {
-                try {
-                  const { existsSync } = await import('fs');
-                  if (existsSync(filePath)) await sendMedia(filePath, 'Arquivo gerado pela Zaya');
-                } catch (e) { log.wa.warn({ err: e.message }, 'Erro ao enviar arquivo via audio'); }
-              }
-            }
-          } catch (e) { await sendText(`Erro na transcrição: ${e.message}`); }
-        });
-        return;
-      }
-
-      // ========== IMAGEM ==========
-      if (hasImage && !config.analyzeImages) return;
-      if (hasImage) {
-        await enqueue(jid, async () => {
-          await sendText(getProcessingMsg());
-          try {
-            const media = await msg.downloadMedia();
-            const base64 = media.data;
-            const mimetype = media.mimetype || 'image/jpeg';
-            const caption = text || 'Descreva esta imagem em detalhes. Responda em português brasileiro.';
-
-            const response = await openai.chat.completions.create({
-              model: AI_MODEL_MINI, max_tokens: 1024,
-              messages: [
-                { role: 'system', content: `Assistente visual no WhatsApp do ${ADMIN_NAME}. Português brasileiro, conciso.` },
-                { role: 'user', content: [
-                  { type: 'text', text: caption },
-                  { type: 'image_url', image_url: { url: `data:${mimetype};base64,${base64}` } },
-                ] },
-              ],
-            });
-
-            const analysis = response.choices[0].message.content;
-            addToHistory(jid, 'user', `[Imagem${text ? ': ' + text : ''}]`);
-            addToHistory(jid, 'assistant', analysis);
-            await sendText(analysis);
-          } catch (e) { await sendText(`Erro ao analisar imagem: ${e.message}`); }
-        });
-        return;
-      }
-
-      if (!text) return;
-
-      // ========== MISSÃO AUTÔNOMA (intercepta respostas de leads) ==========
-      try {
-        const missaoResult = await processarRespostaMissao(phone, text);
-        if (missaoResult) {
-          log.wa.info({ phone, etapa: missaoResult.etapa }, 'Missão: resposta processada');
-          return; // Resposta já foi enviada pelo módulo de missões
-        }
-      } catch (e) { log.wa.warn({ err: e.message }, 'Missão check falhou'); }
-
-      // ========== COMANDOS ==========
-      if (text.startsWith('/login')) {
-        const pwd = text.slice(7).trim();
-        if (!pwd) { await sendText('Use: /login <senha>'); return; }
-        if (pwd === SENHA) {
-          loginSession(jid);
-          await sendText(`Bem-vindo ao ZAYA Bot, ${ADMIN_NAME}!\n\nBot ativo com IA, Vision, DALL-E 3, Whisper, Video, Claude Code, Chrome.\n\n/help para comandos`);
-        } else {
-          await sendText('Senha incorreta.');
-        }
-        return;
-      }
-      if (text === '/logout') { logoutSession(jid); await sendText('Sessão encerrada.'); return; }
-      if (text === '/ping') { await sendText('Pong! Online.'); return; }
-      if (text === '/help') {
-        await sendText(`*ZAYA Bot*\n\n*Comandos:*\n/login <senha> — autenticar\n/logout — sair\n/ping — status\n/limpar — limpar histórico\n/help — esta mensagem\n\n*Funcionalidades:*\nConverse com IA (GPT-4o + tools)\nEnvie áudio - transcrição + IA\nEnvie foto - análise Vision\nEnvie vídeo - edição com IA\nPesquisas via Claude Code\nGerar imagens DALL-E 3\nChrome com perfil logado\nCofre de credenciais`);
-        return;
-      }
-      if (text === '/limpar') { delete chatHistories[jid]; saveHistory(); await sendText('Histórico limpo!'); return; }
-
-      if (!isAuthenticated(jid)) { await sendText('Faça login primeiro: /login <senha>'); return; }
-
-      // ========== IA ==========
-      await enqueue(jid, async () => {
-        await sendText(getProcessingMsg());
-        const result = await processWithAI(text, jid, true);
-        if (result.text) await sendText(result.text);
-        for (const img of result.images) {
-          await sendMedia(img, 'Imagem gerada por IA');
-          try { unlinkSync(img); } catch {}
-        }
-        // Envia arquivos gerados (slides, PDFs, etc)
-        if (result.files && result.files.length > 0) {
-          for (const filePath of result.files) {
+        // ========== IMAGEM ==========
+        if (hasImage && !config.analyzeImages) return;
+        if (hasImage) {
+          await enqueue(jid, async () => {
+            await sendText(getProcessingMsg());
             try {
-              const { existsSync } = await import('fs');
-              if (existsSync(filePath)) {
-                await sendMedia(filePath, 'Arquivo gerado pela Zaya');
-              }
-            } catch (e) { log.wa.warn({ err: e.message }, 'Erro ao enviar arquivo'); }
-          }
+              const buffer = await downloadMediaMessage(msg, 'buffer', {});
+              const base64 = buffer.toString('base64');
+              const mimetype = msg.message.imageMessage.mimetype || 'image/jpeg';
+              const caption = text || 'Descreva esta imagem em detalhes. Responda em português brasileiro.';
+
+              const response = await openai.chat.completions.create({
+                model: AI_MODEL_MINI, max_tokens: getBotConfig().maxTokens || 1024,
+                messages: [
+                  { role: 'system', content: `Assistente visual no WhatsApp do ${ADMIN_NAME}. Português brasileiro, conciso.` },
+                  { role: 'user', content: [
+                    { type: 'text', text: caption },
+                    { type: 'image_url', image_url: { url: `data:${mimetype};base64,${base64}` } },
+                  ] },
+                ],
+              });
+
+              const analysis = response.choices[0].message.content;
+              addToHistory(jid, 'user', `[Imagem${text ? ': ' + text : ''}]`);
+              addToHistory(jid, 'assistant', analysis);
+              await sendText(analysis);
+            } catch (e) { await sendText(`Erro ao analisar imagem: ${e.message}`); }
+          });
+          return;
         }
-      });
-    } catch (e) {
-      log.wa.error({ err: e.message, from: msg.from }, 'Erro no handler');
+
+        if (!text) return;
+
+        // ========== MISSÃO AUTÔNOMA ==========
+        try {
+          const missaoResult = await processarRespostaMissao(phone, text);
+          if (missaoResult) return;
+        } catch {}
+
+        // ========== COMANDOS ==========
+        if (text.startsWith('/login')) {
+          const pwd = text.slice(7).trim();
+          if (!pwd) { await sendText('Use: /login <senha>'); return; }
+          if (pwd === SENHA) {
+            loginSession(jid);
+            await sendText(`Bem-vindo ao ZAYA Bot, ${ADMIN_NAME}!\n\n/help para comandos`);
+          } else { await sendText('Senha incorreta.'); }
+          return;
+        }
+        if (text === '/logout') { logoutSession(jid); await sendText('Sessão encerrada.'); return; }
+        if (text === '/ping') { await sendText('Pong! Online.'); return; }
+        if (text === '/help') {
+          await sendText(`*ZAYA Bot*\n\n/login <senha> — autenticar\n/logout — sair\n/ping — status\n/limpar — limpar histórico\n/help — esta mensagem\n\nConverse com IA, envie áudio, foto ou vídeo.`);
+          return;
+        }
+        if (text === '/limpar') { delete chatHistories[jid]; saveHistory(); await sendText('Histórico limpo!'); return; }
+
+        if (!isAuthenticated(jid)) { await sendText('Faça login primeiro: /login <senha>'); return; }
+
+        // ========== IA ==========
+        await enqueue(jid, async () => {
+          await sendText(getProcessingMsg());
+          const result = await processWithAI(text, jid, true);
+          if (result.text) await sendText(result.text);
+          for (const img of result.images) { await sendMedia(img); try { unlinkSync(img); } catch {} }
+          if (result.files?.length > 0) {
+            for (const filePath of result.files) {
+              try { const { existsSync } = await import('fs'); if (existsSync(filePath)) await sendMedia(filePath); } catch {}
+            }
+          }
+        });
+      } catch (e) {
+        log.wa.error({ err: e.message, from: msg.key?.remoteJid }, 'Erro no handler Baileys');
+      }
     }
   });
 }
