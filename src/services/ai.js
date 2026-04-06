@@ -544,7 +544,7 @@ async function executeVoiceTool(name, args) {
         let resolved = false;
 
         // 1. Busca na agenda SQLite
-        const contactResult = searchContact(args.numero);
+        const contactResult = await searchContact(args.numero);
         if (contactResult?.success) {
           const firstLine = contactResult.output.split('\n')[0];
           const phone = firstLine.split('->')[1]?.trim().replace(/\D/g, '');
@@ -598,7 +598,7 @@ async function executeVoiceTool(name, args) {
     }
 
     case 'buscar_contato': {
-      const result = searchContact(args.nome);
+      const result = await searchContact(args.nome);
       return result.output;
     }
 
@@ -1830,7 +1830,7 @@ export async function processVoiceChat(message, statusCallback) {
       log.ai.warn({ refusal, originalMsg: message }, 'Modelo recusou — tentando fallback');
       try {
         if (refusal.tool === 'enviar_whatsapp' && refusal.contact && refusal.message) {
-          const contactResult = searchContact(refusal.contact);
+          const contactResult = await searchContact(refusal.contact);
           if (contactResult?.success) {
             const firstLine = contactResult.output.split('\n')[0];
             const phone = firstLine.split('->')[1]?.trim();
@@ -2045,7 +2045,7 @@ export async function processWithAI(text, jid, isAdmin) {
         log.ai.warn({ refusal, originalMsg: text }, 'WA: Modelo recusou — tentando fallback');
         try {
           if (refusal.tool === 'enviar_whatsapp' && refusal.contact && refusal.message) {
-            const contactResult = searchContact(refusal.contact);
+            const contactResult = await searchContact(refusal.contact);
             if (contactResult?.success) {
               const firstLine = contactResult.output.split('\n')[0];
               const phone = firstLine.split('->')[1]?.trim();

@@ -2,33 +2,44 @@ import { contactsDB } from '../database.js';
 import { readFileSync, existsSync } from 'fs';
 import { join } from 'path';
 import { ROOT_DIR } from '../config.js';
+import { searchContactSupabase } from './supabase.js';
 
-export function searchContact(query) {
+export async function searchContact(query) {
   // 1. Busca no banco SQLite
   const found = contactsDB.search(query);
-
-  // 2. Se não achou, tenta no arquivo data/contatos.json
-  if (found.length === 0) {
-    try {
-      const filePath = join(ROOT_DIR, 'data', 'contatos.json');
-      if (existsSync(filePath)) {
-        const agenda = JSON.parse(readFileSync(filePath, 'utf-8'));
-        const q = query.toLowerCase().trim();
-        const matches = agenda.filter(c => {
-          const nome = (c.nome || '').toLowerCase();
-          const push = (c.pushname || '').toLowerCase();
-          return nome.includes(q) || push.includes(q) || (c.telefone || '').includes(q);
-        });
-        if (matches.length > 0) {
-          return { success: true, output: matches.map(c => `${c.nome} -> ${c.telefone}`).join('\n') };
-        }
-      }
-    } catch {}
+  if (found.length > 0) {
+    return formatResult(found, query);
   }
 
-  if (found.length === 0) return { success: false, output: `Nenhum contato encontrado com "${query}"` };
+  // 2. Busca no Supabase
+  try {
+    const sbResults = await searchContactSupabase(query);
+    if (sbResults && sbResults.length > 0) {
+      return { success: true, output: sbResults.map(c => `${c.nome} -> ${c.telefone}`).join('\n') };
+    }
+  } catch {}
 
-  // Ordena por relevância: match exato > começa com > contém
+  // 3. Fallback: arquivo data/contatos.json
+  try {
+    const filePath = join(ROOT_DIR, 'data', 'contatos.json');
+    if (existsSync(filePath)) {
+      const agenda = JSON.parse(readFileSync(filePath, 'utf-8'));
+      const q = query.toLowerCase().trim();
+      const matches = agenda.filter(c => {
+        const nome = (c.nome || '').toLowerCase();
+        const push = (c.pushname || '').toLowerCase();
+        return nome.includes(q) || push.includes(q) || (c.telefone || '').includes(q);
+      });
+      if (matches.length > 0) {
+        return { success: true, output: matches.map(c => `${c.nome} -> ${c.telefone}`).join('\n') };
+      }
+    }
+  } catch {}
+
+  return { success: false, output: `Nenhum contato encontrado com "${query}"` };
+}
+
+function formatResult(found, query) {
   const q = query.toLowerCase().trim();
   const sorted = found.sort((a, b) => {
     const an = a.nome.toLowerCase();
@@ -43,6 +54,5 @@ export function searchContact(query) {
     if (aStarts !== bStarts) return aStarts - bStarts;
     return an.length - bn.length;
   });
-
   return { success: true, output: sorted.map(c => `${c.nome} -> ${c.telefone}`).join('\n') };
 }

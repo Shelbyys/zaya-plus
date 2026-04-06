@@ -114,18 +114,45 @@ CREATE INDEX IF NOT EXISTS idx_leads_categoria ON leads(categoria);
 CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
 CREATE INDEX IF NOT EXISTS idx_leads_cidade ON leads(cidade);
 
+-- WhatsApp Inbox (mensagens recebidas)
+CREATE TABLE IF NOT EXISTS wa_inbox (
+  id BIGSERIAL PRIMARY KEY,
+  event TEXT,
+  jid TEXT,
+  phone TEXT,
+  push_name TEXT,
+  message_body TEXT,
+  message_type TEXT DEFAULT 'text',
+  media_url TEXT,
+  mimetype TEXT,
+  from_me BOOLEAN DEFAULT false,
+  is_group BOOLEAN DEFAULT false,
+  raw_payload JSONB,
+  status TEXT DEFAULT 'pending',
+  received_at TIMESTAMPTZ DEFAULT now(),
+  processed_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS idx_wa_inbox_status ON wa_inbox(status);
+CREATE INDEX IF NOT EXISTS idx_wa_inbox_phone ON wa_inbox(phone);
+CREATE INDEX IF NOT EXISTS idx_wa_inbox_received ON wa_inbox(received_at DESC);
+
+-- Unique index para contatos (evita duplicatas)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_contatos_telefone ON contatos(telefone);
+
 -- RLS (Row Level Security) - acesso apenas com service key
 ALTER TABLE pesquisas ENABLE ROW LEVEL SECURITY;
 ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE contatos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wa_inbox ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Service access" ON pesquisas FOR ALL USING (true);
 CREATE POLICY "Service access" ON chat_messages FOR ALL USING (true);
 CREATE POLICY "Service access" ON contatos FOR ALL USING (true);
 CREATE POLICY "Service access" ON activity_log FOR ALL USING (true);
 CREATE POLICY "Service access" ON leads FOR ALL USING (true);
+CREATE POLICY "Service access" ON wa_inbox FOR ALL USING (true);
 `);
 }
 
@@ -152,6 +179,52 @@ export async function syncPesquisa(msg) {
   } catch (e) {
     log.db.error({ err: e.message }, 'Erro sync pesquisa');
   }
+}
+
+// ================================================================
+// SYNC: CONTATO PARA SUPABASE
+// ================================================================
+export async function syncContactToSupabase(nome, telefone, jid) {
+  const sb = getSupabase();
+  if (!sb || !telefone) return;
+  try {
+    await sb.from('contatos').upsert({ nome, telefone, jid, updated_at: new Date().toISOString() }, { onConflict: 'telefone' });
+  } catch {}
+}
+
+// ================================================================
+// SYNC: SALVAR MENSAGEM WA NO INBOX
+// ================================================================
+export async function saveToWaInbox(phone, pushName, body, type = 'text', fromMe = false) {
+  const sb = getSupabase();
+  if (!sb) return;
+  try {
+    await sb.from('wa_inbox').insert({
+      event: fromMe ? 'message.sent' : 'message.received',
+      jid: phone + '@s.whatsapp.net',
+      phone,
+      push_name: pushName || phone,
+      message_body: body,
+      message_type: type,
+      from_me: fromMe,
+      status: fromMe ? 'processed' : 'pending',
+    });
+  } catch {}
+}
+
+// ================================================================
+// BUSCAR CONTATO NO SUPABASE
+// ================================================================
+export async function searchContactSupabase(query) {
+  const sb = getSupabase();
+  if (!sb) return null;
+  try {
+    const { data } = await sb.from('contatos')
+      .select('nome, telefone, jid')
+      .or(`nome.ilike.%${query}%,telefone.ilike.%${query}%`)
+      .limit(5);
+    return data && data.length > 0 ? data : null;
+  } catch { return null; }
 }
 
 // ================================================================

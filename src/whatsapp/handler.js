@@ -12,6 +12,7 @@ import { log } from '../logger.js';
 import { getBotConfig, contactsDB } from '../database.js';
 import { processarRespostaMissao } from '../services/missions.js';
 import { verifyVoice, getVoiceIdStatus } from '../services/voice-id.js';
+import { syncContactToSupabase, saveToWaInbox } from '../services/supabase.js';
 
 const PROCESSING_MSGS = ['Processando...', 'Pensando...', 'Analisando...', 'Um momento...', 'Trabalhando...', 'Consultando IA...'];
 let msgIdx = 0;
@@ -64,15 +65,21 @@ export function setupMessageHandler(client, instanceName) {
 
       // Sync incremental do contato + detectar primeiro contato
       let isNewContact = false;
+      let contactName = phone;
       try {
         const existing = contactsDB.getByJid(jid);
         const contact = await msg.getContact();
         if (contact) {
-          const nome = contact.name || contact.pushname || contact.shortName || phone;
+          contactName = contact.name || contact.pushname || contact.shortName || phone;
           if (!existing) isNewContact = true;
-          contactsDB.upsert(nome, phone, jid);
+          contactsDB.upsert(contactName, phone, jid);
+          syncContactToSupabase(contactName, phone, jid);
         }
       } catch {}
+
+      // Salva mensagem recebida no Supabase
+      const msgBody = msg.body || (msg.hasMedia ? `[${msg.type}]` : '');
+      saveToWaInbox(phone, contactName, msgBody, msg.type || 'text', false);
 
       // Verifica se é admin
       const isAdmin = config.adminNumbers.some(n => phone === n || phone.endsWith(n));
