@@ -538,6 +538,22 @@ async function executeVoiceTool(name, args) {
 
     case 'enviar_whatsapp': {
       let num = args.numero.replace(/\D/g, '');
+      // Se o "numero" tem poucas ou nenhuma cifra, é um nome — busca na agenda
+      if (num.length < 8) {
+        const contactResult = searchContact(args.numero);
+        if (contactResult?.success) {
+          const firstLine = contactResult.output.split('\n')[0];
+          const phone = firstLine.split('->')[1]?.trim().replace(/\D/g, '');
+          if (phone && phone.length >= 8) {
+            num = phone;
+            log.ai.info({ name: args.numero, resolved: num }, 'enviar_whatsapp: nome resolvido para número');
+          } else {
+            return `Não encontrei o número de "${args.numero}" na agenda. Tente com o número completo.`;
+          }
+        } else {
+          return `Não encontrei "${args.numero}" na agenda. Tente com o número completo ou peça para buscar o contato primeiro.`;
+        }
+      }
       if (num.length <= 11) num = '55' + num;
       const result = await sendWhatsApp(num, args.mensagem);
       return result.output;
