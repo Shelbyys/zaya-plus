@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { existsSync, mkdirSync, rmSync, readFileSync, unlinkSync } from 'fs';
 import { join } from 'path';
+import { execSync } from 'child_process';
 import QRCode from 'qrcode';
 import { WA_DIR, OUTBOX } from '../config.js';
 import { waConnections } from '../state.js';
@@ -9,6 +10,23 @@ import { normalizeBRPhone, sendWhatsApp } from '../services/messaging.js';
 import { waConnect, createClient } from '../whatsapp/connection.js';
 import { setupMessageHandler } from '../whatsapp/handler.js';
 import { log } from '../logger.js';
+
+// Mata processos Chrome órfãos de uma sessão específica
+function killOrphanChrome(sessionName) {
+  const sessionDir = join(WA_DIR, 'wwebjs', `session-${sessionName}`);
+  try {
+    // Remove o lock file do Chrome se existir
+    const lockFile = join(sessionDir, 'SingletonLock');
+    if (existsSync(lockFile)) unlinkSync(lockFile);
+  } catch {}
+  try {
+    // Mata processos chrome que usam esse userDataDir
+    if (process.platform === 'darwin' || process.platform === 'linux') {
+      execSync(`pkill -f "userDataDir=${sessionDir.replace(/\//g, '.')}" 2>/dev/null || true`, { timeout: 5000, stdio: 'pipe' });
+      execSync(`pkill -f "${sessionDir}" 2>/dev/null || true`, { timeout: 5000, stdio: 'pipe' });
+    }
+  } catch {}
+}
 
 const router = Router();
 
@@ -52,8 +70,20 @@ router.post('/pair', async (req, res) => {
   if (!rawName || !phone) return res.status(400).json({ error: 'name e phone obrigatórios' });
   const name = rawName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
   const config = waLoadConfig();
-  if (config.instances[name]) return res.status(400).json({ error: 'Instância já existe' });
+  // Se instância já existe, permite re-conectar (limpeza feita abaixo)
   const cleanPhone = normalizeBRPhone(phone);
+
+  // Limpa qualquer Chrome órfão / instância anterior com esse nome
+  if (waConnections[name]?.client) {
+    try { waConnections[name].client.removeAllListeners(); await waConnections[name].client.destroy(); } catch {}
+    delete waConnections[name];
+  }
+  killOrphanChrome(name);
+  // Remove da config se já existia (permite re-tentar)
+  if (config.instances[name]) {
+    delete config.instances[name];
+    waSaveConfig(config);
+  }
 
   let client;
 
@@ -118,8 +148,19 @@ router.get('/pair-qr', async (req, res) => {
   if (!rawName || !phone) return res.status(400).json({ error: 'name e phone obrigatórios' });
   const name = rawName.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
   const config = waLoadConfig();
-  if (config.instances[name]) return res.status(400).json({ error: 'Instância já existe' });
+  // Se instância já existe, permite re-conectar (limpeza feita abaixo)
   const cleanPhone = normalizeBRPhone(phone);
+
+  // Limpa Chrome órfão / instância anterior
+  if (waConnections[name]?.client) {
+    try { waConnections[name].client.removeAllListeners(); await waConnections[name].client.destroy(); } catch {}
+    delete waConnections[name];
+  }
+  killOrphanChrome(name);
+  if (config.instances[name]) {
+    delete config.instances[name];
+    waSaveConfig(config);
+  }
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
