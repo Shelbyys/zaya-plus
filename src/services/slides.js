@@ -232,7 +232,8 @@ pres.writeFile({ fileName: ${JSON.stringify(outputFile)} }).then(() => {
   writeFileSync(scriptFile, scriptContent);
 
   const result = await new Promise((resolve) => {
-    exec(`node "${scriptFile}"`, { timeout: 30000, env: { ...process.env } }, (err, stdout, stderr) => {
+    const projectNodeModules = join(import.meta.dirname, '..', '..', 'node_modules');
+    exec(`node "${scriptFile}"`, { timeout: 30000, env: { ...process.env, NODE_PATH: projectNodeModules } }, (err, stdout, stderr) => {
       resolve({ err, stdout, stderr });
     });
   });
