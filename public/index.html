@@ -845,11 +845,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
       const env = envR ? await envR.json() : {};
       const modules = env.steps?.modules || {};
 
-      // WhatsApp
-      if (!modules.whatsapp) {
-        const btn = document.getElementById('waBtn');
-        if (btn) { btn.style.opacity = '0.3'; btn.style.pointerEvents = 'none'; btn.title = 'WhatsApp nao configurado'; }
-      }
+      // WhatsApp — sempre ativo (usa whatsapp-web.js local)
       // Vozes
       if (!modules.elevenlabs && !cfg.openaiTts) {
         const btn = document.getElementById('voiceBtn');
