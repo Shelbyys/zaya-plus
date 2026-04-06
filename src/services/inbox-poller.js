@@ -275,6 +275,9 @@ async function processInboxMessage(msg) {
 // ================================================================
 // POLL LOOP — busca mensagens pendentes a cada 3 segundos
 // ================================================================
+let _pollErrors = 0;
+const MAX_POLL_ERRORS = 3;
+
 async function pollOnce() {
   if (polling) return;
   polling = true;
@@ -298,10 +301,19 @@ async function pollOnce() {
       .limit(5);
 
     if (error) {
-      log.wa.error({ err: error.message }, 'Inbox poll error');
+      _pollErrors++;
+      if (_pollErrors <= MAX_POLL_ERRORS) {
+        log.wa.error({ err: error.message }, 'Inbox poll error');
+      }
+      if (_pollErrors === MAX_POLL_ERRORS) {
+        log.wa.warn('Tabela wa_inbox não encontrada. Execute o SQL no Supabase (Setup > Supabase > Criar Tabelas). Poller pausado.');
+        stopInboxPoller();
+      }
       polling = false;
       return;
     }
+
+    _pollErrors = 0; // Reset se query funcionou
 
     if (messages && messages.length > 0) {
       // ============================================================
