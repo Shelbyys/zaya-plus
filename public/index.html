@@ -3686,6 +3686,35 @@ async function doUpdate(){
 checkForUpdates();
 setInterval(checkForUpdates, 30 * 60 * 1000);
 
+// === SUPABASE TABLES ===
+async function createSupabaseTables(){
+  const msg = document.getElementById('setupMsg_supabase');
+  if(msg) msg.textContent = 'Criando tabelas...';
+  try{
+    const r = await fetch('/api/setup/create-tables',{method:'POST'});
+    const d = await r.json();
+    if(d.success){
+      if(msg){msg.textContent='Tabelas criadas com sucesso!';msg.style.color='#25d366';}
+    }else{
+      // Mostra o SQL para copiar manualmente
+      if(d.sql){
+        const sqlBox = document.createElement('div');
+        sqlBox.style.cssText = 'margin-top:8px;padding:8px;background:#111;border:1px solid var(--w3);border-radius:4px;max-height:200px;overflow-y:auto;font-size:8px;color:var(--od);white-space:pre-wrap;font-family:monospace;cursor:pointer';
+        sqlBox.textContent = d.sql;
+        sqlBox.title = 'Clique para copiar';
+        sqlBox.onclick = () => {navigator.clipboard.writeText(d.sql);sqlBox.style.borderColor='#25d366';setTimeout(()=>sqlBox.style.borderColor='var(--w3)',1500);};
+        const form = document.getElementById('setupForm_supabase');
+        if(form) form.appendChild(sqlBox);
+        if(msg){msg.textContent='Copie o SQL acima e execute no Supabase Dashboard > SQL Editor';msg.style.color='var(--od)';}
+      }else{
+        if(msg){msg.textContent=d.error||'Erro';msg.style.color='var(--red)';}
+      }
+    }
+  }catch(e){
+    if(msg){msg.textContent='Erro: '+e.message;msg.style.color='var(--red)';}
+  }
+}
+
 // === SETUP / PENDENCIAS ===
 const SETUP_MODULES = [
   { id:'ai', label:'Inteligencia Artificial', desc:'Motor de IA para todas as funcoes', required:true, icon:'🧠',
@@ -3784,6 +3813,7 @@ const SETUP_MODULES = [
       'Crie um novo projeto',
       'Acesse Settings > API',
       'Copie a Project URL e a anon/public key',
+      'Apos salvar, clique em CRIAR TABELAS para configurar o banco',
     ],
     fields:[
       {key:'SUPABASE_URL',type:'text',label:'Project URL',placeholder:'https://xxx.supabase.co'},
@@ -3791,7 +3821,8 @@ const SETUP_MODULES = [
     ],
     links:[{url:'https://supabase.com/dashboard',label:'Supabase Dashboard'}],
     saveEndpoint:'/api/setup/save-module',
-    buildPayload(f){ return {module:'supabase',config:f}; }
+    buildPayload(f){ return {module:'supabase',config:f}; },
+    extraAction:{label:'CRIAR TABELAS',fn:'createSupabaseTables()'}
   },
   { id:'firecrawl', label:'Pesquisa Web', desc:'Pesquisas profundas na internet com IA', required:false, icon:'🔍',
     steps:[
@@ -4001,6 +4032,7 @@ function renderSetupModule(m, isActive){
       <span class="setup-save-msg" id="setupMsg_${m.id}"></span>
     </div>`;
     if(isActive) formHtml += `<div style="font-size:7px;color:var(--od);margin-top:6px">Deixe os campos vazios para manter os valores atuais. Preencha apenas o que deseja alterar.</div>`;
+    if(m.extraAction) formHtml += `<button class="setup-save-btn" style="margin-top:8px;background:#25d366" onclick="${m.extraAction.fn}">${m.extraAction.label}</button>`;
     formHtml += '</div>';
   }
 

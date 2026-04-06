@@ -564,4 +564,20 @@ router.post('/update', async (req, res) => {
   }
 });
 
+// ─── POST /create-tables ───────────────────────────────────
+
+router.post('/create-tables', async (req, res) => {
+  try {
+    const { createSupabaseTables, getCreateTableSQL } = await import('../services/supabase.js');
+    const result = await createSupabaseTables();
+    if (!result.success) {
+      // Retorna o SQL para o usuário executar manualmente
+      return res.json({ success: false, sql: result.sql || getCreateTableSQL(), error: result.error });
+    }
+    res.json({ success: true, created: result.created });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;

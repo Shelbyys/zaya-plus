@@ -49,8 +49,8 @@ export async function initSupabaseTables() {
   }
 }
 
-function logCreateTableSQL() {
-  log.db.info(`Execute este SQL no Supabase Dashboard (SQL Editor):
+export function getCreateTableSQL() {
+  return `
 
 -- Pesquisas
 CREATE TABLE IF NOT EXISTS pesquisas (
@@ -153,7 +153,45 @@ CREATE POLICY "Service access" ON contatos FOR ALL USING (true);
 CREATE POLICY "Service access" ON activity_log FOR ALL USING (true);
 CREATE POLICY "Service access" ON leads FOR ALL USING (true);
 CREATE POLICY "Service access" ON wa_inbox FOR ALL USING (true);
-`);
+`;
+}
+
+function logCreateTableSQL() {
+  log.db.info('Execute o SQL no Supabase Dashboard (SQL Editor):');
+  log.db.info(getCreateTableSQL());
+}
+
+export async function createSupabaseTables() {
+  const sb = getSupabase();
+  if (!sb) return { success: false, error: 'Supabase não configurado' };
+
+  const sql = getCreateTableSQL();
+  // Executa cada statement separadamente
+  const statements = sql.split(';').map(s => s.trim()).filter(s => s.length > 5);
+  let created = 0, errors = [];
+
+  for (const stmt of statements) {
+    try {
+      const { error } = await sb.rpc('exec_sql', { query: stmt + ';' });
+      if (error) {
+        // Ignora erros de "já existe"
+        if (!error.message?.includes('already exists') && !error.message?.includes('42710')) {
+          errors.push(error.message);
+        }
+      } else {
+        created++;
+      }
+    } catch (e) {
+      errors.push(e.message);
+    }
+  }
+
+  // Se RPC não funciona, retorna o SQL para o usuário executar manualmente
+  if (errors.length > 0 && created === 0) {
+    return { success: false, sql, error: 'RPC não disponível. Execute o SQL manualmente no Supabase Dashboard > SQL Editor.', errors };
+  }
+
+  return { success: true, created, errors };
 }
 
 // ================================================================
