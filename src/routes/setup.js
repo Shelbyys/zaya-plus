@@ -72,6 +72,10 @@ function updateEnv(updates) {
   const current = readEnv();
   const merged = { ...current, ...updates };
   writeEnv(merged);
+  // Atualiza process.env em memória para efeito imediato
+  for (const [k, v] of Object.entries(updates)) {
+    if (v !== undefined && v !== null) process.env[k] = v;
+  }
 }
 
 // ─── GET /status ────────────────────────────────────────────

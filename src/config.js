@@ -27,6 +27,8 @@ function findBinary(name, fallbacks = []) {
 
 function findChrome() {
   if (process.env.CHROME_PATH) return process.env.CHROME_PATH;
+
+  // 1. Chrome/Chromium instalado no sistema
   const candidates = IS_MAC
     ? [
         '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',

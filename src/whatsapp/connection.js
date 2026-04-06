@@ -17,18 +17,23 @@ const PUPPETEER_ARGS = [
 ];
 
 export function createClient(name) {
-  log.wa.info({ chrome: CHROME_PATH, instance: name }, 'Criando client WA');
+  // Usa Chrome do sistema se encontrado, senão deixa puppeteer usar o Chromium bundled
+  const useChrome = CHROME_PATH && CHROME_PATH !== 'google-chrome' ? CHROME_PATH : undefined;
+  log.wa.info({ chrome: useChrome || 'puppeteer-bundled', instance: name }, 'Criando client WA');
+
+  const puppeteerOpts = {
+    headless: true,
+    args: PUPPETEER_ARGS,
+    protocolTimeout: 120_000,
+  };
+  if (useChrome) puppeteerOpts.executablePath = useChrome;
+
   const client = new Client({
     authStrategy: new LocalAuth({
       clientId: name,
       dataPath: join(WA_DIR, 'wwebjs'),
     }),
-    puppeteer: {
-      headless: true,
-      args: PUPPETEER_ARGS,
-      protocolTimeout: 120_000,
-      executablePath: CHROME_PATH,
-    },
+    puppeteer: puppeteerOpts,
     restartOnAuthFail: true,
     webVersionCache: { type: 'none' },
   });
