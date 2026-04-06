@@ -3688,31 +3688,142 @@ setInterval(checkForUpdates, 30 * 60 * 1000);
 
 // === SUPABASE TABLES ===
 async function createSupabaseTables(){
-  const msg = document.getElementById('setupMsg_supabase');
-  if(msg) msg.textContent = 'Criando tabelas...';
+  const form = document.getElementById('setupForm_supabase');
+  if(!form) return;
+
+  // Remove wizard anterior se existir
+  const old = document.getElementById('sbWizard');
+  if(old) old.remove();
+
+  // Busca o SQL do servidor
+  let sql='';
   try{
     const r = await fetch('/api/setup/create-tables',{method:'POST'});
     const d = await r.json();
+    sql = d.sql || '';
     if(d.success){
-      if(msg){msg.textContent='Tabelas criadas com sucesso!';msg.style.color='#25d366';}
-    }else{
-      // Mostra o SQL para copiar manualmente
-      if(d.sql){
-        const sqlBox = document.createElement('div');
-        sqlBox.style.cssText = 'margin-top:8px;padding:8px;background:#111;border:1px solid var(--w3);border-radius:4px;max-height:200px;overflow-y:auto;font-size:8px;color:var(--od);white-space:pre-wrap;font-family:monospace;cursor:pointer';
-        sqlBox.textContent = d.sql;
-        sqlBox.title = 'Clique para copiar';
-        sqlBox.onclick = () => {navigator.clipboard.writeText(d.sql);sqlBox.style.borderColor='#25d366';setTimeout(()=>sqlBox.style.borderColor='var(--w3)',1500);};
-        const form = document.getElementById('setupForm_supabase');
-        if(form) form.appendChild(sqlBox);
-        if(msg){msg.textContent='Copie o SQL acima e execute no Supabase Dashboard > SQL Editor';msg.style.color='var(--od)';}
-      }else{
-        if(msg){msg.textContent=d.error||'Erro';msg.style.color='var(--red)';}
-      }
+      showSbSuccess(form);
+      return;
     }
   }catch(e){
-    if(msg){msg.textContent='Erro: '+e.message;msg.style.color='var(--red)';}
+    // Busca SQL mesmo se falhar
+    try{
+      const r2 = await fetch('/api/setup/create-tables',{method:'POST'});
+      sql = (await r2.json()).sql || '';
+    }catch{}
   }
+
+  if(!sql){
+    const msg=document.getElementById('setupMsg_supabase');
+    if(msg){msg.textContent='Erro ao obter SQL. Salve as credenciais do Supabase primeiro.';msg.style.color='var(--red)';}
+    return;
+  }
+
+  // Detecta a URL do Supabase para gerar link direto
+  const sbUrlInput = form.querySelector('input[data-key="SUPABASE_URL"]');
+  const sbUrl = sbUrlInput?.value || sbUrlInput?.placeholder || _setupMasked?.supabase_url || '';
+  const projectRef = sbUrl.match(/https:\/\/(\w+)\.supabase/)?.[1] || '';
+  const sqlEditorUrl = projectRef
+    ? `https://supabase.com/dashboard/project/${projectRef}/sql/new`
+    : 'https://supabase.com/dashboard';
+
+  // Monta wizard guiado
+  const wizard = document.createElement('div');
+  wizard.id = 'sbWizard';
+  wizard.innerHTML = `
+    <div style="margin-top:12px;border:1px solid var(--od);border-radius:6px;padding:14px;background:rgba(243,102,0,0.03)">
+      <div style="font-family:'Space Mono';font-size:10px;color:var(--od);letter-spacing:1px;margin-bottom:10px;font-weight:700">CONFIGURAR BANCO DE DADOS</div>
+
+      <div class="setup-step" style="margin-bottom:10px">
+        <span class="setup-step-num">1</span>
+        <span>Clique no botao abaixo para <b>copiar o SQL</b></span>
+      </div>
+      <button class="setup-save-btn" id="sbCopyBtn" style="width:100%;margin-bottom:12px" onclick="copySbSQL()">
+        COPIAR SQL PARA A AREA DE TRANSFERENCIA
+      </button>
+
+      <div class="setup-step" style="margin-bottom:10px">
+        <span class="setup-step-num">2</span>
+        <span>Clique para <b>abrir o SQL Editor</b> do Supabase</span>
+      </div>
+      <a href="${sqlEditorUrl}" target="_blank" rel="noopener" class="setup-save-btn" style="display:block;text-align:center;text-decoration:none;width:100%;margin-bottom:12px;background:#25d366;box-sizing:border-box">
+        ABRIR SUPABASE SQL EDITOR &#8599;
+      </a>
+
+      <div class="setup-step" style="margin-bottom:10px">
+        <span class="setup-step-num">3</span>
+        <span>No SQL Editor: <b>cole o SQL</b> (Ctrl+V / Cmd+V) e clique em <b>Run</b></span>
+      </div>
+
+      <div class="setup-step" style="margin-bottom:10px">
+        <span class="setup-step-num">4</span>
+        <span>Volte aqui e clique em <b>Verificar</b></span>
+      </div>
+      <button class="setup-save-btn" style="width:100%;background:transparent;border:1px solid #25d366;color:#25d366" onclick="verifySbTables()">
+        VERIFICAR SE TABELAS FORAM CRIADAS
+      </button>
+
+      <div id="sbVerifyResult" style="margin-top:8px;font-family:'Space Mono';font-size:9px"></div>
+
+      <div style="margin-top:10px;border-top:1px solid rgba(255,255,255,0.05);padding-top:8px">
+        <div style="font-size:7px;color:var(--od);margin-bottom:4px;letter-spacing:0.5px">SQL (clique para copiar):</div>
+        <pre id="sbSQLPreview" style="margin:0;padding:6px;background:#0a0a0f;border:1px solid var(--w3);border-radius:3px;max-height:120px;overflow-y:auto;font-size:7px;color:var(--w2);white-space:pre-wrap;cursor:pointer;line-height:1.4" onclick="copySbSQL()">${sql.replace(/</g,'&lt;')}</pre>
+      </div>
+    </div>
+  `;
+  form.appendChild(wizard);
+
+  // Salva SQL globalmente
+  window._sbCreateSQL = sql;
+}
+
+function copySbSQL(){
+  if(!window._sbCreateSQL) return;
+  navigator.clipboard.writeText(window._sbCreateSQL).then(()=>{
+    const btn=document.getElementById('sbCopyBtn');
+    if(btn){
+      btn.textContent='COPIADO!';
+      btn.style.background='#25d366';
+      setTimeout(()=>{btn.textContent='COPIAR SQL PARA A AREA DE TRANSFERENCIA';btn.style.background='';},2000);
+    }
+  });
+}
+
+async function verifySbTables(){
+  const el=document.getElementById('sbVerifyResult');
+  if(!el)return;
+  el.innerHTML='<span style="color:var(--od)">Verificando...</span>';
+  try{
+    const tables=['pesquisas','chat_messages','contatos','activity_log','leads','wa_inbox'];
+    const r=await fetch('/api/setup/status');
+    const d=await r.json();
+    // Testa se Supabase responde
+    const r2=await fetch('/api/setup/create-tables',{method:'POST'});
+    const d2=await r2.json();
+    if(d2.success){
+      el.innerHTML='<span style="color:#25d366;font-size:10px">&#10003; Todas as tabelas criadas com sucesso! Reinicie o servidor.</span>';
+      showSbSuccess(document.getElementById('setupForm_supabase'));
+    }else if(d2.error?.includes('already exists')){
+      el.innerHTML='<span style="color:#25d366;font-size:10px">&#10003; Tabelas ja existem! Tudo certo.</span>';
+    }else{
+      el.innerHTML=`<span style="color:var(--red)">Tabelas ainda nao encontradas. Cole o SQL no Supabase e clique Run.</span>`;
+    }
+  }catch(e){
+    el.innerHTML=`<span style="color:var(--red)">Erro: ${e.message}</span>`;
+  }
+}
+
+function showSbSuccess(form){
+  if(!form)return;
+  const old=document.getElementById('sbWizard');
+  if(old)old.remove();
+  const ok=document.createElement('div');
+  ok.id='sbWizard';
+  ok.innerHTML=`<div style="margin-top:10px;text-align:center;padding:12px;border:1px solid #25d366;border-radius:4px;background:rgba(37,211,102,0.05)">
+    <div style="font-size:16px">&#10003;</div>
+    <div style="font-family:'Space Mono';font-size:9px;color:#25d366;letter-spacing:1px">TABELAS CRIADAS COM SUCESSO</div>
+  </div>`;
+  form.appendChild(ok);
 }
 
 // === SETUP / PENDENCIAS ===
