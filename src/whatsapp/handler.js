@@ -77,9 +77,9 @@ export function setupMessageHandler(client, instanceName) {
         }
       } catch {}
 
-      // Salva mensagem recebida no Supabase
+      // Salva mensagem recebida no Supabase (marcada como processed — handler local já trata)
       const msgBody = msg.body || (msg.hasMedia ? `[${msg.type}]` : '');
-      saveToWaInbox(phone, contactName, msgBody, msg.type || 'text', false);
+      saveToWaInbox(phone, contactName, msgBody, msg.type || 'text', false, true);
 
       // Verifica se é admin
       const isAdmin = config.adminNumbers.some(n => phone === n || phone.endsWith(n));

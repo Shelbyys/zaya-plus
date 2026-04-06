@@ -2,7 +2,7 @@ import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
 import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
-import { WA_DIR, ROOT_DIR } from '../config.js';
+import { WA_DIR, ROOT_DIR, CHROME_PATH } from '../config.js';
 import { waConnections } from '../state.js';
 import { waLoadConfig, waSaveConfig } from './utils.js';
 import { setupMessageHandler } from './handler.js';
@@ -17,6 +17,7 @@ const PUPPETEER_ARGS = [
 ];
 
 export function createClient(name) {
+  log.wa.info({ chrome: CHROME_PATH, instance: name }, 'Criando client WA');
   const client = new Client({
     authStrategy: new LocalAuth({
       clientId: name,
@@ -26,9 +27,10 @@ export function createClient(name) {
       headless: true,
       args: PUPPETEER_ARGS,
       protocolTimeout: 120_000,
+      executablePath: CHROME_PATH,
     },
     restartOnAuthFail: true,
-    webVersionCache: { type: 'remote', remotePath: 'https://raw.githubusercontent.com/nicol4s0/nicol4s0/refs/heads/main/nicol4s0' },
+    webVersionCache: { type: 'none' },
   });
 
   return client;
@@ -139,8 +141,11 @@ export async function waConnect(name) {
       log.wa.debug({ instance: name, state }, 'Estado mudou');
     });
 
-    // Inicializa ANTES de atribuir ao waConnections (evita uso de client não-pronto)
-    await client.initialize();
+    // Inicializa com timeout de 60s
+    await Promise.race([
+      client.initialize(),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout ao inicializar Chrome (60s)')), 60000)),
+    ]);
   } catch (e) {
     log.wa.error({ instance: name, err: e.message }, 'Erro fatal na conexão');
     waConnections[name] = { client: null, status: 'error', handlerSetup: false };

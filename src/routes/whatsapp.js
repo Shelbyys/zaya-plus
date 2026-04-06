@@ -93,7 +93,7 @@ router.post('/pair', async (req, res) => {
     client.on('ready', () => {
       log.wa.info({ name, phone: cleanPhone }, 'PAREADO COM SUCESSO via código!');
       const config = waLoadConfig();
-      config.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true };
+      config.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true, type: 'local' };
       if (!config.defaultInstance) config.defaultInstance = name;
       waSaveConfig(config);
       waConnections[name] = { client, status: 'connected', handlerSetup: true };
@@ -207,7 +207,7 @@ router.get('/pair-qr', async (req, res) => {
     client.on('ready', () => {
       log.wa.info({ name, phone: cleanPhone }, 'Conectado via QR!');
       const config = waLoadConfig();
-      config.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true };
+      config.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true, type: 'local' };
       if (!config.defaultInstance) config.defaultInstance = name;
       waSaveConfig(config);
       waConnections[name] = { client, status: 'connected', handlerSetup: true };

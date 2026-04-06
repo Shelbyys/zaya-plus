@@ -195,7 +195,7 @@ export async function syncContactToSupabase(nome, telefone, jid) {
 // ================================================================
 // SYNC: SALVAR MENSAGEM WA NO INBOX
 // ================================================================
-export async function saveToWaInbox(phone, pushName, body, type = 'text', fromMe = false) {
+export async function saveToWaInbox(phone, pushName, body, type = 'text', fromMe = false, alreadyProcessed = false) {
   const sb = getSupabase();
   if (!sb) return;
   try {
@@ -207,7 +207,8 @@ export async function saveToWaInbox(phone, pushName, body, type = 'text', fromMe
       message_body: body,
       message_type: type,
       from_me: fromMe,
-      status: fromMe ? 'processed' : 'pending',
+      status: (fromMe || alreadyProcessed) ? 'processed' : 'pending',
+      processed_at: alreadyProcessed ? new Date().toISOString() : null,
     });
   } catch {}
 }
