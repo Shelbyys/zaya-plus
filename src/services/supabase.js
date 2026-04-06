@@ -230,6 +230,35 @@ export async function syncContactToSupabase(nome, telefone, jid) {
   } catch {}
 }
 
+// Batch sync — envia contatos em lotes de 500
+export async function syncContactsBatchToSupabase(contacts) {
+  const sb = getSupabase();
+  if (!sb || !contacts?.length) return { synced: 0, errors: 0 };
+
+  const BATCH_SIZE = 500;
+  let synced = 0, errors = 0;
+  const now = new Date().toISOString();
+
+  for (let i = 0; i < contacts.length; i += BATCH_SIZE) {
+    const batch = contacts.slice(i, i + BATCH_SIZE).map(c => ({
+      nome: c.nome || c.name || c.telefone,
+      telefone: c.telefone || c.phone || '',
+      jid: c.jid || '',
+      updated_at: now,
+    })).filter(c => c.telefone);
+
+    try {
+      const { error } = await sb.from('contatos').upsert(batch, { onConflict: 'telefone' });
+      if (error) { errors += batch.length; log.db.error({ err: error.message, batch: i }, 'Erro batch contatos'); }
+      else synced += batch.length;
+    } catch (e) {
+      errors += batch.length;
+    }
+  }
+
+  return { synced, errors };
+}
+
 // ================================================================
 // SYNC: SALVAR MENSAGEM WA NO INBOX
 // ================================================================

@@ -8,7 +8,7 @@ import { waLoadConfig, waSaveConfig } from './utils.js';
 import { setupMessageHandler } from './handler.js';
 import { log } from '../logger.js';
 import { contactsDB } from '../database.js';
-import { syncContactToSupabase, isSupabaseEnabled } from '../services/supabase.js';
+import { syncContactsBatchToSupabase, isSupabaseEnabled } from '../services/supabase.js';
 
 const PUPPETEER_ARGS = [
   '--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu',
@@ -95,12 +95,13 @@ export async function waConnect(name) {
           .sort((a, b) => a.nome.localeCompare(b.nome));
         writeFileSync(join(dataDir, 'contatos.json'), JSON.stringify(agenda, null, 2), 'utf-8');
 
-        // Sync para Supabase em background
+        // Sync batch para Supabase (lotes de 500)
         if (isSupabaseEnabled()) {
-          for (const c of agenda) {
-            syncContactToSupabase(c.nome, c.telefone, '').catch(() => {});
-          }
-          log.wa.info({ instance: name, supabase: agenda.length }, 'Contatos enviados para Supabase');
+          syncContactsBatchToSupabase(agenda).then(r => {
+            log.wa.info({ instance: name, synced: r.synced, errors: r.errors }, 'Contatos sincronizados com Supabase');
+          }).catch(e => {
+            log.wa.warn({ err: e.message }, 'Erro sync batch Supabase');
+          });
         }
 
         log.wa.info({ instance: name, synced: result.synced, file: agenda.length }, 'Contatos sincronizados + arquivo salvo');
