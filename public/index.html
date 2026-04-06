@@ -3147,6 +3147,15 @@ async function sendChatStream(message){
       }
 
       clearTimeout(timer);
+
+      // Detecta se a Zaya pede para abrir setup de um módulo
+      const setupMatch = finalResponse?.match(/\[SETUP_NECESSARIO:(\w+)\]/);
+      if(setupMatch){
+        const moduleId = setupMatch[1];
+        finalResponse = finalResponse.replace(/\[SETUP_NECESSARIO:\w+\]\s*/g, '');
+        setTimeout(() => openSetupFor(moduleId), 1500);
+      }
+
       resolve({response:finalResponse,spokeBefore:false,wasExecuting});
     }).catch(e=>{clearTimeout(timer);reject(e);});
   });
@@ -3793,7 +3802,10 @@ function isModuleActive(mod, status, pubCfg){
   return status.steps?.modules?.[mod.id] || false;
 }
 
+let _setupMasked = {};
+
 function renderSetupPanel(status, pubCfg){
+  _setupMasked = status.masked || {};
   const pending = SETUP_MODULES.filter(m => !isModuleActive(m, status, pubCfg));
   const active = SETUP_MODULES.filter(m => isModuleActive(m, status, pubCfg));
 
@@ -3819,11 +3831,36 @@ function renderSetupPanel(status, pubCfg){
     for(const m of pending) html += renderSetupModule(m, false);
   }
   if(active.length > 0){
-    html += '<div class="wa-config-section" style="color:#25d366">ATIVO ('+active.length+')</div>';
+    html += '<div class="wa-config-section" style="color:#25d366">ATIVO ('+active.length+') — clique para editar</div>';
     for(const m of active) html += renderSetupModule(m, true);
   }
 
+  if(pct===100){
+    html += `<div style="text-align:center;margin-top:16px;padding:12px;border:1px solid #25d366;border-radius:4px;background:rgba(37,211,102,0.05)">
+      <div style="font-size:14px;margin-bottom:4px">&#10003;</div>
+      <div style="font-family:'Space Mono';font-size:9px;color:#25d366;letter-spacing:1px">SETUP COMPLETO</div>
+      <div style="font-size:8px;color:var(--od);margin-top:4px">Todas as configuracoes estao ativas. Clique em qualquer modulo para editar.</div>
+    </div>`;
+  }
+
   $('setupContent').innerHTML = html;
+}
+
+// Abre o setup panel direto num módulo específico (chamado pela Zaya)
+function openSetupFor(moduleId){
+  const p=$('setupPanel');
+  if(!p.classList.contains('open')){
+    p.classList.add('open');
+  }
+  loadSetupStatus().then(()=>{
+    setTimeout(()=>{
+      const detail=document.getElementById('setupDetail_'+moduleId);
+      if(detail){
+        detail.style.display='block';
+        detail.scrollIntoView({behavior:'smooth',block:'center'});
+      }
+    },300);
+  });
 }
 
 function renderSetupModule(m, isActive){
@@ -3851,24 +3888,56 @@ function renderSetupModule(m, isActive){
     linksHtml += '</div>';
   }
 
+  // Mapeamento de campos para valores mascarados atuais
+  const maskedMap = {
+    '_provider': _setupMasked.ai_provider||'openai',
+    'key': m.id==='ai'?(_setupMasked.ai_key||''):'',
+    'baseUrl': _setupMasked.ai_baseUrl||'',
+    'name': _setupMasked.identity_name||'',
+    'phone': m.id==='identity'?(_setupMasked.identity_phone||''):'',
+    'ELEVENLABS_API_KEY': _setupMasked.elevenlabs_key||'',
+    'ELEVENLABS_VOICE_ID': _setupMasked.elevenlabs_voice||'',
+    'TWILIO_ACCOUNT_SID': _setupMasked.twilio_sid||'',
+    'TWILIO_AUTH_TOKEN': _setupMasked.twilio_token||'',
+    'TWILIO_PHONE_NUMBER': _setupMasked.twilio_phone||'',
+    'TWILIO_NGROK_DOMAIN': _setupMasked.twilio_ngrok||'',
+    'FACEBOOK_ACCESS_TOKEN': _setupMasked.meta_token||'',
+    'META_PAGE_ID': _setupMasked.meta_page||'',
+    'META_IG_ID': _setupMasked.meta_ig||'',
+    'META_AD_ACCOUNT_ID': _setupMasked.meta_ad||'',
+    'SUPABASE_URL': _setupMasked.supabase_url||'',
+    'SUPABASE_KEY': _setupMasked.supabase_key||'',
+    'FIRECRAWL_API_KEY': _setupMasked.firecrawl_key||'',
+    'GOOGLE_AI_STUDIO_KEY': _setupMasked.google_ai_key||'',
+    'FREEPIK_API_KEY': _setupMasked.freepik_key||'',
+  };
+
   // Formulario
   let formHtml = '';
   if(!m.noForm && m.fields?.length){
     formHtml = `<div class="setup-form" id="setupForm_${m.id}">`;
     m.fields.forEach(f => {
       const cond = f.condition ? ` data-condition="${f.condition}"` : '';
+      const currentVal = isActive ? (maskedMap[f.key]||'') : '';
       if(f.type==='select'){
         formHtml += `<label class="setup-field"${cond}><span>${f.label}</span><select data-key="${f.key}" onchange="setupFieldChange('${m.id}')">`;
-        f.options.forEach(o => { formHtml += `<option value="${o.v}">${o.l}</option>`; });
+        f.options.forEach(o => {
+          const sel = (isActive && maskedMap[f.key]===o.v) ? ' selected' : '';
+          formHtml += `<option value="${o.v}"${sel}>${o.l}</option>`;
+        });
         formHtml += '</select></label>';
       }else{
-        formHtml += `<label class="setup-field"${cond}><span>${f.label}</span><input type="${f.type}" data-key="${f.key}" placeholder="${f.placeholder||''}"></label>`;
+        const phText = isActive && currentVal ? currentVal : (f.placeholder||'');
+        formHtml += `<label class="setup-field"${cond}><span>${f.label}${isActive?' <span style="color:#25d366;font-size:7px">ATIVO</span>':''}</span><input type="${f.type}" data-key="${f.key}" placeholder="${phText}"></label>`;
       }
     });
+    const btnLabel = isActive ? 'ATUALIZAR' : 'SALVAR';
     formHtml += `<div style="display:flex;gap:8px;margin-top:8px">
-      <button class="setup-save-btn" onclick="saveSetupModule('${m.id}')">SALVAR</button>
+      <button class="setup-save-btn" onclick="saveSetupModule('${m.id}')">${btnLabel}</button>
       <span class="setup-save-msg" id="setupMsg_${m.id}"></span>
-    </div></div>`;
+    </div>`;
+    if(isActive) formHtml += `<div style="font-size:7px;color:var(--od);margin-top:6px">Deixe os campos vazios para manter os valores atuais. Preencha apenas o que deseja alterar.</div>`;
+    formHtml += '</div>';
   }
 
   // Acao especial (ex: abrir painel WA)

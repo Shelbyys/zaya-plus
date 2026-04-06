@@ -464,8 +464,28 @@ async function monitorCallStatus(callSid, numero) {
 // ================================================================
 // EXECUTE VOICE TOOL
 // ================================================================
+// Mapeamento: tool → módulo necessário → env var que precisa existir
+const TOOL_MODULE_MAP = {
+  'fazer_ligacao': { module: 'twilio', env: 'TWILIO_ACCOUNT_SID', label: 'Ligações (Twilio)' },
+  'whatsapp_cloud': { module: 'meta', env: 'FACEBOOK_ACCESS_TOKEN', label: 'Meta (Instagram/Facebook)' },
+  'meta': { module: 'meta', env: 'FACEBOOK_ACCESS_TOKEN', label: 'Meta (Instagram/Facebook)' },
+  'pesquisar': { module: 'firecrawl', env: 'FIRECRAWL_API_KEY', label: 'Pesquisa Web (Firecrawl)' },
+  'nano_banana': { module: 'google_ai', env: 'GOOGLE_AI_STUDIO_KEY', label: 'Google AI Studio' },
+  'gerar_video': { module: 'freepik', env: 'FREEPIK_API_KEY', label: 'Vídeo IA (Freepik)' },
+  'supabase_query': { module: 'supabase', env: 'SUPABASE_URL', label: 'Supabase (Nuvem)' },
+  'supabase_inserir': { module: 'supabase', env: 'SUPABASE_URL', label: 'Supabase (Nuvem)' },
+  'supabase_gerenciar': { module: 'supabase', env: 'SUPABASE_URL', label: 'Supabase (Nuvem)' },
+  'supabase_storage': { module: 'supabase', env: 'SUPABASE_URL', label: 'Supabase (Nuvem)' },
+};
+
 async function executeVoiceTool(name, args) {
   log.ai.info({ tool: name, args: JSON.stringify(args).slice(0, 150) }, `VoiceTool: ${name}`);
+
+  // Verificar se módulo necessário está configurado
+  const req = TOOL_MODULE_MAP[name];
+  if (req && !process.env[req.env]) {
+    return `[SETUP_NECESSARIO:${req.module}] O módulo "${req.label}" não está configurado. Peça ao usuário para abrir o painel de Setup e configurar. Ele pode clicar no botão SETUP no dashboard.`;
+  }
 
   switch (name) {
     case 'executar_comando': {

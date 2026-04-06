@@ -76,6 +76,11 @@ function updateEnv(updates) {
 
 // ─── GET /status ────────────────────────────────────────────
 
+function maskKey(val) {
+  if (!val || val.length < 8) return val ? '***' : '';
+  return val.slice(0, 4) + '...' + val.slice(-4);
+}
+
 router.get('/status', (req, res) => {
   try {
     const env = readEnv();
@@ -84,8 +89,33 @@ router.get('/status', (req, res) => {
     const hasVoice = !!env.ELEVENLABS_API_KEY;
     const setupComplete = env.SETUP_COMPLETE === 'true';
 
+    // Valores mascarados para edição no frontend
+    const masked = {
+      ai_provider: env.ANTHROPIC_API_KEY ? 'anthropic' : (env.OPENAI_BASE_URL?.includes('groq') ? 'groq' : 'openai'),
+      ai_key: maskKey(env.OPENAI_API_KEY || env.ANTHROPIC_API_KEY),
+      ai_baseUrl: env.OPENAI_BASE_URL || '',
+      identity_name: env.ADMIN_NAME || '',
+      identity_phone: env.ADMIN_NUMBER || '',
+      elevenlabs_key: maskKey(env.ELEVENLABS_API_KEY),
+      elevenlabs_voice: env.ELEVENLABS_VOICE_ID || '',
+      twilio_sid: maskKey(env.TWILIO_ACCOUNT_SID),
+      twilio_token: maskKey(env.TWILIO_AUTH_TOKEN),
+      twilio_phone: env.TWILIO_PHONE_NUMBER || '',
+      twilio_ngrok: env.TWILIO_NGROK_DOMAIN || '',
+      meta_token: maskKey(env.FACEBOOK_ACCESS_TOKEN),
+      meta_page: env.META_PAGE_ID || '',
+      meta_ig: env.META_IG_ID || '',
+      meta_ad: env.META_AD_ACCOUNT_ID || '',
+      supabase_url: env.SUPABASE_URL || '',
+      supabase_key: maskKey(env.SUPABASE_KEY),
+      firecrawl_key: maskKey(env.FIRECRAWL_API_KEY),
+      google_ai_key: maskKey(env.GOOGLE_AI_STUDIO_KEY),
+      freepik_key: maskKey(env.FREEPIK_API_KEY),
+    };
+
     res.json({
       setupComplete,
+      masked,
       steps: {
         mind: hasApiKey,
         identity: hasIdentity,
