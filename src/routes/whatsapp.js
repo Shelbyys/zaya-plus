@@ -270,6 +270,55 @@ router.post('/send', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// ================================================================
+// CONTATOS
+// ================================================================
+router.get('/contacts', async (req, res) => {
+  try {
+    const { contactsDB } = await import('../database.js');
+    const all = contactsDB.getAll();
+    res.json({ contacts: all, count: all.length });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+router.post('/contacts/sync', async (req, res) => {
+  try {
+    const config = waLoadConfig();
+    const instName = req.body?.instance || config.defaultInstance;
+    const conn = instName && waConnections[instName];
+    if (!conn?.client || conn.status !== 'connected') {
+      return res.status(400).json({ error: 'WhatsApp não conectado' });
+    }
+
+    const contacts = await conn.client.getContacts();
+    const { contactsDB } = await import('../database.js');
+    const result = contactsDB.syncFromWhatsApp(contacts);
+
+    // Salva arquivo JSON local legível
+    const { writeFileSync } = await import('fs');
+    const { join } = await import('path');
+    const { ROOT_DIR } = await import('../config.js');
+    const agenda = contacts
+      .filter(c => c.id?.user && c.isMyContact)
+      .map(c => ({
+        nome: c.name || c.pushname || c.shortName || c.id.user,
+        telefone: c.id.user,
+        pushname: c.pushname || '',
+        isGroup: c.isGroup || false,
+      }))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+
+    const filePath = join(ROOT_DIR, 'data', 'contatos.json');
+    writeFileSync(filePath, JSON.stringify(agenda, null, 2), 'utf-8');
+
+    log.wa.info({ synced: result.synced, file: agenda.length }, 'Contatos sincronizados + arquivo salvo');
+    res.json({ success: true, synced: result.synced, failed: result.failed, file: agenda.length, path: 'data/contatos.json' });
+  } catch (e) {
+    log.wa.error({ err: e.message }, 'Erro sync contatos');
+    res.status(500).json({ error: e.message });
+  }
+});
+
 router.delete('/instances/:name', async (req, res) => {
   const name = req.params.name;
   const config = waLoadConfig();

@@ -1,7 +1,8 @@
 import pkg from 'whatsapp-web.js';
 const { Client, LocalAuth } = pkg;
 import { join } from 'path';
-import { WA_DIR } from '../config.js';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { WA_DIR, ROOT_DIR } from '../config.js';
 import { waConnections } from '../state.js';
 import { waLoadConfig, waSaveConfig } from './utils.js';
 import { setupMessageHandler } from './handler.js';
@@ -73,11 +74,25 @@ export async function waConnect(name) {
         waConnections[name].handlerSetup = true;
       }
 
-      // Sync contatos do WhatsApp para o banco local
+      // Sync contatos do WhatsApp para o banco local + arquivo JSON
       try {
         const contacts = await client.getContacts();
         const result = contactsDB.syncFromWhatsApp(contacts);
-        log.wa.info({ instance: name, synced: result.synced, failed: result.failed }, 'Contatos sincronizados');
+
+        // Salva arquivo data/contatos.json
+        const dataDir = join(ROOT_DIR, 'data');
+        if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
+        const agenda = contacts
+          .filter(c => c.id?.user && (c.isMyContact || c.name || c.pushname))
+          .map(c => ({
+            nome: c.name || c.pushname || c.shortName || c.id.user,
+            telefone: c.id.user,
+            pushname: c.pushname || '',
+          }))
+          .sort((a, b) => a.nome.localeCompare(b.nome));
+        writeFileSync(join(dataDir, 'contatos.json'), JSON.stringify(agenda, null, 2), 'utf-8');
+
+        log.wa.info({ instance: name, synced: result.synced, file: agenda.length }, 'Contatos sincronizados + arquivo salvo');
       } catch (e) {
         log.wa.error({ instance: name, err: e.message }, 'Erro ao sincronizar contatos');
       }
