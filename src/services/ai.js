@@ -930,21 +930,74 @@ async function executeVoiceTool(name, args) {
 
     case 'ler_mensagens_whatsapp': {
       try {
-        const { createClient } = await import('@supabase/supabase-js');
-        const { SUPABASE_URL, SUPABASE_KEY } = await import('../config.js');
-        if (!SUPABASE_URL || !SUPABASE_KEY) return 'Supabase não configurado.';
+        const { waConnections } = await import('../state.js');
+        const { waLoadConfig } = await import('../whatsapp/utils.js');
+        const waConfig = waLoadConfig();
+        const instName = waConfig.defaultInstance;
+        const conn = instName && waConnections[instName];
 
+        // Tenta ler direto do whatsapp-web.js local
+        if (conn?.client && conn.status === 'connected') {
+          const limite = Math.min(args.limite || 10, 20);
+          const chats = await conn.client.getChats();
+
+          // Filtra chats com mensagens não lidas ou recentes
+          let relevantChats = chats
+            .filter(c => !c.isGroup || args.filtro)
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+            .slice(0, 15);
+
+          // Filtro por nome ou número
+          if (args.filtro) {
+            const f = args.filtro.toLowerCase();
+            relevantChats = chats.filter(c => {
+              const name = (c.name || c.pushname || c.id?.user || '').toLowerCase();
+              return name.includes(f) || (c.id?.user || '').includes(f.replace(/\D/g, ''));
+            });
+          }
+
+          if (relevantChats.length === 0) return 'Nenhum chat encontrado.';
+
+          let result = '';
+          let totalMsgs = 0;
+
+          for (const chat of relevantChats.slice(0, 10)) {
+            const msgs = await chat.fetchMessages({ limit: limite });
+            const received = msgs.filter(m => !m.fromMe).slice(-5);
+            if (received.length === 0) continue;
+
+            const nome = chat.name || chat.pushname || chat.id?.user || 'Desconhecido';
+            const unread = chat.unreadCount || 0;
+            result += `*${nome}*${unread > 0 ? ` (${unread} nao lidas)` : ''}:\n`;
+
+            for (const m of received) {
+              const time = new Date(m.timestamp * 1000).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+              const body = m.body || (m.hasMedia ? `[${m.type}]` : '[vazio]');
+              result += `  ${time} — ${body.slice(0, 150)}\n`;
+              totalMsgs++;
+            }
+            result += '\n';
+          }
+
+          if (totalMsgs === 0) return 'Nenhuma mensagem recebida recentemente.';
+          return `📬 ${totalMsgs} mensagem(ns) recentes:\n\n${result.trim()}`;
+        }
+
+        // Fallback: Supabase se whatsapp-web.js não disponível
+        const { SUPABASE_URL, SUPABASE_KEY } = await import('../config.js');
+        if (!SUPABASE_URL || !SUPABASE_KEY) return 'WhatsApp não conectado e Supabase não configurado. Conecte o WhatsApp primeiro pelo painel.';
+
+        const { createClient } = await import('@supabase/supabase-js');
         const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
         const limite = Math.min(args.limite || 10, 20);
 
-        // Calcula data de início baseado no período
         let dateFilter = new Date();
         const periodo = args.periodo || 'hoje';
         if (periodo === 'hoje') dateFilter.setHours(0, 0, 0, 0);
         else if (periodo === 'ontem') { dateFilter.setDate(dateFilter.getDate() - 1); dateFilter.setHours(0, 0, 0, 0); }
         else if (periodo === '3dias') dateFilter.setDate(dateFilter.getDate() - 3);
         else if (periodo === 'semana') dateFilter.setDate(dateFilter.getDate() - 7);
-        else dateFilter = new Date(0); // todas
+        else dateFilter = new Date(0);
 
         let query = sb.from('wa_inbox')
           .select('phone, push_name, message_body, message_type, event, received_at')
@@ -954,21 +1007,16 @@ async function executeVoiceTool(name, args) {
           .order('received_at', { ascending: false })
           .limit(limite);
 
-        // Filtro por nome ou número
         if (args.filtro) {
           const f = args.filtro.replace(/\D/g, '');
-          if (f.length >= 8) {
-            query = query.ilike('phone', `%${f}%`);
-          } else {
-            query = query.ilike('push_name', `%${args.filtro}%`);
-          }
+          if (f.length >= 8) query = query.ilike('phone', `%${f}%`);
+          else query = query.ilike('push_name', `%${args.filtro}%`);
         }
 
         const { data: msgs, error } = await query;
         if (error) return `Erro ao buscar: ${error.message}`;
         if (!msgs || msgs.length === 0) return 'Nenhuma mensagem encontrada nesse período.';
 
-        // Agrupa por remetente
         const byPerson = {};
         for (const m of msgs) {
           const nome = m.push_name || m.phone || 'Desconhecido';
@@ -987,7 +1035,6 @@ async function executeVoiceTool(name, args) {
           }
           result += '\n';
         }
-
         return result.trim();
       } catch (e) {
         log.ai.error({ err: e.message }, 'Erro ler_mensagens_whatsapp');
