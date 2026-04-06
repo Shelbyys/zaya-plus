@@ -74,20 +74,30 @@ export async function sendWhatsApp(phone, message) {
   // Fallback: whatsapp-web.js (local)
   const chatId = cleanPhone + '@c.us';
   const config = waLoadConfig();
-  const name = config.defaultInstance;
+  let name = config.defaultInstance;
+
+  // Se não tem default, tenta a primeira instância conectada
+  if (!name || !waConnections[name]?.client || waConnections[name]?.status !== 'connected') {
+    const connected = Object.entries(waConnections).find(([, c]) => c.status === 'connected' && c.client);
+    if (connected) {
+      name = connected[0];
+      log.wa.info({ instance: name }, 'Usando instância conectada (não-default)');
+    }
+  }
 
   if (name && waConnections[name]?.status === 'connected' && waConnections[name]?.client) {
     try {
       await waConnections[name].client.sendMessage(chatId, message);
-      log.wa.info({ chatId }, 'WA local enviado');
+      log.wa.info({ chatId, instance: name }, 'WA local enviado');
       return { success: true, output: `Mensagem enviada para ${phone}` };
     } catch (e) {
-      log.wa.error({ err: e.message, chatId }, 'WA local erro');
-      return { success: false, output: `Erro: ${e.message}` };
+      log.wa.error({ err: e.message, chatId, instance: name }, 'WA local erro');
+      return { success: false, output: `Erro ao enviar: ${e.message}` };
     }
   }
 
-  return { success: false, output: 'Nenhuma instância WhatsApp conectada' };
+  log.wa.warn({ defaultInstance: config.defaultInstance, connections: Object.keys(waConnections) }, 'Nenhuma instância conectada');
+  return { success: false, output: 'Nenhuma instância WhatsApp conectada. Conecte pelo painel WhatsApp primeiro.' };
 }
 
 export async function sendWhatsAppMedia(jid, filePath, caption) {
