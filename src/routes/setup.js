@@ -487,4 +487,79 @@ router.get('/env-template', (req, res) => {
   }
 });
 
+// ─── GET /check-update ─────────────────────────────────────
+
+router.get('/check-update', async (req, res) => {
+  try {
+    const { execSync } = await import('child_process');
+    const cwd = ROOT_DIR;
+
+    // Busca commits remotos sem baixar
+    try { execSync('git fetch origin main --quiet', { cwd, timeout: 15000, stdio: 'pipe' }); } catch {}
+
+    const local = execSync('git rev-parse HEAD', { cwd, encoding: 'utf-8' }).trim();
+    const remote = execSync('git rev-parse origin/main', { cwd, encoding: 'utf-8' }).trim();
+
+    if (local === remote) {
+      return res.json({ hasUpdate: false, current: local.slice(0, 7) });
+    }
+
+    // Pega resumo dos commits novos
+    let commits = [];
+    try {
+      const log = execSync(`git log ${local}..${remote} --oneline --no-decorate -10`, { cwd, encoding: 'utf-8' }).trim();
+      commits = log.split('\n').filter(Boolean).map(l => {
+        const [hash, ...msg] = l.split(' ');
+        return { hash: hash.slice(0, 7), msg: msg.join(' ') };
+      });
+    } catch {}
+
+    res.json({
+      hasUpdate: true,
+      current: local.slice(0, 7),
+      latest: remote.slice(0, 7),
+      commits,
+      count: commits.length,
+    });
+  } catch (e) {
+    res.json({ hasUpdate: false, error: e.message });
+  }
+});
+
+// ─── POST /update ──────────────────────────────────────────
+
+router.post('/update', async (req, res) => {
+  try {
+    const { exec } = await import('child_process');
+    const cwd = ROOT_DIR;
+
+    res.json({ started: true, message: 'Atualizando... o servidor vai reiniciar em instantes.' });
+
+    // Executa update em background após responder
+    setTimeout(() => {
+      const cmd = [
+        'git checkout -- .',
+        'git clean -fd --exclude=.env --exclude=whatsapp-sessions --exclude="zaya.db*" --exclude=node_modules',
+        'git pull origin main --force',
+        'npm install --production --silent',
+      ].join(' && ');
+
+      exec(cmd, { cwd, timeout: 120000 }, (err) => {
+        if (err) {
+          console.error('Update falhou:', err.message);
+          // Tenta force reset como fallback
+          exec('git fetch origin main && git reset --hard origin/main && npm install --production --silent', { cwd, timeout: 120000 }, () => {
+            process.exit(0); // PM2/nodemon reinicia
+          });
+        } else {
+          console.log('Update concluído! Reiniciando...');
+          process.exit(0); // PM2/nodemon reinicia
+        }
+      });
+    }, 500);
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;

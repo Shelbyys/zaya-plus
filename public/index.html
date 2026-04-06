@@ -440,6 +440,12 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
 .setup-save-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:1px;padding:6px 16px;background:var(--od);color:#000;border:none;border-radius:3px;cursor:pointer;font-weight:700;transition:all .2s;}
 .setup-save-btn:hover{background:var(--o);}
 .setup-save-msg{font-family:'Space Mono',monospace;font-size:8px;display:flex;align-items:center;}
+.update-bar{position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,#f36600,#ff8c00);padding:6px 16px;display:flex;align-items:center;justify-content:center;gap:12px;font-family:'Space Mono',monospace;font-size:10px;color:#000;transform:translateY(-100%);transition:transform .4s;cursor:default;}
+.update-bar.show{transform:translateY(0);}
+.update-bar button{background:#000;color:#ff8c00;border:none;padding:4px 12px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1px;border-radius:3px;cursor:pointer;font-weight:700;}
+.update-bar button:hover{background:#222;}
+.update-bar .close{background:transparent;color:#000;font-size:14px;padding:0 6px;opacity:0.6;}
+.update-bar .close:hover{opacity:1;}
 .wa-default-badge{font-size:7px;letter-spacing:1px;color:var(--o);border:1px solid var(--o);padding:1px 5px;margin-left:4px;}
 .wa-input{
   width:100%;background:rgba(0,0,0,0.5);border:1px solid var(--w3);color:var(--w);
@@ -648,6 +654,11 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
 </style>
 </head>
 <body>
+<div class="update-bar" id="updateBar">
+  <span id="updateMsg">Nova atualização disponível!</span>
+  <button onclick="doUpdate()">ATUALIZAR AGORA</button>
+  <button class="close" onclick="dismissUpdate()">&times;</button>
+</div>
 <canvas id="bg-canvas"></canvas>
 <video id="camera" autoplay playsinline></video>
 <canvas id="camera-canvas"></canvas>
@@ -3621,6 +3632,59 @@ async function reconnectWaInstance(name){
   await fetch(`/api/whatsapp/reconnect/${name}`,{method:'POST'});
   setTimeout(()=>loadWaInstances(),2000);
 }
+
+// === AUTO-UPDATE ===
+let _updateDismissed = false;
+
+async function checkForUpdates(){
+  if(_updateDismissed) return;
+  try{
+    const r = await fetch('/api/setup/check-update');
+    const d = await r.json();
+    if(d.hasUpdate){
+      const msg = d.count > 1
+        ? `${d.count} atualizações disponíveis`
+        : 'Nova atualização disponível!';
+      document.getElementById('updateMsg').textContent = msg;
+      document.getElementById('updateBar').classList.add('show');
+    }
+  }catch{}
+}
+
+function dismissUpdate(){
+  document.getElementById('updateBar').classList.remove('show');
+  _updateDismissed = true;
+}
+
+async function doUpdate(){
+  const bar = document.getElementById('updateBar');
+  const msg = document.getElementById('updateMsg');
+  const btns = bar.querySelectorAll('button');
+  btns.forEach(b => b.disabled = true);
+  msg.textContent = 'Atualizando... aguarde, o servidor vai reiniciar.';
+
+  try{
+    await fetch('/api/setup/update', { method: 'POST' });
+    msg.textContent = 'Atualizado! Reconectando em 10s...';
+    // Espera o servidor reiniciar e recarrega
+    let attempts = 0;
+    const tryReload = setInterval(async () => {
+      attempts++;
+      try {
+        const r = await fetch('/api/setup/status', { signal: AbortSignal.timeout(3000) });
+        if(r.ok) { clearInterval(tryReload); location.reload(); }
+      } catch {}
+      if(attempts > 30) { clearInterval(tryReload); msg.textContent = 'Reinicie manualmente: npm start'; }
+    }, 3000);
+  }catch(e){
+    msg.textContent = 'Erro: ' + e.message;
+    btns.forEach(b => b.disabled = false);
+  }
+}
+
+// Verifica atualizações ao carregar e a cada 30 min
+checkForUpdates();
+setInterval(checkForUpdates, 30 * 60 * 1000);
 
 // === SETUP / PENDENCIAS ===
 const SETUP_MODULES = [
