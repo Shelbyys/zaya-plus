@@ -3393,7 +3393,12 @@ $('deactivateBtn').addEventListener('click',()=>{if(zayaOn)deactivateZaya();});
 function toggleWaPanel(){
   const p=$('waPanel');
   p.classList.toggle('open');
-  if(p.classList.contains('open'))loadWaInstances();
+  if(p.classList.contains('open')){
+    sessionStorage.setItem('_panel_wa','1');
+    loadWaInstances();
+  }else{
+    sessionStorage.removeItem('_panel_wa');
+  }
 }
 
 async function loadWaInstances(){
@@ -4024,7 +4029,13 @@ let _setupStatus = null;
 function toggleSetupPanel(){
   const p=$('setupPanel');
   p.classList.toggle('open');
-  if(p.classList.contains('open')) loadSetupStatus();
+  if(p.classList.contains('open')){
+    sessionStorage.setItem('_panel_setup','1');
+    loadSetupStatus();
+  }else{
+    sessionStorage.removeItem('_panel_setup');
+    sessionStorage.removeItem('_panel_setup_detail');
+  }
 }
 
 async function loadSetupStatus(){
@@ -4211,7 +4222,14 @@ function renderSetupModule(m, isActive){
 
 function toggleSetupDetail(id){
   const el=document.getElementById('setupDetail_'+id);
-  if(el) el.style.display=el.style.display==='none'?'block':'none';
+  if(!el)return;
+  const isOpen=el.style.display!=='block';
+  el.style.display=isOpen?'block':'none';
+  if(isOpen){
+    sessionStorage.setItem('_panel_setup_detail',id);
+  }else{
+    sessionStorage.removeItem('_panel_setup_detail');
+  }
 }
 
 function setupFieldChange(modId){
@@ -4711,6 +4729,22 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(mi)mi.addEventListener('keydown',e=>{
     if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();mobileSend();}
   });
+
+  // Restaurar painéis abertos após reload
+  setTimeout(()=>{
+    if(sessionStorage.getItem('_panel_setup')){
+      const p=$('setupPanel');
+      if(p&&!p.classList.contains('open')) toggleSetupPanel();
+      const detailId=sessionStorage.getItem('_panel_setup_detail');
+      if(detailId){
+        setTimeout(()=>{ toggleSetupDetail(detailId); },500);
+      }
+    }
+    if(sessionStorage.getItem('_panel_wa')){
+      const p=$('waPanel');
+      if(p&&!p.classList.contains('open')) toggleWaPanel();
+    }
+  },300);
 });
 
 // === MUTE ===
