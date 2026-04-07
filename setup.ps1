@@ -47,7 +47,7 @@ $nodeExists = $false
 try {
     $nodeVer = (node -v 2>$null)
     if ($nodeVer) {
-        $major = [int]($nodeVer -replace 'v','').Split('.')[0]
+        $major = [int]($nodeVer -replace "v","").Split(".")[0]
         if ($major -ge 18) {
             Write-Host "  OK Node.js $nodeVer encontrado" -ForegroundColor Green
             $nodeExists = $true
@@ -78,7 +78,7 @@ if (-not $nodeExists) {
         $nodeInstaller = "$env:TEMP\node-install.msi"
         Invoke-WebRequest -Uri $nodeUrl -OutFile $nodeInstaller -UseBasicParsing
         Write-Host "  -> Instalando (pode pedir permissao de admin)..." -ForegroundColor Cyan
-        $msiArgs = '/i "' + $nodeInstaller + '" /qn'
+        $msiArgs = "/i " + [char]34 + $nodeInstaller + [char]34 + " /qn"
         Start-Process msiexec.exe -ArgumentList $msiArgs -Wait -Verb RunAs
         Remove-Item $nodeInstaller -Force -ErrorAction SilentlyContinue
     }
@@ -170,26 +170,29 @@ node activate.js $Token
 # 5. Criar atalho "zaya" no terminal
 # ================================================================
 
-# PowerShell profile alias
-$profileDir = Split-Path $PROFILE -Parent
-if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Path $profileDir -Force | Out-Null }
-if (-not (Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force | Out-Null }
-
-$aliasLine = "function zaya { Set-Location '$INSTALL_DIR'; npm start }"
-$profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
-if (-not $profileContent -or $profileContent -notmatch 'function zaya') {
-    $nl = [Environment]::NewLine
-    Add-Content $PROFILE ($nl + '# Zaya Plus' + $nl + $aliasLine)
-    Write-Host "  OK Atalho 'zaya' criado no PowerShell" -ForegroundColor Green
-}
-
 # CMD alias via batch file
-$cmdDir = "$env:USERPROFILE\AppData\Local\Microsoft\WindowsApps"
+$cmdDir = Join-Path $env:USERPROFILE "AppData\Local\Microsoft\WindowsApps"
 if (Test-Path $cmdDir) {
-    $batLines = @('@echo off', "cd /d ""$INSTALL_DIR"" && npm start")
-    Set-Content "$cmdDir\zaya.cmd" ($batLines -join [Environment]::NewLine) -Force
-    Write-Host "  OK Atalho 'zaya' criado no CMD" -ForegroundColor Green
+    $batPath = Join-Path $cmdDir "zaya.cmd"
+    $line1 = "@echo off"
+    $line2 = "cd /d " + [char]34 + $INSTALL_DIR + [char]34 + " && npm start"
+    [System.IO.File]::WriteAllText($batPath, ($line1 + [Environment]::NewLine + $line2))
+    Write-Host "  OK Atalho zaya criado no CMD" -ForegroundColor Green
 }
+
+# PowerShell profile alias
+try {
+    $profileDir = Split-Path $PROFILE -Parent
+    if (-not (Test-Path $profileDir)) { New-Item -ItemType Directory -Path $profileDir -Force | Out-Null }
+    if (-not (Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force | Out-Null }
+    $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
+    if (-not $profileContent -or $profileContent -notmatch "function zaya") {
+        $funcLine = "function zaya { Set-Location " + [char]39 + $INSTALL_DIR + [char]39 + "; npm start }"
+        $nl = [Environment]::NewLine
+        [System.IO.File]::AppendAllText($PROFILE, ($nl + "# Zaya Plus" + $nl + $funcLine + $nl))
+        Write-Host "  OK Atalho zaya criado no PowerShell" -ForegroundColor Green
+    }
+} catch {}
 
 Write-Host ""
 Write-Host "  -----------------------------------------" -ForegroundColor DarkGray
