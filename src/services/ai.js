@@ -1755,14 +1755,27 @@ async function executeVoiceTool(name, args) {
 // ================================================================
 // FALLBACK: detecta recusa do modelo e tenta extrair ação da msg original
 // ================================================================
-const RECUSA_PATTERNS = /n[aã]o (posso|consigo|é poss[ií]vel|tenho (capacidade|como)|devo)|cannot|can'?t send|unable to|i('m| am) not able/i;
+const RECUSA_PATTERNS = /n[aã]o (posso|consigo|é poss[ií]vel|tenho (capacidade|como)|devo|sei como)|infelizmente|unfortunately|cannot|can'?t|unable to|i('m| am) not able|i don'?t have|no tengo|sorry|desculp[ea]|não é possível|não tenho acesso|I can'?t|I('m| am) unable|I don'?t|I cannot|no puedo/i;
 const ACAO_PATTERNS = [
+  // "envie uma mensagem para o meu gato pelo WhatsApp falando que eu amo ele"
+  { regex: /(?:mand[ae]|envi[ae]|fal[ae]|dig[ae]|escrev[ae])\s+(?:(?:uma?\s+)?(?:msg|mensagem|message)\s+)?(?:(?:pra|para|pro|ao?|no)\s+)(.+?)(?:\s+(?:pelo|via|no|por)\s+whatsapp)?\s+(?:que|dizendo|falando|escrevendo)\s+(?:que\s+)?[""]?(.+?)[""]?\s*$/i, tool: 'enviar_whatsapp' },
+  // "manda pro fulano: texto"
+  { regex: /(?:mand[ae]|envi[ae])\s+(?:(?:uma?\s+)?(?:msg|mensagem)\s+)?(?:(?:pra|para|pro)\s+)(.+?)\s*[:\-]\s*(.+)/i, tool: 'enviar_whatsapp' },
+  // "envia mensagem pra fulano texto"
   { regex: /(?:mand[ae]|envi[ae]|fal[ae]|dig[ae]|escrev[ae])\s+(?:(?:uma?\s+)?(?:msg|mensagem|message)\s+)?(?:(?:pra|para|pro|ao?|no)\s+)(.+?)(?:\s+(?:que|dizendo|falando|escrevendo)\s+[""]?(.+?)[""]?\s*$)/i, tool: 'enviar_whatsapp' },
-  { regex: /(?:mand[ae]|envi[ae])\s+(?:(?:uma?\s+)?(?:msg|mensagem)\s+)?(?:(?:pra|para|pro)\s+)(\S+)\s*[:\-]?\s*(.+)/i, tool: 'enviar_whatsapp' },
+  // "manda/envia pra fulano mensagem"
+  { regex: /(?:mand[ae]|envi[ae])\s+(?:(?:uma?\s+)?(?:msg|mensagem)\s+)?(?:(?:pra|para|pro)\s+)(\S+)\s+(.+)/i, tool: 'enviar_whatsapp' },
+  // "send a message to X saying Y" (inglês - modelo às vezes responde em inglês)
+  { regex: /send\s+(?:a\s+)?message\s+to\s+(.+?)\s+(?:saying|that)\s+(.+)/i, tool: 'enviar_whatsapp' },
 ];
 
 function detectRefusalAndExtractAction(reply, originalMessage) {
-  if (!RECUSA_PATTERNS.test(reply)) return null;
+  // Detecta se o modelo recusou OU se simplesmente não usou nenhuma tool quando deveria
+  const isRefusal = RECUSA_PATTERNS.test(reply);
+  const mentionsWhatsApp = /whatsapp|mensagem|message|mand[ae]|envi[ae]/i.test(originalMessage);
+  const noToolUsed = !reply.includes('Mensagem enviada') && !reply.includes('Pronto') && mentionsWhatsApp;
+
+  if (!isRefusal && !noToolUsed) return null;
   for (const { regex, tool } of ACAO_PATTERNS) {
     const m = originalMessage.match(regex);
     if (m) return { tool, contact: m[1]?.trim(), message: m[2]?.trim() };
@@ -1832,16 +1845,49 @@ export async function processVoiceChat(message, statusCallback) {
     if (refusal) {
       log.ai.warn({ refusal, originalMsg: message }, 'Modelo recusou — tentando fallback');
       try {
-        if (refusal.tool === 'enviar_whatsapp' && refusal.contact && refusal.message) {
+        if (refusal.tool === 'enviar_whatsapp' && refusal.contact) {
+          const msgToSend = refusal.message || message;
+          // Tenta buscar contato na agenda
           const contactResult = await searchContact(refusal.contact);
+          let phone = null;
           if (contactResult?.success) {
             const firstLine = contactResult.output.split('\n')[0];
-            const phone = firstLine.split('->')[1]?.trim();
-            if (phone) {
-              const result = await sendWhatsApp(phone, refusal.message);
+            phone = firstLine.split('->')[1]?.trim()?.replace(/\D/g, '');
+          }
+          // Fallback: busca nos chats do WhatsApp
+          if (!phone) {
+            try {
+              const { waConnections } = await import('../state.js');
+              const connected = Object.entries(waConnections).find(([, c]) => c.status === 'connected' && c.client);
+              if (connected) {
+                const [, conn] = connected;
+                const store = conn.client?.store;
+                if (store) {
+                  const contacts = store.contacts || {};
+                  const query = refusal.contact.toLowerCase();
+                  for (const [jid, contact] of Object.entries(contacts)) {
+                    const name = (contact.name || contact.notify || '').toLowerCase();
+                    if (name.includes(query) || query.includes(name)) {
+                      phone = jid.split('@')[0];
+                      break;
+                    }
+                  }
+                }
+              }
+            } catch {}
+          }
+          if (phone) {
+            if (phone.length <= 11) phone = '55' + phone;
+            const result = await sendWhatsApp(phone, msgToSend);
+            if (result.success) {
               reply = `Pronto, mandei a mensagem pra ${refusal.contact}!`;
-              log.ai.info({ contact: refusal.contact, result }, 'Fallback: mensagem enviada com sucesso');
+              log.ai.info({ contact: refusal.contact, phone, result }, 'Fallback: mensagem enviada com sucesso');
+            } else {
+              log.ai.warn({ contact: refusal.contact, result }, 'Fallback: envio falhou');
             }
+          } else {
+            log.ai.warn({ contact: refusal.contact }, 'Fallback: contato não encontrado');
+            reply = `Nao encontrei "${refusal.contact}" nos contatos. Me passa o numero completo (ex: 5511999999999).`;
           }
         }
       } catch (e) {
