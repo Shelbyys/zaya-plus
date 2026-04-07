@@ -79,7 +79,8 @@ export function setupMessageHandler(sock, instanceName) {
         const hasAudio = !!(msg.message?.audioMessage);
         const hasImage = !!(msg.message?.imageMessage);
         const hasVideo = !!(msg.message?.videoMessage);
-        const msgType = hasAudio ? 'audio' : hasImage ? 'image' : hasVideo ? 'video' : 'text';
+        const hasDocument = !!(msg.message?.documentMessage || msg.message?.documentWithCaptionMessage);
+        const msgType = hasAudio ? 'audio' : hasImage ? 'image' : hasVideo ? 'video' : hasDocument ? 'document' : 'text';
 
         // Salva no Supabase
         const msgBody = text || (msg.message ? `[${msgType}]` : '');
@@ -213,6 +214,83 @@ export function setupMessageHandler(sock, instanceName) {
               addToHistory(jid, 'user', `[Imagem${text ? ': ' + text : ''}]`);
               addToHistory(jid, 'assistant', analysis);
               await sendText(analysis);
+            } catch (e) { await sendText(traduzirErroAPI(e.message)); }
+          });
+          return;
+        }
+
+        // ========== VÍDEO ==========
+        if (hasVideo) {
+          await enqueue(jid, async () => {
+            await sendText(getProcessingMsg());
+            try {
+              const buffer = await downloadMediaMessage(msg, 'buffer', {});
+              const videoPath = join(TMP_DIR, `video_${Date.now()}.mp4`);
+              writeFileSync(videoPath, buffer);
+
+              // Extrai primeiro frame pra análise visual
+              const framePath = videoPath.replace('.mp4', '_frame.jpg');
+              await new Promise((resolve, reject) => {
+                exec(`${FFMPEG} -y -i "${videoPath}" -ss 00:00:01 -vframes 1 "${framePath}"`, { timeout: 15000 }, (err) => err ? reject(err) : resolve());
+              });
+
+              let analysis = '';
+              try {
+                const { readFileSync: readF } = await import('fs');
+                const frameBuffer = readF(framePath);
+                const b64 = frameBuffer.toString('base64');
+                const caption = text || 'Descreve esse vídeo. O que tá acontecendo? Responda em português brasileiro.';
+
+                const response = await openai.chat.completions.create({
+                  model: AI_MODEL_MINI, max_tokens: getBotConfig().maxTokens || 1024,
+                  messages: [
+                    { role: 'system', content: `Assistente visual no WhatsApp do ${ADMIN_NAME}. Português brasileiro, conciso.` },
+                    { role: 'user', content: [
+                      { type: 'text', text: caption },
+                      { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${b64}` } },
+                    ] },
+                  ],
+                });
+                analysis = response.choices[0].message.content;
+              } catch (e) {
+                analysis = 'Recebi o vídeo mas não consegui analisar: ' + e.message;
+              }
+
+              addToHistory(jid, 'user', `[Vídeo${text ? ': ' + text : ''}]`);
+              addToHistory(jid, 'assistant', analysis);
+              await sendText(analysis);
+
+              // Cleanup
+              try { unlinkSync(videoPath); } catch {}
+              try { unlinkSync(framePath); } catch {}
+            } catch (e) { await sendText(traduzirErroAPI(e.message)); }
+          });
+          return;
+        }
+
+        // ========== DOCUMENTO ==========
+        if (hasDocument) {
+          await enqueue(jid, async () => {
+            try {
+              const docMsg = msg.message?.documentMessage || msg.message?.documentWithCaptionMessage?.message?.documentMessage;
+              const fileName = docMsg?.fileName || 'arquivo';
+              const mimetype = docMsg?.mimetype || '';
+
+              addToHistory(jid, 'user', `[Documento: ${fileName}]`);
+
+              // Se é PDF ou texto, tenta ler
+              if (mimetype.includes('pdf') || mimetype.includes('text') || fileName.endsWith('.txt') || fileName.endsWith('.csv')) {
+                const buffer = await downloadMediaMessage(msg, 'buffer', {});
+                const filePath = join(TMP_DIR, `doc_${Date.now()}_${fileName}`);
+                writeFileSync(filePath, buffer);
+
+                const caption = text || 'Analise este documento e faça um resumo em português brasileiro.';
+                const aiResult = await processWithAI(`${caption}\n\n[Arquivo recebido: ${fileName} (${mimetype})]`, jid, isAdmin && isAuthenticated(jid));
+                if (aiResult.text) await sendText(aiResult.text);
+                try { unlinkSync(filePath); } catch {}
+              } else {
+                await sendText(`Recebi o arquivo "${fileName}". Salvo! Se precisar que eu analise, me diz o que quer saber.`);
+              }
             } catch (e) { await sendText(traduzirErroAPI(e.message)); }
           });
           return;

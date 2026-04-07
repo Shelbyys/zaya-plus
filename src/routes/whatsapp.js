@@ -255,15 +255,8 @@ router.get('/pair-qr', async (req, res) => {
 });
 
 // ================================================================
-// CONTACTS
+// CONTACTS (rota unificada — busca por query ou retorna todos)
 // ================================================================
-router.get('/contacts', async (req, res) => {
-  try {
-    const { contactsDB } = await import('../database.js');
-    const all = contactsDB.getAll();
-    res.json({ contacts: all, count: all.length });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
 
 router.post('/contacts/sync', async (req, res) => {
   try {
