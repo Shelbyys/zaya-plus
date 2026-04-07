@@ -27,17 +27,33 @@ export async function createClient(name) {
     generateHighQualityLinkPreview: false,
     syncFullHistory: false,
     markOnlineOnConnect: false,
+    defaultQueryTimeoutMs: 60000,
+    retryRequestDelayMs: 500,
+    connectTimeoutMs: 60000,
   });
 
   // Captura contatos e chats nos eventos do Baileys
-  sock.ev.on('contacts.set', ({ contacts }) => {
-    for (const c of contacts) { if (c.id) store.contacts[c.id] = c; }
+  sock.ev.on('contacts.set', (data) => {
+    const contacts = data?.contacts || data || [];
+    if (Array.isArray(contacts)) {
+      for (const c of contacts) { if (c.id) store.contacts[c.id] = c; }
+    }
   });
   sock.ev.on('contacts.update', (updates) => {
-    for (const u of updates) { if (u.id) store.contacts[u.id] = { ...store.contacts[u.id], ...u }; }
+    if (Array.isArray(updates)) {
+      for (const u of updates) { if (u.id) store.contacts[u.id] = { ...store.contacts[u.id], ...u }; }
+    }
   });
-  sock.ev.on('chats.set', ({ chats }) => {
-    for (const c of chats) { if (c.id) store.chats[c.id] = c; }
+  sock.ev.on('chats.set', (data) => {
+    const chats = data?.chats || data || [];
+    if (Array.isArray(chats)) {
+      for (const c of chats) { if (c.id) store.chats[c.id] = c; }
+    }
+  });
+  sock.ev.on('chats.upsert', (chats) => {
+    if (Array.isArray(chats)) {
+      for (const c of chats) { if (c.id) store.chats[c.id] = c; }
+    }
   });
   sock.store = store;
 
@@ -83,6 +99,7 @@ export async function waConnect(name) {
       if (connection === 'open') {
         waConnections[name].status = 'connected';
         waConnections[name].qr = null;
+        waConnections[name]._retries = 0;
         log.wa.info({ instance: name }, 'Conectado com sucesso via Baileys!');
 
         // Registra handler apenas uma vez
@@ -103,17 +120,22 @@ export async function waConnect(name) {
         waConnections[name].status = 'disconnected';
         waConnections[name].handlerSetup = false;
         const statusCode = lastDisconnect?.error?.output?.statusCode;
+        const reason = lastDisconnect?.error?.message || 'desconhecido';
         const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
 
-        log.wa.warn({ instance: name, statusCode, shouldReconnect }, 'Desconectado');
+        log.wa.warn({ instance: name, statusCode, reason, shouldReconnect }, 'Desconectado');
 
         if (shouldReconnect) {
-          setTimeout(() => {
-            log.wa.info({ instance: name }, 'Reconectando...');
-            waConnect(name);
-          }, 5000);
+          // Backoff: espera mais a cada tentativa
+          const retries = waConnections[name]._retries || 0;
+          const delay = Math.min(5000 * (retries + 1), 30000);
+          waConnections[name]._retries = retries + 1;
+
+          log.wa.info({ instance: name, delay, retry: retries + 1 }, 'Reconectando...');
+          setTimeout(() => waConnect(name), delay);
         } else {
-          log.wa.info({ instance: name }, 'Logout — não reconecta');
+          log.wa.info({ instance: name }, 'Logout — nao reconecta');
+          waConnections[name]._retries = 0;
         }
       }
     });

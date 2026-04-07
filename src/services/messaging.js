@@ -84,13 +84,25 @@ export async function sendWhatsApp(phone, message) {
   }
 
   if (name && waConnections[name]?.status === 'connected' && waConnections[name]?.client) {
-    try {
-      await waConnections[name].client.sendMessage(jid, { text: message });
-      log.wa.info({ jid, instance: name }, 'WA Baileys enviado');
-      return { success: true, output: `Mensagem enviada para ${phone}` };
-    } catch (e) {
-      log.wa.error({ err: e.message, jid, instance: name }, 'WA Baileys erro');
-      return { success: false, output: `Erro ao enviar: ${e.message}` };
+    // Retry: tenta 3x com delay crescente
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        await waConnections[name].client.sendMessage(jid, { text: message });
+        log.wa.info({ jid, instance: name }, 'WA Baileys enviado');
+        return { success: true, output: `Mensagem enviada para ${phone}` };
+      } catch (e) {
+        log.wa.error({ err: e.message, jid, instance: name, attempt }, 'WA Baileys erro');
+        if (attempt < 3) {
+          await new Promise(r => setTimeout(r, 1000 * attempt));
+          // Se desconectou, tenta outra instancia
+          if (waConnections[name]?.status !== 'connected') {
+            const other = Object.entries(waConnections).find(([k, c]) => k !== name && c.status === 'connected' && c.client);
+            if (other) { name = other[0]; log.wa.info({ instance: name }, 'Trocando para outra instancia'); }
+          }
+        } else {
+          return { success: false, output: `Erro ao enviar apos 3 tentativas: ${e.message}` };
+        }
+      }
     }
   }
 
