@@ -45,7 +45,7 @@ app.use((req, res, next) => {
   if (!req.path.endsWith('.html') && req.path !== '/' && req.path !== '/index.html') return next();
 
   // license.html, admin.html, onboarding.html — sempre acessíveis
-  if (req.path === '/license.html' || req.path === '/admin.html' || req.path === '/onboarding.html' || req.path === '/settings.html') return next();
+  if (req.path === '/license.html' || req.path === '/admin.html' || req.path === '/onboarding.html' || req.path === '/settings.html' || req.path === '/whatsapp.html') return next();
 
   // Página de login — sempre acessível
   if (req.path === '/login') return next();

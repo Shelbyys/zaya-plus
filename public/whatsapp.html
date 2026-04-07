@@ -3,461 +3,281 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ZAYA — WhatsApp Manager</title>
+<title>WhatsApp — ZAYA PLUS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#e0e0e0;min-height:100vh;padding:20px;max-width:900px;margin:0 auto;}
-h1{color:#f36600;font-size:28px;margin-bottom:20px;font-weight:800;letter-spacing:2px;}
-h2{color:#888;font-size:12px;text-transform:uppercase;letter-spacing:3px;margin:24px 0 12px;display:flex;align-items:center;gap:8px;}
-h2::after{content:'';flex:1;height:1px;background:#1e1e2e;}
-.card{background:#12121a;border:1px solid #1e1e2e;border-radius:12px;padding:20px;margin-bottom:16px;}
-.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
-
-/* Instances */
-.instance{display:flex;justify-content:space-between;align-items:center;padding:14px;border:1px solid #1e1e2e;border-radius:8px;margin-bottom:8px;}
-.instance.connected{border-color:#25d366;box-shadow:0 0 10px rgba(37,211,102,0.1);}
-.instance-name{font-weight:600;font-size:16px;}
-.instance-phone{color:#666;font-size:13px;margin-top:2px;}
-.instance-status{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;}
-.instance-status.connected{background:rgba(37,211,102,0.15);color:#25d366;}
-.instance-status.offline{background:rgba(255,71,87,0.15);color:#ff4757;}
-.instance-status.connecting{background:rgba(255,192,72,0.15);color:#ffc048;}
-.btns{display:flex;gap:6px;margin-top:8px;}
-
-/* Buttons */
-.btn{padding:6px 14px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;}
-.btn-primary{background:#f36600;color:#fff;}
-.btn-green{background:#25d366;color:#000;}
-.btn-red{background:#ff4757;color:#fff;}
-.btn-blue{background:#6c5ce7;color:#fff;}
-.btn-gray{background:#222;color:#999;border:1px solid #333;}
-.btn:hover{opacity:0.85;transform:scale(0.98);}
-.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;}
-.btn-lg{padding:12px 20px;font-size:14px;width:100%;}
-
-/* Inputs */
-input,select,textarea{width:100%;padding:10px 14px;background:#1a1a25;border:1px solid #2a2a3a;border-radius:8px;color:#e0e0e0;font-size:14px;margin-bottom:10px;outline:none;font-family:inherit;}
-input:focus,select:focus,textarea:focus{border-color:#f36600;}
-input::placeholder,textarea::placeholder{color:#444;}
-select{-webkit-appearance:none;cursor:pointer;}
-textarea{resize:vertical;min-height:60px;}
-
-/* Toggle switch */
-.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1a1a25;}
-.toggle-row:last-child{border-bottom:none;}
-.toggle-label{font-size:14px;color:#ccc;}
-.toggle-desc{font-size:11px;color:#555;margin-top:2px;}
-.toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
-.toggle input{opacity:0;width:0;height:0;}
-.toggle .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#333;border-radius:24px;transition:.3s;}
-.toggle .slider::before{content:'';position:absolute;height:18px;width:18px;left:3px;bottom:3px;background:#666;border-radius:50%;transition:.3s;}
-.toggle input:checked+.slider{background:#25d366;}
-.toggle input:checked+.slider::before{transform:translateX(20px);background:#fff;}
-
-/* Tags/chips */
-.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
-.tag{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:#1a1a25;border:1px solid #2a2a3a;border-radius:20px;font-size:12px;color:#ccc;}
-.tag .remove{cursor:pointer;color:#ff4757;font-weight:700;margin-left:2px;}
-.tag .remove:hover{color:#ff6b6b;}
-.add-number{display:flex;gap:8px;}
-.add-number input{margin-bottom:0;flex:1;}
-
-/* Pair section */
-.pair-btns{display:flex;gap:10px;margin-bottom:16px;}
-.pair-btns .btn{flex:1;}
-.code{font-size:48px;font-weight:700;color:#25d366;text-align:center;padding:20px;border:2px solid #25d366;border-radius:12px;margin:16px 0;letter-spacing:8px;text-shadow:0 0 20px rgba(37,211,102,0.4);}
-.hint{color:#666;font-size:13px;text-align:center;line-height:1.8;}
-.qr-wrap{text-align:center;padding:16px;}
-.qr-wrap img{border:3px solid #25d366;padding:10px;background:#fff;border-radius:8px;max-width:300px;}
-.success{text-align:center;padding:30px;color:#25d366;font-size:18px;font-weight:600;}
-.error{color:#ff4757;text-align:center;padding:10px;}
-.timer{display:flex;align-items:center;justify-content:center;gap:10px;margin:10px 0;}
-.timer-bar{width:200px;height:4px;background:#1e1e2e;border-radius:2px;overflow:hidden;}
-.timer-fill{height:100%;background:#25d366;border-radius:2px;transition:width 1s linear;}
-.timer-text{color:#666;font-size:12px;}
-
-/* Config sections */
-.config-section{margin-bottom:16px;}
-.config-section label{display:block;font-size:12px;color:#888;margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;}
-
-/* Log */
-.log{background:#060610;padding:12px;border-radius:8px;font-family:'SF Mono',monospace;font-size:11px;color:#25d366;max-height:120px;overflow-y:auto;margin-top:10px;white-space:pre-wrap;}
-
-/* Saved indicator */
-.saved{color:#25d366;font-size:12px;opacity:0;transition:opacity 0.3s;}
-.saved.show{opacity:1;}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a25;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --text:#eee;--text2:#999;--text3:#666;
+  --accent:#25d366;--accent2:#128c7e;
+  --purple:#6c5ce7;--purple2:#a29bfe;
+  --red:#ff5252;--yellow:#ffd740;
+  --radius:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-title{font-size:1.1rem;font-weight:700}
+.header-sub{font-size:0.75rem;color:var(--text2)}
+.back-btn{background:rgba(255,255,255,0.06);border:1px solid var(--border2);color:var(--text);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;font-family:'Inter',sans-serif;transition:all 0.2s}
+.back-btn:hover{background:rgba(255,255,255,0.1)}
+.container{max-width:900px;margin:0 auto;padding:24px 24px 60px}
+.section-title{font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:28px 0 12px;padding-left:4px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:12px}
+.card-title{font-size:0.9rem;font-weight:600;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.instance{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px;transition:border-color 0.3s}
+.instance:hover{border-color:var(--border2)}
+.instance-icon{width:42px;height:42px;border-radius:50%;background:rgba(37,211,102,0.1);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0}
+.instance-info{flex:1}
+.instance-name{font-size:0.9rem;font-weight:600}
+.instance-phone{font-size:0.75rem;color:var(--text2);margin-top:2px}
+.instance-badges{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap}
+.badge{font-size:0.55rem;padding:2px 8px;border-radius:10px;font-weight:600;letter-spacing:0.5px}
+.badge-green{background:rgba(37,211,102,0.15);color:var(--accent)}
+.badge-yellow{background:rgba(255,215,64,0.15);color:var(--yellow)}
+.badge-red{background:rgba(255,82,82,0.15);color:var(--red)}
+.badge-purple{background:rgba(108,92,231,0.15);color:var(--purple2)}
+.instance-actions{display:flex;gap:6px;flex-wrap:wrap}
+.btn{padding:7px 16px;border:none;border-radius:8px;font-size:0.75rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s}
+.btn:hover{opacity:0.9;transform:translateY(-1px)}
+.btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff}
+.btn-secondary{background:rgba(255,255,255,0.06);color:var(--text2);border:1px solid var(--border2)}
+.btn-danger{background:rgba(255,82,82,0.12);color:var(--red);border:1px solid rgba(255,82,82,0.2)}
+.btn-sm{padding:5px 12px;font-size:0.7rem}
+.form-row{display:flex;gap:10px;margin-bottom:10px}
+.field{display:flex;flex-direction:column;gap:4px;flex:1}
+.field-label{font-size:0.7rem;color:var(--text2);font-weight:500}
+.field-input,.field-select,.field-textarea{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 12px;border-radius:8px;font-size:0.85rem;font-family:'Inter',sans-serif;transition:border-color 0.2s;width:100%}
+.field-input:focus,.field-select:focus,.field-textarea:focus{outline:none;border-color:var(--accent)}
+.field-textarea{resize:vertical;min-height:60px}
+.qr-area{text-align:center;padding:24px;border:2px dashed var(--border2);border-radius:var(--radius);margin:16px 0;min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.qr-area img{max-width:250px;border-radius:8px}
+.qr-timer{width:100%;max-width:250px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-top:8px}
+.qr-timer-bar{height:100%;background:var(--accent);transition:width 0.3s}
+.qr-status{font-size:0.8rem;color:var(--text2)}
+.qr-code-display{font-size:2rem;font-weight:700;letter-spacing:6px;color:var(--accent);font-family:monospace}
+.config-group{font-size:0.6rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.config-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.config-row:last-child{border-bottom:none}
+.config-left{flex:1}
+.config-label{font-size:0.8rem;font-weight:500}
+.config-desc{font-size:0.7rem;color:var(--text3);margin-top:2px}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--bg3);border-radius:22px;cursor:pointer;transition:0.3s;border:1px solid var(--border2)}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:2px;top:2px;background:var(--text3);border-radius:50%;transition:0.3s}
+.toggle input:checked+.toggle-slider{background:var(--accent);border-color:var(--accent)}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px);background:#fff}
+.tag-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{font-size:0.7rem;padding:4px 10px;background:rgba(255,255,255,0.06);border:1px solid var(--border2);border-radius:6px;display:flex;align-items:center;gap:6px}
+.tag-remove{cursor:pointer;color:var(--red);font-weight:700;font-size:0.8rem}
+.tag-add{display:flex;gap:6px;margin-top:6px}
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 20px;border-radius:10px;font-size:0.8rem;font-weight:500;animation:slideIn 0.3s;backdrop-filter:blur(8px)}
+.toast.success{background:rgba(37,211,102,0.15);color:var(--accent);border:1px solid rgba(37,211,102,0.2)}
+.toast.error{background:rgba(255,82,82,0.15);color:var(--red);border:1px solid rgba(255,82,82,0.2)}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{text-align:center;padding:40px;color:var(--text3);font-size:0.85rem}
+@media(max-width:600px){.instance{flex-direction:column;align-items:flex-start}.instance-actions{width:100%}.form-row{flex-direction:column}}
 </style>
 </head>
 <body>
-
-<div class="top-bar">
-  <h1>WHATSAPP</h1>
-</div>
-
-<!-- INSTÂNCIAS -->
-<div class="card">
-  <h2>Instancias Conectadas</h2>
-  <div id="instances"><div style="color:#555">Carregando...</div></div>
-</div>
-
-<!-- BOT CONFIG (oculto até clicar em Configurar) -->
-<div class="card" id="configCard" style="display:none">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <h2 style="margin:0">Configuracoes do Bot</h2>
-    <button class="btn btn-gray" onclick="toggleConfig(false)" style="font-size:11px">FECHAR</button>
+<div class="header">
+  <div class="header-left">
+    <span style="font-size:1.4rem">&#128172;</span>
+    <div><div class="header-title">WhatsApp</div><div class="header-sub">Conexoes e configuracoes do bot</div></div>
   </div>
-  <div id="configPanel">Carregando...</div>
+  <button class="back-btn" onclick="location.href='/'">&#8592; Voltar</button>
 </div>
-
-<!-- NOVA CONEXÃO -->
-<button class="btn btn-primary btn-lg" style="margin-bottom:16px" onclick="toggleNewConn()">+ NOVA CONEXAO</button>
-<div class="card" id="newConnCard" style="display:none">
-  <div style="display:flex;justify-content:space-between;align-items:center">
-    <h2 style="margin:0">Nova Conexao</h2>
-    <button class="btn btn-gray" onclick="toggleNewConn()" style="font-size:11px">FECHAR</button>
-  </div>
-  <div style="margin-top:12px">
-    <input type="text" id="name" placeholder="Nome da instancia (ex: Pessoal)">
-    <input type="text" id="phone" placeholder="Telefone com DDD (ex: 5511999999999)">
-    <input type="text" id="label" placeholder="Label (opcional)">
-    <div class="pair-btns">
-      <button class="btn btn-primary btn-lg" id="qrBtn" onclick="pairQR()">CONECTAR VIA QR CODE</button>
+<div class="container">
+  <div class="section-title">Instancias Conectadas</div>
+  <div id="instanceList"><div class="empty"><div class="spinner"></div><br>Carregando...</div></div>
+  <div class="section-title">Nova Conexao</div>
+  <div class="card">
+    <div class="card-title">&#128279; Conectar WhatsApp</div>
+    <div class="form-row">
+      <div class="field"><label class="field-label">Nome da instancia</label><input class="field-input" id="pairName" placeholder="Ex: principal"></div>
+      <div class="field"><label class="field-label">Telefone com DDD</label><input class="field-input" id="pairPhone" placeholder="5511999999999"></div>
     </div>
-    <div id="result"></div>
-    <div class="log" id="log"></div>
+    <div class="form-row">
+      <div class="field"><label class="field-label">Label (opcional)</label><input class="field-input" id="pairLabel" placeholder="Ex: Comercial, Pessoal..."></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-primary" onclick="connectQR()">&#9641; QR Code</button>
+      <button class="btn btn-secondary" onclick="connectCode()">&#128290; Codigo Numerico</button>
+    </div>
+    <div id="pairResult" style="margin-top:16px"></div>
   </div>
+  <div class="section-title">Configuracoes do Bot</div>
+  <div class="card" id="botConfigCard"><div class="empty"><div class="spinner"></div><br>Carregando...</div></div>
 </div>
-
+<div class="toast-container" id="toastContainer"></div>
 <script>
-const $=id=>document.getElementById(id);
-let pollInterval=null, qrSource=null, botConfig={};
-const CODE_TIMEOUT=120, QR_MAX=15, QR_SHOW_TIME=45, POLL_MS=2000;
+let _cfg={},_instances=[],_default='',_qrSource=null;
 
-function log(msg){const el=$('log');el.textContent+='['+new Date().toLocaleTimeString()+'] '+msg+'\n';el.scrollTop=el.scrollHeight;}
-function toggleConfig(show){
-  const card=$('configCard');
-  if(show){card.style.display='block';loadConfig();card.scrollIntoView({behavior:'smooth'});}
-  else{card.style.display='none';}
-}
-function toggleNewConn(){
-  const card=$('newConnCard');
-  const visible=card.style.display!=='none';
-  card.style.display=visible?'none':'block';
-  if(!visible)card.scrollIntoView({behavior:'smooth'});
-}
-function cleanup(){if(pollInterval){clearInterval(pollInterval);pollInterval=null;}if(qrSource){qrSource.close();qrSource=null;}}
-function resetButtons(){$('codeBtn').disabled=false;$('codeBtn').textContent='CODIGO NUMERICO';$('qrBtn').disabled=false;$('qrBtn').textContent='QR CODE';}
-function clearForm(){$('name').value='';$('phone').value='';$('label').value='';}
+async function init(){await Promise.all([loadInstances(),loadConfig()])}
 
-// ================================================================
-// INSTANCES
-// ================================================================
 async function loadInstances(){
   try{
-    const r=await fetch('/api/whatsapp/instances');
-    const data=await r.json();
-    const c=$('instances');
-    if(!data.instances.length){c.innerHTML='<div style="color:#555">Nenhuma instancia conectada.</div>';return;}
-    c.innerHTML=data.instances.map(i=>`
-      <div class="instance ${i.status}">
-        <div>
-          <div class="instance-name">${i.name} ${i.isDefault?'<span style="color:#f36600;font-size:11px">PADRAO</span>':''}</div>
-          <div class="instance-phone">${i.label} — ${i.phone}</div>
-          <div class="btns">
-            <button class="btn btn-primary" onclick="toggleConfig(true)">Configurar</button>
-            ${!i.isDefault?`<button class="btn btn-gray" onclick="setDefault('${i.name}')">Tornar Padrao</button>`:''}
-            <button class="btn btn-gray" onclick="reconnect('${i.name}')">Reconectar</button>
-            <button class="btn btn-red" onclick="remove('${i.name}')">Remover</button>
-          </div>
-        </div>
-        <span class="instance-status ${i.status}">${i.status.toUpperCase()}</span>
-      </div>
-    `).join('');
-  }catch(e){$('instances').innerHTML='<div class="error">Erro: '+e.message+'</div>';}
+    const r=await fetch('/api/whatsapp/instances');const d=await r.json();
+    _instances=d.instances||[];_default=d.defaultInstance||'';renderInstances();
+  }catch(e){document.getElementById('instanceList').innerHTML='<div class="empty">Erro ao carregar</div>';}
 }
 
-// ================================================================
-// BOT CONFIG PANEL
-// ================================================================
-async function loadConfig(){
+function renderInstances(){
+  const el=document.getElementById('instanceList');
+  if(!_instances.length){el.innerHTML='<div class="empty">Nenhuma instancia conectada. Use o formulario abaixo.</div>';return;}
+  el.innerHTML=_instances.map(i=>{
+    const isDef=i.name===_default;
+    const sMap={connected:'Conectado',connecting:'Conectando...',reconnecting:'Reconectando...'};
+    const sLabel=sMap[i.status]||'Desconectado';
+    const sCls=i.status==='connected'?'badge-green':i.status==='connecting'||i.status==='reconnecting'?'badge-yellow':'badge-red';
+    return `<div class="instance">
+      <div class="instance-icon">&#128241;</div>
+      <div class="instance-info">
+        <div class="instance-name">${i.name}${i.label?' — '+i.label:''}</div>
+        <div class="instance-phone">${i.phone||'Sem numero'}</div>
+        <div class="instance-badges">
+          <span class="badge ${sCls}">${sLabel}</span>
+          ${isDef?'<span class="badge badge-purple">PADRAO</span>':''}
+          ${i.active!==false?'<span class="badge badge-green">BOT IA</span>':''}
+        </div>
+      </div>
+      <div class="instance-actions">
+        ${!isDef?`<button class="btn btn-sm btn-secondary" onclick="setDefault('${i.name}')">Definir Padrao</button>`:''}
+        <button class="btn btn-sm btn-secondary" onclick="reconnect('${i.name}')">Reconectar</button>
+        <button class="btn btn-sm btn-danger" onclick="remove('${i.name}')">Remover</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function setDefault(n){await fetch(`/api/whatsapp/default/${n}`,{method:'POST'});showToast('Padrao atualizado','success');loadInstances();}
+async function reconnect(n){showToast('Reconectando...','success');await fetch(`/api/whatsapp/reconnect/${n}`,{method:'POST'});setTimeout(loadInstances,2000);}
+async function remove(n){if(!confirm(`Remover "${n}"?`))return;await fetch(`/api/whatsapp/instances/${n}`,{method:'DELETE'});showToast('Removida','success');loadInstances();}
+
+function connectQR(){
+  const name=document.getElementById('pairName').value.trim()||'principal';
+  const phone=document.getElementById('pairPhone').value.trim();
+  const label=document.getElementById('pairLabel').value.trim();
+  if(!phone){showToast('Informe o telefone','error');return;}
+  const result=document.getElementById('pairResult');
+  result.innerHTML=`<div class="qr-area"><div class="spinner"></div><div class="qr-status">Gerando QR Code...</div></div>`;
+  if(_qrSource)_qrSource.close();
+  _qrSource=new EventSource(`/api/whatsapp/pair-qr?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&label=${encodeURIComponent(label)}`);
+  let qc=0;
+  _qrSource.addEventListener('qr',(e)=>{qc++;document.getElementById('pairResult').querySelector('.qr-area').innerHTML=`
+    <img src="${e.data}"><div class="qr-status">Escaneie com o WhatsApp (${qc}/8)</div>
+    <div class="qr-timer"><div class="qr-timer-bar" style="width:100%;animation:shrink 20s linear forwards"></div></div>
+    <style>@keyframes shrink{to{width:0}}</style>`;});
+  _qrSource.addEventListener('connected',()=>{_qrSource.close();result.innerHTML=`<div class="qr-area" style="border-color:var(--accent)"><div style="font-size:2rem">&#10003;</div><div style="font-size:1rem;font-weight:600;color:var(--accent)">Conectado!</div></div>`;showToast('WhatsApp conectado!','success');loadInstances();});
+  _qrSource.addEventListener('timeout',()=>{_qrSource.close();result.innerHTML=`<div class="qr-area" style="border-color:var(--red)"><div style="color:var(--red)">Tempo esgotado.</div><button class="btn btn-primary" onclick="connectQR()">Tentar Novamente</button></div>`;});
+  _qrSource.addEventListener('error',()=>{_qrSource.close();result.innerHTML=`<div class="qr-area" style="border-color:var(--red)"><div style="color:var(--red)">Erro na conexao.</div><button class="btn btn-primary" onclick="connectQR()">Tentar Novamente</button></div>`;});
+}
+
+async function connectCode(){
+  const name=document.getElementById('pairName').value.trim()||'principal';
+  const phone=document.getElementById('pairPhone').value.trim();
+  const label=document.getElementById('pairLabel').value.trim();
+  if(!phone){showToast('Informe o telefone','error');return;}
+  const result=document.getElementById('pairResult');
+  result.innerHTML=`<div class="qr-area"><div class="spinner"></div><div class="qr-status">Gerando codigo...</div></div>`;
   try{
-    const r=await fetch('/api/bot/config');
-    botConfig=await r.json();
-    renderConfig();
-  }catch(e){$('configPanel').innerHTML='<div class="error">Erro: '+e.message+'</div>';}
+    const r=await fetch('/api/whatsapp/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,label})});
+    const d=await r.json();if(!d.code)throw new Error(d.error||'Erro');
+    result.innerHTML=`<div class="qr-area"><div class="qr-code-display">${d.code}</div><div class="qr-status">WhatsApp > Aparelhos conectados > Conectar > Inserir codigo</div><div class="qr-timer"><div class="qr-timer-bar" style="width:100%;animation:shrink 60s linear forwards"></div></div><style>@keyframes shrink{to{width:0}}</style></div>`;
+    let att=0;const poll=setInterval(async()=>{att++;try{const cr=await fetch('/api/whatsapp/instances');const cd=await cr.json();if((cd.instances||[]).find(i=>i.name===name&&i.status==='connected')){clearInterval(poll);result.innerHTML=`<div class="qr-area" style="border-color:var(--accent)"><div style="font-size:2rem">&#10003;</div><div style="font-size:1rem;font-weight:600;color:var(--accent)">Conectado!</div></div>`;showToast('WhatsApp conectado!','success');loadInstances();}}catch{}if(att>30)clearInterval(poll);},2000);
+  }catch(e){result.innerHTML=`<div class="qr-area" style="border-color:var(--red)"><div style="color:var(--red)">${e.message}</div></div>`;}
+}
+
+async function loadConfig(){
+  try{const r=await fetch('/api/bot/config');_cfg=await r.json();renderConfig();}
+  catch(e){document.getElementById('botConfigCard').innerHTML='<div class="empty">Erro ao carregar</div>';}
 }
 
 function renderConfig(){
-  const c=botConfig;
-  $('configPanel').innerHTML=`
-    <!-- Bot Ativo -->
-    <div class="toggle-row">
-      <div>
-        <div class="toggle-label">Bot Ativo</div>
-        <div class="toggle-desc">Responder mensagens automaticamente</div>
-      </div>
-      <label class="toggle"><input type="checkbox" ${c.botActive?'checked':''} onchange="updateConfig('botActive',this.checked)"><span class="slider"></span></label>
+  const c=_cfg;
+  document.getElementById('botConfigCard').innerHTML=`
+    <div class="card-title">&#9881; Configuracoes do Bot IA</div>
+
+    <div class="config-group">Identidade</div>
+    <div class="form-row">
+      <div class="field"><label class="field-label">Nome do Bot</label><input class="field-input" value="${c.botName||'ZAYA'}" onchange="cfgSet('botName',this.value)"></div>
+      <div class="field"><label class="field-label">Como chamar o usuario</label><input class="field-input" value="${c.callName||''}" placeholder="Deixe vazio = nome do admin" onchange="cfgSet('callName',this.value)"></div>
+    </div>
+    <div class="field" style="margin-top:8px"><label class="field-label">Mensagem de boas-vindas</label><textarea class="field-textarea" placeholder="Enviada quando novo contato escreve" onchange="cfgSet('welcomeMessage',this.value)">${c.welcomeMessage||''}</textarea></div>
+
+    <div class="config-group">Controle</div>
+    ${tgl('botActive','Bot Ativo','Responde mensagens automaticamente',c.botActive)}
+    ${tgl('readReceipts','Marcar como Lido','Envia ticks azuis',c.readReceipts)}
+    ${tgl('replyGroups','Responder em Grupos','Bot responde em grupos',c.replyGroups)}
+    ${tgl('autoLoginAdmin','Auto-login Admin','Pula login para acesso local',c.autoLoginAdmin)}
+
+    <div class="config-group">Funcionalidades</div>
+    ${tgl('transcribeAudio','Transcrever Audios','Converte audios em texto com Whisper',c.transcribeAudio)}
+    ${tgl('analyzeImages','Analisar Imagens','Analisa fotos com GPT-4 Vision',c.analyzeImages)}
+    ${tgl('editVideos','Editar Videos','Edita videos com instrucoes por texto',c.editVideos)}
+
+    <div class="config-group">Modelo IA</div>
+    <div class="form-row">
+      <div class="field"><label class="field-label">Modelo</label>
+        <select class="field-select" onchange="cfgSet('aiModel',this.value)">
+          ${['gpt-4o-mini','gpt-4o','gpt-4.1-mini','gpt-4.1','claude-sonnet-4-20250514','claude-haiku-4-5-20251001','llama-3.3-70b-versatile','llama-3.1-8b-instant','gemini-2.0-flash'].map(m=>`<option value="${m}"${c.aiModel===m?' selected':''}>${m}</option>`).join('')}
+        </select></div>
+      <div class="field"><label class="field-label">Max Tokens: <strong id="tv">${c.maxTokens||1024}</strong></label>
+        <input type="range" min="128" max="4096" step="128" value="${c.maxTokens||1024}" oninput="document.getElementById('tv').textContent=this.value" onchange="cfgSet('maxTokens',parseInt(this.value))" style="accent-color:var(--accent)"></div>
     </div>
 
-    <!-- Auto Login Admin -->
-    <div class="toggle-row">
-      <div>
-        <div class="toggle-label">Auto-login Admin</div>
-        <div class="toggle-desc">Admins nao precisam digitar /login</div>
-      </div>
-      <label class="toggle"><input type="checkbox" ${c.autoLoginAdmin?'checked':''} onchange="updateConfig('autoLoginAdmin',this.checked)"><span class="slider"></span></label>
+    <div class="config-group">Permissoes</div>
+    <div class="form-row">
+      <div class="field"><label class="field-label">Quem pode usar</label>
+        <select class="field-select" onchange="cfgSet('replyMode',this.value);renderConfig()">
+          <option value="admin_only"${c.replyMode==='admin_only'?' selected':''}>Somente Admin</option>
+          <option value="whitelist"${c.replyMode==='whitelist'?' selected':''}>Lista de autorizados</option>
+          <option value="everyone"${c.replyMode==='everyone'?' selected':''}>Todos</option>
+        </select></div>
     </div>
-
-    <!-- Read Receipts -->
-    <div class="toggle-row">
-      <div>
-        <div class="toggle-label">Marcar como Lido</div>
-        <div class="toggle-desc">Envia confirmacao de leitura</div>
-      </div>
-      <label class="toggle"><input type="checkbox" ${c.readReceipts?'checked':''} onchange="updateConfig('readReceipts',this.checked)"><span class="slider"></span></label>
+    <div class="field" style="margin-top:8px"><label class="field-label">Numeros Admin</label>
+      <div class="tag-list">${(c.adminNumbers||[]).map(n=>`<span class="tag">${n}<span class="tag-remove" onclick="cfgRemove('adminNumbers','${n}')">x</span></span>`).join('')}</div>
+      <div class="tag-add"><input class="field-input" id="addAdmin" placeholder="5511999999999" style="flex:1"><button class="btn btn-sm btn-secondary" onclick="cfgAdd('adminNumbers','addAdmin')">+</button></div>
     </div>
+    ${c.replyMode==='whitelist'?`<div class="field" style="margin-top:12px"><label class="field-label">Contatos Autorizados</label>
+      <div class="tag-list">${(c.whitelist||[]).map(n=>`<span class="tag">${n}<span class="tag-remove" onclick="cfgRemove('whitelist','${n}')">x</span></span>`).join('')}</div>
+      <div class="tag-add"><input class="field-input" id="addWl" placeholder="5511999999999" style="flex:1"><button class="btn btn-sm btn-secondary" onclick="cfgAdd('whitelist','addWl')">+</button></div>
+    </div>`:''}
+    <div class="field" style="margin-top:12px"><label class="field-label">Resposta para nao autorizados</label>
+      <textarea class="field-textarea" placeholder="Vazio = ignora silenciosamente" onchange="cfgSet('unauthorizedReply',this.value)">${c.unauthorizedReply||''}</textarea></div>
 
-    <!-- Responder Grupos -->
-    <div class="toggle-row">
-      <div>
-        <div class="toggle-label">Responder em Grupos</div>
-        <div class="toggle-desc">Bot responde mensagens de grupos</div>
-      </div>
-      <label class="toggle"><input type="checkbox" ${c.replyGroups?'checked':''} onchange="updateConfig('replyGroups',this.checked)"><span class="slider"></span></label>
+    <div class="config-group">Monitoramento</div>
+    <div class="field"><label class="field-label">Numeros Monitorados</label>
+      <div class="tag-list">${(c.watchNumbers||[]).map(w=>`<span class="tag">${w.nome||w.numero} (${w.numero})<span class="tag-remove" onclick="cfgRemoveW('${w.numero}')">x</span></span>`).join('')}</div>
+      <div class="tag-add"><input class="field-input" id="wPhone" placeholder="Numero" style="flex:1"><input class="field-input" id="wName" placeholder="Nome" style="flex:1"><button class="btn btn-sm btn-secondary" onclick="cfgAddW()">+</button></div>
     </div>
-
-    <!-- Transcrever Audio -->
-    <div class="toggle-row">
-      <div>
-        <div class="toggle-label">Transcrever Audios</div>
-        <div class="toggle-desc">Transcreve audios recebidos com Whisper</div>
-      </div>
-      <label class="toggle"><input type="checkbox" ${c.transcribeAudio?'checked':''} onchange="updateConfig('transcribeAudio',this.checked)"><span class="slider"></span></label>
-    </div>
-
-    <!-- Analisar Imagens -->
-    <div class="toggle-row">
-      <div>
-        <div class="toggle-label">Analisar Imagens</div>
-        <div class="toggle-desc">Analisa imagens com GPT Vision</div>
-      </div>
-      <label class="toggle"><input type="checkbox" ${c.analyzeImages?'checked':''} onchange="updateConfig('analyzeImages',this.checked)"><span class="slider"></span></label>
-    </div>
-
-    <!-- Editar Videos -->
-    <div class="toggle-row">
-      <div>
-        <div class="toggle-label">Editar Videos</div>
-        <div class="toggle-desc">Aceita videos para edicao com IA</div>
-      </div>
-      <label class="toggle"><input type="checkbox" ${c.editVideos?'checked':''} onchange="updateConfig('editVideos',this.checked)"><span class="slider"></span></label>
-    </div>
-
-    <div style="height:16px"></div>
-
-    <!-- Modo de Resposta -->
-    <div class="config-section">
-      <label>Modo de Resposta</label>
-      <select onchange="updateConfig('replyMode',this.value)">
-        <option value="admin_only" ${c.replyMode==='admin_only'?'selected':''}>Apenas Admins</option>
-        <option value="whitelist" ${c.replyMode==='whitelist'?'selected':''}>Contatos Selecionados</option>
-        <option value="everyone" ${c.replyMode==='everyone'?'selected':''}>Todos</option>
-      </select>
-    </div>
-
-    <!-- Numeros Admin -->
-    <div class="config-section">
-      <label>Numeros Admin (acesso total ao bot)</label>
-      <div class="tag-list" id="adminTags">
-        ${(c.adminNumbers||[]).map(n=>`<span class="tag">${n}<span class="remove" onclick="removeAdmin('${n}')">&times;</span></span>`).join('')}
-      </div>
-      <div class="add-number">
-        <input type="text" id="newAdmin" placeholder="5511999999999" style="margin:0">
-        <button class="btn btn-primary" onclick="addAdmin()">Adicionar</button>
-      </div>
-    </div>
-
-    <!-- Whitelist (se modo = whitelist) -->
-    <div class="config-section" id="whitelistSection" style="display:${c.replyMode==='whitelist'?'block':'none'}">
-      <label>Contatos Autorizados (whitelist)</label>
-      <div class="tag-list" id="whitelistTags">
-        ${(c.whitelist||[]).map(n=>`<span class="tag">${n}<span class="remove" onclick="removeWhitelist('${n}')">&times;</span></span>`).join('')}
-      </div>
-      <div class="add-number">
-        <input type="text" id="newWhitelist" placeholder="5511999999999" style="margin:0">
-        <button class="btn btn-primary" onclick="addWhitelist()">Adicionar</button>
-      </div>
-    </div>
-
-    <!-- Resposta para nao autorizados -->
-    <div class="config-section">
-      <label>Resposta para nao autorizados (vazio = ignora)</label>
-      <textarea id="unauthorizedReply" placeholder="Ex: Desculpe, este bot e privado." onchange="updateConfig('unauthorizedReply',this.value)">${c.unauthorizedReply||''}</textarea>
-    </div>
-
-    <!-- Modelo IA -->
-    <div class="config-section">
-      <label>Modelo IA</label>
-      <select onchange="updateConfig('aiModel',this.value)">
-        <option value="gpt-4o-mini" ${c.aiModel==='gpt-4o-mini'?'selected':''}>GPT-4o Mini (rapido, barato)</option>
-        <option value="gpt-4o" ${c.aiModel==='gpt-4o'?'selected':''}>GPT-4o (mais inteligente)</option>
-      </select>
-    </div>
-
-    <!-- Mensagem de boas-vindas -->
-    <div class="config-section">
-      <label>Mensagem de boas-vindas (apos /login)</label>
-      <textarea id="welcomeMsg" placeholder="Ex: Bem-vindo ao ZAYA Bot!" onchange="updateConfig('welcomeMessage',this.value)">${c.welcomeMessage||''}</textarea>
-    </div>
-
-    <!-- Números monitorados -->
-    <div class="config-section">
-      <label>Numeros Monitorados (avisa quando mandarem msg)</label>
-      <div class="tag-list" id="watchTags">
-        ${(c.watchNumbers||[]).map(w=>`<span class="tag">${w.nome} (${w.numero}) ${w.notify?'✅':'❌'}<span class="remove" onclick="removeWatch('${w.numero}')">&times;</span></span>`).join('')}
-      </div>
-      <div class="add-number">
-        <input type="text" id="newWatchNum" placeholder="5511999999999" style="margin:0;flex:1">
-        <input type="text" id="newWatchName" placeholder="Nome" style="margin:0;flex:1">
-        <button class="btn btn-primary" onclick="addWatch()">Adicionar</button>
-      </div>
-    </div>
-
-    <!-- Modo de notificação -->
-    <div class="config-section">
-      <label>Modo de Notificacao</label>
-      <select onchange="updateConfig('watchNotifyMode',this.value)">
-        <option value="both" ${c.watchNotifyMode==='both'?'selected':''}>WhatsApp + Voz (ambos)</option>
-        <option value="whatsapp" ${c.watchNotifyMode==='whatsapp'?'selected':''}>Apenas WhatsApp</option>
-        <option value="voice" ${c.watchNotifyMode==='voice'?'selected':''}>Apenas Voz/Dashboard</option>
-      </select>
-    </div>
-
-    <span class="saved" id="savedIndicator">Salvo!</span>
-  `;
+    <div class="form-row" style="margin-top:8px"><div class="field"><label class="field-label">Como notificar</label>
+      <select class="field-select" onchange="cfgSet('watchNotifyMode',this.value)">
+        <option value="both"${c.watchNotifyMode==='both'?' selected':''}>Voz + WhatsApp</option>
+        <option value="whatsapp"${c.watchNotifyMode==='whatsapp'?' selected':''}>Somente WhatsApp</option>
+        <option value="voice"${c.watchNotifyMode==='voice'?' selected':''}>Somente Voz</option>
+      </select></div></div>`;
 }
 
-async function updateConfig(key, value){
-  botConfig[key]=value;
-  try{
-    await fetch('/api/bot/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({[key]:value})});
-    // Show/hide whitelist section
-    if(key==='replyMode'){
-      const ws=document.getElementById('whitelistSection');
-      if(ws) ws.style.display=value==='whitelist'?'block':'none';
-    }
-    flashSaved();
-  }catch(e){log('Erro salvando config: '+e.message);}
-}
+function tgl(k,l,d,v){return `<div class="config-row"><div class="config-left"><div class="config-label">${l}</div><div class="config-desc">${d}</div></div><label class="toggle"><input type="checkbox" ${v!==false?'checked':''} onchange="cfgSet('${k}',this.checked)"><span class="toggle-slider"></span></label></div>`;}
 
-function flashSaved(){
-  const el=$('savedIndicator');
-  if(el){el.classList.add('show');setTimeout(()=>el.classList.remove('show'),1500);}
-}
+async function cfgSet(k,v){_cfg[k]=v;try{await fetch('/api/bot/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({[k]:v})});showToast('Salvo!','success');}catch{showToast('Erro','error');}}
 
-function addAdmin(){
-  const n=$('newAdmin').value.trim().replace(/\D/g,'');
-  if(!n||n.length<10)return;
-  if(!botConfig.adminNumbers)botConfig.adminNumbers=[];
-  if(!botConfig.adminNumbers.includes(n)){
-    botConfig.adminNumbers.push(n);
-    updateConfig('adminNumbers',botConfig.adminNumbers);
-    renderConfig();
-  }
-  $('newAdmin').value='';
-}
+async function cfgAdd(k,id){const i=document.getElementById(id);const v=i.value.trim();if(!v)return;const a=_cfg[k]||[];if(a.includes(v))return;a.push(v);await cfgSet(k,a);i.value='';renderConfig();}
+async function cfgRemove(k,v){_cfg[k]=(_cfg[k]||[]).filter(x=>x!==v);await cfgSet(k,_cfg[k]);renderConfig();}
+async function cfgAddW(){const p=document.getElementById('wPhone').value.trim();const n=document.getElementById('wName').value.trim();if(!p)return;(_cfg.watchNumbers||[]).push({numero:p,nome:n||p,notify:true});await cfgSet('watchNumbers',_cfg.watchNumbers);document.getElementById('wPhone').value='';document.getElementById('wName').value='';renderConfig();}
+async function cfgRemoveW(num){_cfg.watchNumbers=(_cfg.watchNumbers||[]).filter(w=>w.numero!==num);await cfgSet('watchNumbers',_cfg.watchNumbers);renderConfig();}
 
-function removeAdmin(n){
-  botConfig.adminNumbers=botConfig.adminNumbers.filter(x=>x!==n);
-  updateConfig('adminNumbers',botConfig.adminNumbers);
-  renderConfig();
-}
+function showToast(m,t){const c=document.getElementById('toastContainer');const e=document.createElement('div');e.className='toast '+t;e.textContent=(t==='success'?'\u2713 ':'\u2717 ')+m;c.appendChild(e);setTimeout(()=>{e.style.opacity='0';setTimeout(()=>e.remove(),300);},2500);}
 
-function addWhitelist(){
-  const n=$('newWhitelist').value.trim().replace(/\D/g,'');
-  if(!n||n.length<10)return;
-  if(!botConfig.whitelist)botConfig.whitelist=[];
-  if(!botConfig.whitelist.includes(n)){
-    botConfig.whitelist.push(n);
-    updateConfig('whitelist',botConfig.whitelist);
-    renderConfig();
-  }
-}
-
-function removeWhitelist(n){
-  botConfig.whitelist=botConfig.whitelist.filter(x=>x!==n);
-  updateConfig('whitelist',botConfig.whitelist);
-  renderConfig();
-}
-
-function addWatch(){
-  const n=$('newWatchNum').value.trim().replace(/\D/g,'');
-  const name=$('newWatchName').value.trim()||n;
-  if(!n||n.length<10)return;
-  if(!botConfig.watchNumbers)botConfig.watchNumbers=[];
-  if(!botConfig.watchNumbers.find(w=>w.numero===n)){
-    botConfig.watchNumbers.push({numero:n,nome:name,notify:true});
-    updateConfig('watchNumbers',botConfig.watchNumbers);
-    renderConfig();
-  }
-}
-
-function removeWatch(n){
-  botConfig.watchNumbers=botConfig.watchNumbers.filter(w=>w.numero!==n);
-  updateConfig('watchNumbers',botConfig.watchNumbers);
-  renderConfig();
-}
-
-// ================================================================
-// PAIRING (código e QR — mantido igual)
-// ================================================================
-async function pairCode(){
-  const name=$('name').value.trim(),phone=$('phone').value.trim().replace(/\D/g,''),label=$('label').value.trim(),result=$('result');
-  if(!name||!phone){result.innerHTML='<div class="error">Preencha nome e telefone</div>';return;}
-  cleanup();$('codeBtn').disabled=true;$('qrBtn').disabled=true;$('codeBtn').textContent='CONECTANDO...';
-  result.innerHTML='<div style="color:#666;text-align:center">Gerando codigo...</div>';
-  try{
-    const r=await fetch('/api/whatsapp/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,label:label||name})});
-    const data=await r.json();
-    if(data.error){result.innerHTML='<div class="error">'+data.error+'</div>';resetButtons();return;}
-    if(data.code){
-      let timeLeft=CODE_TIMEOUT;
-      result.innerHTML=`<div class="code">${data.code}</div><div class="timer"><div class="timer-bar"><div class="timer-fill" id="timerFill" style="width:100%"></div></div><span class="timer-text" id="timerText">${CODE_TIMEOUT}s</span></div><div class="hint">1. WhatsApp → Configuracoes → Dispositivos conectados<br>2. Conectar dispositivo → <b>Conectar com numero</b><br>3. Digite: <b>${data.code}</b></div>`;
-      const timer=setInterval(()=>{timeLeft--;const f=document.getElementById('timerFill'),t=document.getElementById('timerText');if(f)f.style.width=(timeLeft/CODE_TIMEOUT*100)+'%';if(t)t.textContent=timeLeft+'s';if(timeLeft<=15&&f)f.style.background='#ff4757';if(timeLeft<=0){clearInterval(timer);cleanup();result.innerHTML='<div class="error">Tempo esgotado.</div>';resetButtons();}},1000);
-      const nn=name.toLowerCase().replace(/[^a-z0-9]/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
-      pollInterval=setInterval(async()=>{try{const d=await(await fetch('/api/whatsapp/instances')).json();if(d.instances.find(i=>i.name===nn&&i.status==='connected')){clearInterval(timer);cleanup();result.innerHTML='<div class="success">CONECTADO COM SUCESSO!</div>';resetButtons();clearForm();loadInstances();}}catch{}},POLL_MS);
-    }else if(data.paired){result.innerHTML='<div class="success">CONECTADO COM SUCESSO!</div>';resetButtons();clearForm();loadInstances();}
-    else{result.innerHTML='<div class="error">'+(data.message||'Erro')+'</div>';resetButtons();}
-  }catch(e){result.innerHTML='<div class="error">'+e.message+'</div>';resetButtons();}
-}
-
-function pairQR(){
-  const name=$('name').value.trim(),phone=$('phone').value.trim().replace(/\D/g,''),label=$('label').value.trim(),result=$('result');
-  if(!name||!phone){result.innerHTML='<div class="error">Preencha nome e telefone</div>';return;}
-  cleanup();$('qrBtn').disabled=true;$('codeBtn').disabled=true;$('qrBtn').textContent='AGUARDANDO...';
-  result.innerHTML='<div style="color:#666;text-align:center">Iniciando Chrome... aguarde</div>';
-  const url='/api/whatsapp/pair-qr?name='+encodeURIComponent(name)+'&phone='+encodeURIComponent(phone)+'&label='+encodeURIComponent(label||name);
-  qrSource=new EventSource(url);
-  let timerInt=null,errCount=0,currentQR=null,pendingQR=null,qrDisplayCount=0;
-
-  function showQR(d){qrDisplayCount++;currentQR=d;pendingQR=null;if(timerInt)clearInterval(timerInt);let tl=QR_SHOW_TIME;
-    result.innerHTML=`<div class="qr-wrap"><img src="${d.qr}"></div><div class="timer"><div class="timer-bar"><div class="timer-fill" id="qrTimer" style="width:100%"></div></div><span class="timer-text">QR ${qrDisplayCount}/${d.maxCount||QR_MAX} — <span id="qrSecs">${QR_SHOW_TIME}</span>s</span></div><div class="hint">WhatsApp → Dispositivos conectados → Escaneie o QR<br><b>Aguarde processar!</b></div>`;
-    timerInt=setInterval(()=>{tl--;const f=document.getElementById('qrTimer'),s=document.getElementById('qrSecs');if(f)f.style.width=(tl/QR_SHOW_TIME*100)+'%';if(s)s.textContent=tl;if(tl<=10&&f)f.style.background='#ffc048';if(tl<=0){clearInterval(timerInt);timerInt=null;if(pendingQR)showQR(pendingQR);}},1000);
-  }
-
-  qrSource.addEventListener('qr',e=>{errCount=0;const d=JSON.parse(e.data);if(!currentQR)showQR(d);else pendingQR=d;});
-  qrSource.addEventListener('connected',e=>{if(timerInt)clearInterval(timerInt);cleanup();result.innerHTML='<div class="success">CONECTADO COM SUCESSO!</div>';resetButtons();clearForm();loadInstances();});
-  qrSource.addEventListener('timeout',()=>{if(timerInt)clearInterval(timerInt);cleanup();result.innerHTML='<div class="error">Tempo esgotado.</div>';resetButtons();});
-  qrSource.addEventListener('error',()=>{if(!qrSource||qrSource.readyState===2){if(timerInt)clearInterval(timerInt);cleanup();result.innerHTML='<div class="error">Conexao perdida.</div>';resetButtons();return;}errCount++;if(errCount>=10){if(timerInt)clearInterval(timerInt);cleanup();result.innerHTML='<div class="error">Muitos erros.</div>';resetButtons();}});
-}
-
-async function setDefault(n){await fetch('/api/whatsapp/default/'+n,{method:'POST'});loadInstances();}
-async function reconnect(n){await fetch('/api/whatsapp/reconnect/'+n,{method:'POST'});setTimeout(loadInstances,3000);}
-async function remove(n){if(!confirm('Remover '+n+'?'))return;await fetch('/api/whatsapp/instances/'+n,{method:'DELETE'});loadInstances();}
-
-// Init
-loadInstances();
-setInterval(loadInstances,10000);
+init();
 </script>
 </body>
 </html>
