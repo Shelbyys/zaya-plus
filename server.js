@@ -209,7 +209,7 @@ import calendarRoutes from './src/routes/calendar.js';
 import twilioVoiceRoutes from './src/routes/twilio-voice.js';
 import setupRoutes from './src/routes/setup.js';
 import licenseRoutes from './src/routes/license.js';
-import { isLicensed } from './src/services/license.js';
+import { isLicensed, activateLicense, checkLocalLicense } from './src/services/license.js';
 
 // License + Setup routes (sem auth para funcionar na primeira vez)
 app.use('/api/license', licenseRoutes);
@@ -302,6 +302,19 @@ import { startFolderWatcher } from './src/services/folder-watcher.js';
 
 server.listen(PORT, '0.0.0.0', async () => {
   log.server.info(`Iniciando ZAYA PLUS...`);
+
+  // Auto-reativação: se .license existe mas fingerprint mudou, tenta reativar online
+  if (!isLicensed()) {
+    try {
+      const local = await checkLocalLicense();
+      if (!local.valid && local.token) {
+        log.server.info('Fingerprint mudou — tentando reativacao automatica...');
+        const result = await activateLicense(local.token);
+        if (result.valid) log.server.info('Reativacao automatica OK');
+        else log.server.warn(`Reativacao falhou: ${result.error || 'desconhecido'}`);
+      }
+    } catch {}
+  }
   startOutboxMonitor();
   startScheduler();
   startInboxPoller();

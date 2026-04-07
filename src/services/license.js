@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import os from 'os';
 import fs from 'fs';
 import { join } from 'path';
+import { execSync } from 'child_process';
 import { ROOT_DIR } from '../config.js';
 import { log } from '../logger.js';
 
@@ -18,21 +19,76 @@ const LICENSE_FILE = join(ROOT_DIR, '.license');
 const SECRET_KEY = crypto.createHash('sha256').update('zaya-plus-hmac-client-v2').digest();
 
 // ================================================================
-// HARDWARE FINGERPRINT
+// HARDWARE FINGERPRINT (estável + seguro contra cópia)
+// Combina: ID persistente + hardware UUID/serial + CPU + RAM
+// Não usa MAC address (muda com rede).
 // ================================================================
 
-function getMacAddress() {
-  const interfaces = os.networkInterfaces();
-  for (const name of Object.keys(interfaces)) {
-    for (const iface of interfaces[name]) {
-      if (!iface.internal && iface.mac && iface.mac !== '00:00:00:00:00:00') return iface.mac;
+const MACHINE_ID_FILE = join(ROOT_DIR, '.machine-id');
+
+function getOrCreateMachineId() {
+  try {
+    if (fs.existsSync(MACHINE_ID_FILE)) {
+      const id = fs.readFileSync(MACHINE_ID_FILE, 'utf-8').trim();
+      if (id.length >= 32) return id;
     }
-  }
-  return 'unknown';
+  } catch {}
+  const id = crypto.randomUUID() + '-' + Date.now().toString(36);
+  try { fs.writeFileSync(MACHINE_ID_FILE, id, 'utf-8'); } catch {}
+  return id;
+}
+
+function getHardwareId() {
+  try {
+    const platform = os.platform();
+    if (platform === 'darwin') {
+      // macOS: Hardware UUID (único por Mac, nunca muda)
+      const out = execSync('ioreg -rd1 -c IOPlatformExpertDevice', { encoding: 'utf-8', timeout: 5000 });
+      const uuid = out.match(/"IOPlatformUUID"\s*=\s*"([^"]+)"/);
+      const serial = out.match(/"IOPlatformSerialNumber"\s*=\s*"([^"]+)"/);
+      return [uuid ? uuid[1] : '', serial ? serial[1] : ''].join('|');
+    }
+    if (platform === 'win32') {
+      // Windows: UUID da BIOS + serial da placa-mãe
+      const bios = execSync('wmic csproduct get uuid', { encoding: 'utf-8', timeout: 5000 }).split('\n')[1]?.trim() || '';
+      const board = execSync('wmic baseboard get serialnumber', { encoding: 'utf-8', timeout: 5000 }).split('\n')[1]?.trim() || '';
+      return [bios, board].join('|');
+    }
+    // Linux: machine-id do sistema
+    if (fs.existsSync('/etc/machine-id')) return fs.readFileSync('/etc/machine-id', 'utf-8').trim();
+    if (fs.existsSync('/var/lib/dbus/machine-id')) return fs.readFileSync('/var/lib/dbus/machine-id', 'utf-8').trim();
+  } catch {}
+  return 'no-hw-id';
+}
+
+function getDiskSerial() {
+  try {
+    const platform = os.platform();
+    if (platform === 'darwin') {
+      const out = execSync('system_profiler SPStorageDataType SPNVMeDataType', { encoding: 'utf-8', timeout: 5000 });
+      const serial = out.match(/Serial\s*Number:\s*(\S+)/i);
+      return serial ? serial[1] : '';
+    }
+    if (platform === 'win32') {
+      const out = execSync('wmic diskdrive get serialnumber', { encoding: 'utf-8', timeout: 5000 });
+      return out.split('\n')[1]?.trim() || '';
+    }
+    if (platform === 'linux') {
+      const out = execSync('lsblk -ndo SERIAL /dev/sda 2>/dev/null || lsblk -ndo SERIAL /dev/nvme0n1 2>/dev/null', { encoding: 'utf-8', timeout: 5000 });
+      return out.trim();
+    }
+  } catch {}
+  return '';
 }
 
 export function getMachineFingerprint() {
-  const data = [os.hostname(), os.platform(), os.arch(), (os.cpus()[0] || {}).model || '', getMacAddress()].join('|');
+  const machineId = getOrCreateMachineId();
+  const hwId = getHardwareId();
+  const disk = getDiskSerial();
+  const ram = os.totalmem().toString();
+  const cpuModel = (os.cpus()[0] || {}).model || '';
+  const cpuCores = os.cpus().length.toString();
+  const data = [machineId, hwId, disk, os.hostname(), os.platform(), os.arch(), cpuModel, cpuCores, ram].join('|');
   return crypto.createHash('sha256').update(data).digest('hex');
 }
 
@@ -92,8 +148,8 @@ function checkLocalLicenseSync() {
   try {
     if (!fs.existsSync(LICENSE_FILE)) return { valid: false };
     const data = JSON.parse(fs.readFileSync(LICENSE_FILE, 'utf-8'));
-    if (data.fingerprint !== getMachineFingerprint()) return { valid: false };
-    if (!verifySignature(data)) return { valid: false };
+    if (data.fingerprint !== getMachineFingerprint()) return { valid: false, token: data.token, reason: 'fingerprint_changed' };
+    if (!verifySignature(data)) return { valid: false, token: data.token, reason: 'signature_invalid' };
     return { valid: true, plan: data.plan, token: data.token };
   } catch { return { valid: false }; }
 }
@@ -129,12 +185,42 @@ export function isLicensed() {
   try {
     if (!fs.existsSync(LICENSE_FILE)) return false;
     const data = JSON.parse(fs.readFileSync(LICENSE_FILE, 'utf-8'));
-    if (data.fingerprint !== getMachineFingerprint()) return false;
+    if (data.fingerprint !== getMachineFingerprint()) {
+      // Fingerprint mudou (ex: update do sistema) — agenda reativação automática
+      if (data.token && !_autoReactivating) {
+        _autoReactivating = true;
+        autoReactivate(data.token).catch(() => {});
+      }
+      return false;
+    }
     if (!verifySignature(data)) return false;
     // Integrity: verify this function exists and hasn't been replaced with "return true"
     if (isLicensed.toString().length < 100) return false;
     return true;
   } catch { return false; }
+}
+
+// ================================================================
+// AUTO-REATIVAÇÃO (fingerprint mudou na mesma máquina)
+// Tenta revalidar online sem pedir token ao usuário.
+// ================================================================
+
+let _autoReactivating = false;
+
+async function autoReactivate(token) {
+  try {
+    log.server.info('Fingerprint mudou — tentando reativacao automatica...');
+    const result = await activateLicense(token);
+    if (result.valid) {
+      log.server.info('Reativacao automatica OK — licenca atualizada');
+    } else {
+      log.server.warn(`Reativacao automatica falhou: ${result.error || 'desconhecido'}`);
+    }
+  } catch (err) {
+    log.server.warn(`Reativacao automatica erro: ${err.message}`);
+  } finally {
+    _autoReactivating = false;
+  }
 }
 
 // ================================================================

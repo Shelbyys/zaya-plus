@@ -210,31 +210,40 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
 #chatLog::-webkit-scrollbar{width:3px;}
 #chatLog::-webkit-scrollbar-thumb{background:var(--od);border-radius:2px;}
 .chat-bubble{
-  font-family:'Space Mono',monospace;font-size:9px;line-height:1.5;
-  padding:6px 10px;border-radius:4px;max-width:100%;word-wrap:break-word;
-  animation:chatFade .3s ease;
+  font-family:'Space Mono',monospace;font-size:13px;line-height:1.6;
+  padding:10px 14px;border-radius:8px;max-width:100%;word-wrap:break-word;
+  animation:chatFade .3s ease;white-space:pre-wrap;
 }
+.chat-bubble a{color:inherit;text-decoration:underline;text-underline-offset:2px;opacity:0.9;}
+.chat-bubble a:hover{opacity:1;text-decoration-thickness:2px;}
+.chat-bubble .chat-media{margin:8px 0 4px;border-radius:6px;overflow:hidden;}
+.chat-bubble .chat-media img{max-width:100%;max-height:300px;border-radius:6px;cursor:pointer;transition:transform .2s;}
+.chat-bubble .chat-media img:hover{transform:scale(1.02);}
+.chat-bubble .chat-media video{max-width:100%;max-height:300px;border-radius:6px;}
+.chat-bubble .chat-media audio{width:100%;margin-top:4px;}
+.chat-bubble .chat-media .media-link{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:4px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:inherit;text-decoration:none;font-size:11px;margin-top:4px;}
+.chat-bubble .chat-media .media-link:hover{background:rgba(255,255,255,0.1);}
 @keyframes chatFade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
 .chat-user{
   background:rgba(243,102,0,0.1);border:1px solid rgba(243,102,0,0.2);color:var(--o2);
   align-self:flex-end;border-bottom-right-radius:0;
 }
-.chat-user .chat-label{color:var(--o);font-size:7px;letter-spacing:1.5px;margin-bottom:2px;}
+.chat-user .chat-label{color:var(--o);font-size:10px;letter-spacing:1.5px;margin-bottom:3px;}
 .chat-ai{
   background:rgba(0,204,102,0.08);border:1px solid rgba(0,204,102,0.15);color:var(--green);
   align-self:flex-start;border-bottom-left-radius:0;
 }
-.chat-ai .chat-label{color:rgba(0,204,102,0.6);font-size:7px;letter-spacing:1.5px;margin-bottom:2px;}
+.chat-ai .chat-label{color:rgba(0,204,102,0.6);font-size:10px;letter-spacing:1.5px;margin-bottom:3px;}
 .chat-system{
-  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:1px;
-  color:var(--od);text-align:center;padding:4px;
+  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;
+  color:var(--od);text-align:center;padding:6px;
 }
 .chat-hear{
   background:rgba(255,200,50,0.08);border:1px solid rgba(255,200,50,0.15);color:var(--yellow);
   align-self:flex-start;border-bottom-left-radius:0;font-style:italic;
 }
-.chat-hear .chat-label{color:rgba(255,200,50,0.6);font-size:7px;letter-spacing:1.5px;margin-bottom:2px;}
-.chat-time{font-size:6px;color:var(--od);margin-top:2px;text-align:right;}
+.chat-hear .chat-label{color:rgba(255,200,50,0.6);font-size:10px;letter-spacing:1.5px;margin-bottom:3px;}
+.chat-time{font-size:9px;color:var(--od);margin-top:4px;text-align:right;}
 
 /* PROCESSAMENTO CHART */
 .chart-canvas{width:100%;height:100px;display:block;border-radius:3px;}
@@ -750,7 +759,7 @@ html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans
         CONVERSA
         <span id="chatLogStatus" style="margin-left:auto;font-size:7px;color:var(--green);">ONLINE</span>
       </div>
-      <div id="chatLog" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding-right:4px;">
+      <div id="chatLog" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding-right:6px;">
         <div class="chat-system">Sistema iniciado. Aguardando ativacao...</div>
       </div>
       <div style="flex-shrink:0;margin-top:8px;display:flex;gap:4px;">
@@ -2965,14 +2974,39 @@ loadMessages();
 
 // === CHAT LOG (painel direito — historico completo) ===
 let chatAutoScroll=true;
+function chatFormatText(text){
+  let safe=escapeHtml(text);
+  // Links clicáveis
+  safe=safe.replace(/(https?:\/\/[^\s<]+)/g,function(url){
+    const lower=url.toLowerCase();
+    // Imagens inline
+    if(/\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i.test(lower)){
+      return `<div class="chat-media"><img src="${url}" alt="imagem" onclick="window.open('${url}','_blank')" loading="lazy"></div><a href="${url}" target="_blank" rel="noopener">${url}</a>`;
+    }
+    // Vídeos inline
+    if(/\.(mp4|webm|mov|ogg)(\?.*)?$/i.test(lower)){
+      return `<div class="chat-media"><video src="${url}" controls preload="metadata"></video></div><a href="${url}" target="_blank" rel="noopener">${url}</a>`;
+    }
+    // Áudios inline
+    if(/\.(mp3|wav|ogg|aac|m4a|opus)(\?.*)?$/i.test(lower)){
+      return `<div class="chat-media"><audio src="${url}" controls preload="metadata"></audio></div><a href="${url}" target="_blank" rel="noopener">${url}</a>`;
+    }
+    // PDF e documentos
+    if(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|zip|rar)(\?.*)?$/i.test(lower)){
+      const ext=lower.match(/\.(\w+)(\?.*)?$/)[1].toUpperCase();
+      return `<div class="chat-media"><a class="media-link" href="${url}" target="_blank" rel="noopener">📎 ${ext} — Abrir arquivo</a></div>`;
+    }
+    return `<a href="${url}" target="_blank" rel="noopener">${url}</a>`;
+  });
+  return safe;
+}
 function chatLog(text,type,label){
   const log=$('chatLog');
   const bubble=document.createElement('div');
   bubble.className='chat-bubble chat-'+type;
   const time=new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  bubble.innerHTML=`<div class="chat-label">${label||type.toUpperCase()}</div>${escapeHtml(text)}<div class="chat-time">${time}</div>`;
+  bubble.innerHTML=`<div class="chat-label">${label||type.toUpperCase()}</div>${chatFormatText(text)}<div class="chat-time">${time}</div>`;
   log.appendChild(bubble);
-  // Limita a 200 mensagens
   while(log.children.length>200)log.removeChild(log.firstChild);
   if(chatAutoScroll)log.scrollTop=log.scrollHeight;
 }
