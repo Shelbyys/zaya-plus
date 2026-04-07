@@ -134,12 +134,55 @@ echo -e "${PURPLE}[4/4]${NC} Ativando licenca..."
 
 node activate.js "$TOKEN"
 
+# ================================================================
+# 5. Criar atalho "zaya" no terminal
+# ================================================================
+SHELL_RC=""
+if [ -n "$ZSH_VERSION" ] || [ "$SHELL" = "/bin/zsh" ]; then
+    SHELL_RC="$HOME/.zshrc"
+elif [ -f "$HOME/.bashrc" ]; then
+    SHELL_RC="$HOME/.bashrc"
+elif [ -f "$HOME/.bash_profile" ]; then
+    SHELL_RC="$HOME/.bash_profile"
+fi
+
+if [ -n "$SHELL_RC" ]; then
+    # Remove alias antigo se existir
+    if grep -q 'alias zaya=' "$SHELL_RC" 2>/dev/null; then
+        sed -i.bak '/alias zaya=/d' "$SHELL_RC"
+    fi
+    echo "alias zaya='cd $INSTALL_DIR && npm start'" >> "$SHELL_RC"
+    echo -e "  ${GREEN}✓${NC} Atalho criado! Digite ${CYAN}zaya${NC} no terminal pra iniciar"
+fi
+
+# Criar script executavel tambem (funciona sem reabrir terminal)
+cat > "$HOME/.local/bin/zaya" 2>/dev/null << SCRIPT || true
+#!/bin/bash
+cd "$INSTALL_DIR" && npm start
+SCRIPT
+chmod +x "$HOME/.local/bin/zaya" 2>/dev/null || true
+
+# Mac: criar tambem em /usr/local/bin se possivel
+if [ "$(uname)" = "Darwin" ]; then
+    mkdir -p /usr/local/bin 2>/dev/null
+    cat > /usr/local/bin/zaya 2>/dev/null << SCRIPT || true
+#!/bin/bash
+export NVM_DIR="\$HOME/.nvm"
+[ -s "\$NVM_DIR/nvm.sh" ] && . "\$NVM_DIR/nvm.sh"
+cd "$INSTALL_DIR" && npm start
+SCRIPT
+    chmod +x /usr/local/bin/zaya 2>/dev/null || true
+fi
+
 echo ""
 echo "  ─────────────────────────────────────"
 echo ""
 echo -e "${GREEN}${BOLD}  ✓ Zaya Plus instalada e ativada!${NC}"
 echo ""
-echo -e "  Para iniciar agora e sempre:"
+echo -e "  Para iniciar, basta digitar:"
+echo -e "  ${CYAN}${BOLD}zaya${NC}"
+echo ""
+echo -e "  Ou se preferir:"
 echo -e "  ${CYAN}cd $INSTALL_DIR && npm start${NC}"
 echo ""
 echo -e "  Acesse: ${BOLD}http://localhost:3001${NC}"
