@@ -189,10 +189,29 @@ const MODULES = [
     id:'voice', label:'Voz / TTS', desc:'ElevenLabs, OpenAI TTS ou Kokoro (grátis, local)', required:false, icon:'&#128266;', category:'comunicacao',
     steps:['Escolha o provedor de voz abaixo','ELEVENLABS: Crie conta em elevenlabs.io > API Keys > copie key e Voice ID','OPENAI: Usa a mesma API Key da IA, voz "nova" por padrao','KOKORO: 100% grátis, roda local no seu Mac. Melhor em inglês'],
     fields:[
-      {key:'TTS_PROVIDER',type:'select',label:'Provedor TTS',options:[{v:'',l:'ElevenLabs (padrao)'},{v:'openai',l:'OpenAI TTS'},{v:'kokoro',l:'Kokoro (grátis, local)'}]},
-      {key:'ELEVENLABS_API_KEY',type:'password',label:'ElevenLabs API Key',placeholder:'xi-...'},
-      {key:'ELEVENLABS_VOICE_ID',type:'text',label:'ElevenLabs Voice ID',placeholder:'21m00Tcm4TlvDq8ikWAM'},
-      {key:'KOKORO_VOICE',type:'select',label:'Voz Kokoro',options:[{v:'af_heart',l:'Heart (feminina, calorosa)'},{v:'af_nova',l:'Nova (feminina, energética)'},{v:'af_bella',l:'Bella (feminina, expressiva)'},{v:'af_sarah',l:'Sarah (feminina, profissional)'},{v:'am_adam',l:'Adam (masculina, grave)'},{v:'am_michael',l:'Michael (masculina, madura)'}]}
+      {key:'TTS_PROVIDER',type:'select',label:'Provedor TTS',cls:'full',options:[{v:'',l:'ElevenLabs (padrao)'},{v:'openai',l:'OpenAI TTS'},{v:'kokoro',l:'Kokoro (grátis, local)'}]},
+      {key:'ELEVENLABS_API_KEY',type:'password',label:'API Key',placeholder:'xi-...',showWhen:'TTS_PROVIDER='},
+      {key:'ELEVENLABS_VOICE_ID',type:'text',label:'Voice ID',placeholder:'21m00Tcm4TlvDq8ikWAM',showWhen:'TTS_PROVIDER='},
+      {key:'OPENAI_TTS_VOICE',type:'select',label:'Voz OpenAI',showWhen:'TTS_PROVIDER=openai',options:[{v:'nova',l:'Nova (feminina, natural)'},{v:'alloy',l:'Alloy (neutra)'},{v:'echo',l:'Echo (masculina)'},{v:'fable',l:'Fable (masculina, britânica)'},{v:'onyx',l:'Onyx (masculina, grave)'},{v:'shimmer',l:'Shimmer (feminina, suave)'}]},
+      {key:'KOKORO_VOICE',type:'select',label:'Voz Kokoro',showWhen:'TTS_PROVIDER=kokoro',cls:'full',options:[
+        {v:'af_heart',l:'Heart (feminina, calorosa)'},
+        {v:'af_nova',l:'Nova (feminina, energética)'},
+        {v:'af_bella',l:'Bella (feminina, expressiva)'},
+        {v:'af_sarah',l:'Sarah (feminina, profissional)'},
+        {v:'af_sky',l:'Sky (feminina, leve)'},
+        {v:'af_nicole',l:'Nicole (feminina, madura)'},
+        {v:'af_jessica',l:'Jessica (feminina, clara)'},
+        {v:'af_river',l:'River (feminina, calma)'},
+        {v:'af_aoede',l:'Aoede (feminina, suave)'},
+        {v:'af_kore',l:'Kore (feminina, jovem)'},
+        {v:'af_alloy',l:'Alloy (feminina, neutra)'},
+        {v:'am_adam',l:'Adam (masculina, grave)'},
+        {v:'am_echo',l:'Echo (masculina, ressonante)'},
+        {v:'am_eric',l:'Eric (masculina, firme)'},
+        {v:'am_liam',l:'Liam (masculina, jovem)'},
+        {v:'am_michael',l:'Michael (masculina, madura)'},
+        {v:'am_onyx',l:'Onyx (masculina, profunda)'}
+      ]}
     ],
     links:[{url:'https://elevenlabs.io/app/settings/api-keys',label:'ElevenLabs'},{url:'https://elevenlabs.io/app/voice-library',label:'Vozes ElevenLabs'}],
     save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'voice',config:f})}
@@ -411,6 +430,7 @@ function renderModule(m) {
       const val = active ? getMaskedValue(f.key) : '';
       const groupAttr = f.group ? ` data-group="${f.group}"` : '';
       const condAttr = f.condition ? ` data-condition="${f.condition}"` : '';
+      const providerAttr = f.showWhen ? ` data-show-when="${f.showWhen}"` : '';
       const clsAttr = f.cls ? ` ${f.cls}` : '';
       const activeTag = active && val ? '<span class="field-active-tag">ATIVO</span>' : '';
 
@@ -419,20 +439,31 @@ function renderModule(m) {
           const sel = (active && val === o.v) ? ' selected' : (!active && o.v === (f.options[0]?.v) ? ' selected' : '');
           return `<option value="${o.v}"${sel}>${o.l}</option>`;
         }).join('');
-        formHtml += `<div class="field${clsAttr}"${groupAttr}${condAttr}><label class="field-label">${f.label}</label><select class="field-select" data-key="${f.key}" onchange="onFieldChange('${m.id}')">${opts}</select></div>`;
+        formHtml += `<div class="field${clsAttr}"${groupAttr}${condAttr}${providerAttr}><label class="field-label">${f.label}</label><select class="field-select" data-key="${f.key}" onchange="onFieldChange('${m.id}')">${opts}</select></div>`;
       } else {
         const ph = active && val ? val : (f.placeholder || '');
-        formHtml += `<div class="field${clsAttr}"${groupAttr}${condAttr}><label class="field-label">${f.label}${activeTag}</label><input class="field-input" type="${f.type}" data-key="${f.key}" placeholder="${ph}"></div>`;
+        formHtml += `<div class="field${clsAttr}"${groupAttr}${condAttr}${providerAttr}><label class="field-label">${f.label}${activeTag}</label><input class="field-input" type="${f.type}" data-key="${f.key}" placeholder="${ph}"></div>`;
       }
     }
     formHtml += '</div>';
-    formHtml += `<div class="btn-row">
+    formHtml += `<div class="btn-row" style="margin-top:16px">
       <button class="btn btn-primary" onclick="saveModule('${m.id}')" id="saveBtn_${m.id}">${active ? 'Atualizar' : 'Salvar'}</button>
       <span class="save-msg" id="msg_${m.id}"></span>
     </div>`;
     if (active) formHtml += '<div style="font-size:0.65rem;color:var(--text3);margin-top:8px">Deixe campos vazios para manter valores atuais.</div>';
     if (m.extraAction) {
       formHtml += `<button class="btn btn-green" style="margin-top:12px" onclick="${m.extraAction.fn}()">${m.extraAction.label}</button>`;
+    }
+
+    // Vozes preview section (para módulo voice)
+    if (m.id === 'voice') {
+      formHtml += `<div id="voicePreview" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+        <div style="font-size:0.75rem;color:var(--text2);margin-bottom:8px;font-weight:600">Testar voz</div>
+        <div class="btn-row">
+          <input class="field-input" id="voiceTestText" placeholder="Digite um texto para testar a voz..." value="Oi, eu sou a Zaya, sua assistente pessoal." style="flex:1">
+          <button class="btn btn-secondary" onclick="testVoice()">&#9654; Testar</button>
+        </div>
+      </div>`;
     }
   }
 
@@ -470,18 +501,30 @@ function toggleModule(id) {
 function onFieldChange(modId) {
   const form = document.getElementById('form_' + modId);
   if (!form) return;
-  // Show/hide grouped fields based on provider select
-  const providerSelect = form.querySelector('[data-key="VOICE_PROVIDER"]') || form.querySelector('[data-key="_provider"]');
-  if (!providerSelect) return;
-  const val = providerSelect.value;
 
-  form.querySelectorAll('[data-group]').forEach(el => {
-    el.style.display = el.dataset.group === val ? '' : 'none';
-  });
+  // Show/hide grouped fields (for voice providers like twilio/plivo/telnyx/vonage)
+  const providerSelect = form.querySelector('[data-key="VOICE_PROVIDER"]') || form.querySelector('[data-key="_provider"]');
+  if (providerSelect) {
+    const val = providerSelect.value;
+    form.querySelectorAll('[data-group]').forEach(el => {
+      el.style.display = el.dataset.group === val ? '' : 'none';
+    });
+  }
+
+  // Show/hide conditional fields
   form.querySelectorAll('[data-condition]').forEach(el => {
     const [k, v] = el.dataset.condition.split('=');
     const sel = form.querySelector(`[data-key="${k}"]`);
     el.style.display = sel && sel.value === v ? '' : 'none';
+  });
+
+  // Show/hide based on showWhen (e.g. TTS_PROVIDER=kokoro)
+  form.querySelectorAll('[data-show-when]').forEach(el => {
+    const [k, v] = el.dataset.showWhen.split('=');
+    const sel = form.querySelector(`[data-key="${k}"]`);
+    if (sel) {
+      el.style.display = sel.value === v ? '' : 'none';
+    }
   });
 }
 
@@ -610,6 +653,29 @@ function showToast(message, type) {
   toast.textContent = (type === 'success' ? '\u2713 ' : '\u2717 ') + message;
   container.appendChild(toast);
   setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+// ================================================================
+// VOICE TEST
+// ================================================================
+async function testVoice() {
+  const text = document.getElementById('voiceTestText')?.value || 'Oi, eu sou a Zaya.';
+  try {
+    showToast('Gerando voz...', 'success');
+    const res = await fetch('/api/media/speak', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    if (!res.ok) { showToast('Erro ao gerar voz', 'error'); return; }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const audio = new Audio(url);
+    audio.play();
+    audio.onended = () => URL.revokeObjectURL(url);
+  } catch (e) {
+    showToast('Erro: ' + e.message, 'error');
+  }
 }
 
 // ================================================================
