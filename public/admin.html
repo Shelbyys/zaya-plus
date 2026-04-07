@@ -841,9 +841,69 @@
                     <button class="btn btn-copy btn-sm" onclick="copyGeneratedToken()">Copiar Token</button>
 
                     <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
-                        <div class="token-label">Comando Completo de Instalacao (envie para o cliente)</div>
-                        <div class="token-value" id="activateCommand" style="font-size:0.65rem;color:#00e676;white-space:pre-wrap;line-height:1.6"></div>
-                        <button class="btn btn-copy btn-sm" onclick="copyActivateCommand()" style="background:linear-gradient(135deg,#00b894,#00e676)">Copiar Comando</button>
+                        <div class="token-label">Comando 1 — Instalar (envie primeiro)</div>
+                        <div class="token-value" id="installCommand" style="font-size:0.65rem;color:#00d4ff">git clone https://github.com/Shelbyys/zaya-plus-app.git && cd zaya-plus-app && npm install</div>
+                        <button class="btn btn-copy btn-sm" onclick="copyText('git clone https://github.com/Shelbyys/zaya-plus-app.git && cd zaya-plus-app && npm install')" style="background:linear-gradient(135deg,#0984e3,#00d4ff)">Copiar Comando 1</button>
+                    </div>
+                    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
+                        <div class="token-label">Comando 2 — Ativar e Iniciar (envie depois)</div>
+                        <div class="token-value" id="activateCommand" style="font-size:0.65rem;color:#00e676"></div>
+                        <button class="btn btn-copy btn-sm" onclick="copyActivateCommand()" style="background:linear-gradient(135deg,#00b894,#00e676)">Copiar Comando 2</button>
+                    </div>
+                    <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
+                        <div class="token-label">Tudo em 1 comando (alternativa)</div>
+                        <div class="token-value" id="fullCommand" style="font-size:0.6rem;color:#a29bfe"></div>
+                        <button class="btn btn-copy btn-sm" onclick="copyFullCommand()" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)">Copiar Comando Completo</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section: Trial -->
+            <div class="glass-card" style="animation-delay: 0.15s;">
+                <div class="section-header">
+                    <div class="section-title">Licenca Trial (Teste)</div>
+                    <span style="font-size:0.7rem;color:#ffd740;background:rgba(255,215,64,0.12);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,215,64,0.25)">TEMPO LIMITADO</span>
+                </div>
+
+                <form id="trialForm" onsubmit="return generateTrial(event)">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                        <div>
+                            <label style="display:block;font-size:0.75rem;color:#8888a0;margin-bottom:6px">Nome</label>
+                            <input type="text" id="trialName" placeholder="Nome do cliente" required style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#eee;font-size:0.85rem">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.75rem;color:#8888a0;margin-bottom:6px">Email</label>
+                            <input type="email" id="trialEmail" placeholder="email@cliente.com" required style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#eee;font-size:0.85rem">
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+                        <div>
+                            <label style="display:block;font-size:0.75rem;color:#8888a0;margin-bottom:6px">Horas</label>
+                            <input type="number" id="trialHours" value="24" min="0" max="720" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#eee;font-size:0.85rem">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.75rem;color:#8888a0;margin-bottom:6px">Minutos</label>
+                            <input type="number" id="trialMinutes" value="0" min="0" max="59" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#eee;font-size:0.85rem">
+                        </div>
+                        <div>
+                            <label style="display:block;font-size:0.75rem;color:#8888a0;margin-bottom:6px">Plano</label>
+                            <select id="trialPlan" style="width:100%;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;color:#eee;font-size:0.85rem">
+                                <option value="enterprise">Enterprise (completo)</option>
+                                <option value="pro">Pro</option>
+                                <option value="basic">Basic</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="background:linear-gradient(135deg,#f5a623,#ffd740);color:#000;width:100%">Gerar Trial</button>
+                </form>
+
+                <div class="token-display" id="trialDisplay">
+                    <div class="token-label">Token Trial Gerado</div>
+                    <div class="token-value" id="trialToken" style="color:#ffd740"></div>
+                    <div style="font-size:0.75rem;color:#8888a0;margin:8px 0" id="trialExpiry"></div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button class="btn btn-copy btn-sm" onclick="copyTrialToken()">Copiar Token</button>
+                        <button class="btn btn-copy btn-sm" onclick="copyTrialFull()" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)">Copiar Comando Completo</button>
                     </div>
                 </div>
             </div>
@@ -980,7 +1040,8 @@
 
                 generatedToken = data.token || data.license?.token || '';
                 document.getElementById('tokenValue').textContent = generatedToken;
-                document.getElementById('activateCommand').textContent = buildInstallCommand(generatedToken);
+                document.getElementById('activateCommand').textContent = `cd ~/zaya-plus && node activate.js ${generatedToken} && npm start`;
+                document.getElementById('fullCommand').textContent = buildInstallCommand(generatedToken);
                 document.getElementById('tokenDisplay').classList.add('visible');
 
                 showToast('Licenca gerada com sucesso!', 'success');
@@ -1001,17 +1062,87 @@
             });
         }
 
-        function buildInstallCommand(token) {
-            return `curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.sh | bash -s ${token}`;
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Comando copiado!', 'success');
+            });
         }
 
         function copyActivateCommand() {
             if (!generatedToken) return;
-            const cmd = buildInstallCommand(generatedToken);
-            navigator.clipboard.writeText(cmd).then(() => {
-                showToast('Comando copiado! Envie para o cliente.', 'success');
-            });
+            copyText(`cd ~/zaya-plus && node activate.js ${generatedToken} && npm start`);
         }
+
+        function buildInstallCommand(token) {
+            return `curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.sh | bash -s ${token}`;
+        }
+
+        function copyFullCommand() {
+            if (!generatedToken) return;
+            copyText(buildInstallCommand(generatedToken));
+        }
+
+        // ═══════ Trial ═══════
+        let trialToken = '';
+
+        async function generateTrial(e) {
+            e.preventDefault();
+            try {
+                const data = await apiCall('/api/license/admin/generate-trial', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('trialName').value.trim(),
+                        email: document.getElementById('trialEmail').value.trim(),
+                        plan: document.getElementById('trialPlan').value,
+                        hours: document.getElementById('trialHours').value,
+                        minutes: document.getElementById('trialMinutes').value,
+                        password: adminPassword
+                    })
+                });
+                trialToken = data.token;
+                document.getElementById('trialToken').textContent = trialToken;
+                document.getElementById('trialExpiry').textContent = 'Expira em: ' + new Date(data.expires_at).toLocaleString('pt-BR');
+                document.getElementById('trialDisplay').classList.add('visible');
+                showToast('Trial gerado!', 'success');
+                document.getElementById('trialForm').reset();
+                refreshLicenses();
+            } catch (err) {
+                showToast(err.message || 'Erro', 'error');
+            }
+            return false;
+        }
+
+        function copyTrialToken() {
+            if (!trialToken) return;
+            navigator.clipboard.writeText(trialToken).then(() => showToast('Token trial copiado!', 'success'));
+        }
+
+        function copyTrialFull() {
+            if (!trialToken) return;
+            copyText(buildInstallCommand(trialToken));
+        }
+
+        // ═══════ Timer countdown para trials na tabela ═══════
+        function formatCountdown(expiresAt) {
+            const diff = new Date(expiresAt) - new Date();
+            if (diff <= 0) return '<span style="color:#ff5252">EXPIRADO</span>';
+            const h = Math.floor(diff / 3600000);
+            const m = Math.floor((diff % 3600000) / 60000);
+            const s = Math.floor((diff % 60000) / 1000);
+            if (h > 24) {
+                const d = Math.floor(h / 24);
+                return `<span style="color:#ffd740">${d}d ${h % 24}h</span>`;
+            }
+            return `<span style="color:#ffd740;font-family:monospace">${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}</span>`;
+        }
+
+        // Atualizar countdowns a cada segundo
+        setInterval(() => {
+            document.querySelectorAll('[data-countdown]').forEach(el => {
+                el.innerHTML = formatCountdown(el.dataset.countdown);
+            });
+        }, 1000);
 
         // ═══════ License List ═══════
         async function refreshLicenses() {
@@ -1032,8 +1163,9 @@
 
         function getStatus(license) {
             if (license.revoked) return 'revogado';
-            const exp = license.expires_at || license.expires || license.expiresAt;
-            if (exp && new Date(exp) < new Date()) return 'expirado';
+            if (license.expires_at && new Date(license.expires_at) < new Date()) return 'expirado';
+            if (license.expires && new Date(license.expires) < new Date()) return 'expirado';
+            if (license.expiresAt && new Date(license.expiresAt) < new Date()) return 'expirado';
             if (license.activated) return 'ativo';
             return 'pendente';
         }
@@ -1138,22 +1270,32 @@
                 const date = l.createdAt || l.created || '';
                 const dateDisplay = date ? new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-';
 
-                const expiresAt = l.expires_at || l.expires || l.expiresAt || '';
-                const expiresDisplay = expiresAt ? new Date(expiresAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-';
+                const isTrial = token.startsWith('TRIAL-');
+                const expiresAt = l.expires_at || l.expiresAt || '';
+                let timerHtml = '';
+                if (isTrial && expiresAt) {
+                    timerHtml = `<div data-countdown="${expiresAt}" style="margin-top:4px;font-size:0.7rem">${formatCountdown(expiresAt)}</div>`;
+                }
+
+                const planBadge = isTrial
+                    ? `<span class="badge badge-${plan}">${planLabel}</span><span style="font-size:0.6rem;color:#ffd740;display:block;margin-top:2px">TRIAL</span>`
+                    : `<span class="badge badge-${plan}">${planLabel}</span>`;
+
                 const safeData = btoa(JSON.stringify({ token, name: l.name||'', email: l.email||'', plan, expires_at: expiresAt }));
 
                 return `<tr>
                     <td class="token-cell" title="${token}" onclick="copyToken('${token}')">${truncToken}</td>
-                    <td><span class="badge badge-${plan}">${planLabel}</span></td>
+                    <td>${planBadge}</td>
                     <td>${escapeHtml(l.name || '-')}</td>
                     <td>${escapeHtml(l.email || '-')}</td>
-                    <td><span class="badge badge-${status}">${statusLabel}</span></td>
+                    <td><span class="badge badge-${status}">${statusLabel}</span>${timerHtml}</td>
                     <td class="machine-cell ${machineClass}">${escapeHtml(machineDisplay)}</td>
                     <td class="date-cell">${dateDisplay}</td>
                     <td style="white-space:nowrap">
                         <button class="btn btn-sm" onclick="openEditModal('${safeData}')" title="Editar" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);margin:2px;min-width:32px">&#9998;</button>
                         <button class="btn btn-sm" onclick="copyInstallCmd('${token}')" title="Copiar comando" style="background:linear-gradient(135deg,#00b894,#00e676);margin:2px;min-width:32px">&#128203;</button>
                         ${status === 'ativo' ? `<button class="btn btn-danger btn-sm" onclick="deactivateLicense('${token}')" title="Desativar" style="margin:2px;min-width:32px">&#10006;</button>` : ''}
+                        ${status !== 'expirado' && !l.revoked ? `<button class="btn btn-sm" onclick="revokeLicense('${token}')" title="Revogar" style="background:rgba(255,82,82,0.15);color:#ff5252;border:1px solid rgba(255,82,82,0.3);margin:2px;min-width:32px">&#128683;</button>` : ''}
                     </td>
                 </tr>`;
             }).join('');
@@ -1173,6 +1315,23 @@
                 await refreshLicenses();
             } catch (err) {
                 showToast(err.message || 'Erro ao desativar', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function revokeLicense(token) {
+            if (!confirm('REVOGAR permanentemente esta licenca? O cliente perde acesso.')) return;
+            showLoading(true);
+            try {
+                await apiCall('/api/license/admin/revoke', {
+                    method: 'POST',
+                    body: JSON.stringify({ token, password: adminPassword })
+                });
+                showToast('Licenca revogada permanentemente', 'success');
+                await refreshLicenses();
+            } catch (err) {
+                showToast(err.message || 'Erro ao revogar', 'error');
             } finally {
                 showLoading(false);
             }

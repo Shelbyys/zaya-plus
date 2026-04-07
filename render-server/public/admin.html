@@ -1041,7 +1041,7 @@
                 generatedToken = data.token || data.license?.token || '';
                 document.getElementById('tokenValue').textContent = generatedToken;
                 document.getElementById('activateCommand').textContent = `cd ~/zaya-plus && node activate.js ${generatedToken} && npm start`;
-                document.getElementById('fullCommand').textContent = `git clone https://github.com/Shelbyys/zaya-plus-app.git && cd zaya-plus-app && npm install && node activate.js ${generatedToken} && npm start`;
+                document.getElementById('fullCommand').textContent = buildInstallCommand(generatedToken);
                 document.getElementById('tokenDisplay').classList.add('visible');
 
                 showToast('Licenca gerada com sucesso!', 'success');
@@ -1120,7 +1120,7 @@
 
         function copyTrialFull() {
             if (!trialToken) return;
-            copyText(`git clone https://github.com/Shelbyys/zaya-plus-app.git && cd zaya-plus-app && npm install && node activate.js ${trialToken} && npm start`);
+            copyText(buildInstallCommand(trialToken));
         }
 
         // ═══════ Timer countdown para trials na tabela ═══════
