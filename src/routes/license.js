@@ -27,6 +27,16 @@ router.get('/status', async (req, res) => {
   }
 });
 
+// GET /fingerprint — Return this machine's fingerprint
+router.get('/fingerprint', async (req, res) => {
+  try {
+    const { getMachineFingerprint } = await import('../services/license.js');
+    res.json({ fingerprint: getMachineFingerprint() });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /activate — Activate a license token on this machine
 router.post('/activate', async (req, res) => {
   try {
