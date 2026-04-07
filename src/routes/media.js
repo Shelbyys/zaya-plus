@@ -63,12 +63,16 @@ router.all('/speak', async (req, res) => {
     if (ttsProvider === 'kokoro' || ttsProvider === 'kokoro-local') {
       try {
         const { generateSpeech } = await import('../services/kokoro-tts.js');
-        const voice = reqVoice || envVars.KOKORO_VOICE || process.env.KOKORO_VOICE || 'af_heart';
+        const voice = reqVoice || envVars.KOKORO_VOICE || process.env.KOKORO_VOICE || 'pt_br_faber';
         const wavBuffer = await generateSpeech(text, voice);
         res.set('Content-Type', 'audio/wav');
         return res.send(wavBuffer);
       } catch (e) {
-        console.log('[TTS] Kokoro erro:', e.message, '— tentando fallback...');
+        console.log('[TTS] Kokoro erro:', e.message);
+        // Se foi pedido explicitamente pelo setup, retorna o erro em vez de fallback silencioso
+        if (reqProvider) {
+          return res.status(500).json({ error: 'Kokoro TTS erro: ' + e.message });
+        }
       }
     }
 
@@ -103,7 +107,10 @@ router.all('/speak', async (req, res) => {
 
     // ElevenLabs TTS
     const elApiKey = elKey || process.env.ELEVENLABS_API_KEY;
-    if (!elApiKey) return res.status(204).end();
+    if (!elApiKey) {
+      if (reqProvider) return res.status(400).json({ error: 'Nenhum provedor de voz configurado. Salve as configuracoes primeiro.' });
+      return res.status(204).end();
+    }
     const voiceId = reqVoice || currentVoiceId;
     const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',

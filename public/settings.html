@@ -709,8 +709,12 @@ async function testVoice() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, provider: provider || undefined, voice: voice || undefined })
     });
-    if (res.status === 204) { showToast('Nenhum provedor de voz configurado', 'error'); return; }
-    if (!res.ok) { showToast('Erro ao gerar voz', 'error'); return; }
+    if (res.status === 204) { showToast('Nenhum provedor de voz configurado. Salve primeiro.', 'error'); return; }
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showToast(err.error || 'Erro ao gerar voz', 'error');
+      return;
+    }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const audio = new Audio(url);
