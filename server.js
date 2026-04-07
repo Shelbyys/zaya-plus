@@ -129,12 +129,13 @@ function isSetupNeeded() {
   }
 }
 
-app.get('/', (req, res, next) => {
+app.get('/', (req, res) => {
   // 1. Sem licença → página de licença
   if (!isLicensed()) return res.redirect('/license.html');
   // 2. Sem setup → onboarding
   if (isSetupNeeded()) return res.redirect('/onboarding.html');
-  next();
+  // 3. Tudo ok → index.html
+  res.sendFile(join(__dirname, 'public', 'index.html'));
 });
 
 app.get('/index.html', (req, res) => {

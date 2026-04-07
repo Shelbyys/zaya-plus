@@ -49,10 +49,15 @@ function getHardwareId() {
       return [uuid ? uuid[1] : '', serial ? serial[1] : ''].join('|');
     }
     if (platform === 'win32') {
-      // Windows: UUID da BIOS + serial da placa-mãe
-      const bios = execSync('wmic csproduct get uuid', { encoding: 'utf-8', timeout: 5000 }).split('\n')[1]?.trim() || '';
-      const board = execSync('wmic baseboard get serialnumber', { encoding: 'utf-8', timeout: 5000 }).split('\n')[1]?.trim() || '';
-      return [bios, board].join('|');
+      // Windows: UUID da BIOS + serial da placa-mãe (PowerShell — funciona no Win11)
+      try {
+        const bios = execSync('powershell -Command "(Get-CimInstance Win32_ComputerSystemProduct).UUID"', { encoding: 'utf-8', timeout: 5000 }).trim();
+        const board = execSync('powershell -Command "(Get-CimInstance Win32_BaseBoard).SerialNumber"', { encoding: 'utf-8', timeout: 5000 }).trim();
+        return [bios, board].join('|');
+      } catch {
+        // Fallback: hostname + username
+        return [os.hostname(), os.userInfo().username].join('|');
+      }
     }
     // Linux: machine-id do sistema
     if (fs.existsSync('/etc/machine-id')) return fs.readFileSync('/etc/machine-id', 'utf-8').trim();
@@ -70,8 +75,10 @@ function getDiskSerial() {
       return serial ? serial[1] : '';
     }
     if (platform === 'win32') {
-      const out = execSync('wmic diskdrive get serialnumber', { encoding: 'utf-8', timeout: 5000 });
-      return out.split('\n')[1]?.trim() || '';
+      try {
+        const out = execSync('powershell -Command "(Get-CimInstance Win32_DiskDrive | Select-Object -First 1).SerialNumber"', { encoding: 'utf-8', timeout: 5000 });
+        return out.trim();
+      } catch { return ''; }
     }
     if (platform === 'linux') {
       const out = execSync('lsblk -ndo SERIAL /dev/sda 2>/dev/null || lsblk -ndo SERIAL /dev/nvme0n1 2>/dev/null', { encoding: 'utf-8', timeout: 5000 });

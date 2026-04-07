@@ -7,7 +7,7 @@ import { openai } from '../state.js';
 
 const HOME = os.homedir();
 let CLAUDE_BIN = 'claude';
-try { CLAUDE_BIN = execSync('which claude', { encoding: 'utf-8', timeout: 5000 }).trim() || 'claude'; } catch(e) {}
+try { const cmd = process.platform === 'win32' ? 'where claude' : 'which claude'; CLAUDE_BIN = execSync(cmd, { encoding: 'utf-8', timeout: 5000, stdio: ['pipe','pipe','ignore'] }).trim().split('\n')[0] || 'claude'; } catch(e) {}
 
 // ================================================================
 // WHISPER / TRANSCRIÇÃO
