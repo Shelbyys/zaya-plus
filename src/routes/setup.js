@@ -464,6 +464,21 @@ router.post('/test-module', async (req, res) => {
         return res.json({ success: true });
       }
 
+      case 'mind': {
+        let testUrl, testHeaders;
+        if (config.provider === 'anthropic') {
+          testUrl = 'https://api.anthropic.com/v1/models';
+          testHeaders = { 'x-api-key': config.key, 'anthropic-version': '2023-06-01' };
+        } else {
+          const baseUrl = config.baseUrl || 'https://api.openai.com/v1';
+          testUrl = baseUrl + '/models';
+          testHeaders = { 'Authorization': 'Bearer ' + config.key };
+        }
+        const response = await fetch(testUrl, { headers: testHeaders });
+        if (!response.ok) throw new Error('Chave invalida (status ' + response.status + ')');
+        return res.json({ success: true });
+      }
+
       default:
         return res.status(400).json({ success: false, error: `Unknown module: ${module}` });
     }

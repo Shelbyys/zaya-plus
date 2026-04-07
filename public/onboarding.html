@@ -372,7 +372,7 @@
         expectations: [],
     };
 
-    const TOTAL_STEPS = 7;
+    const TOTAL_STEPS = 8;
 
     // Build progress dots
     for (let i = 0; i < TOTAL_STEPS; i++) {
@@ -620,7 +620,7 @@
     }
 
     async function q2_callName() {
-        setStep(1);
+        setStep(2);
         clearInput();
         orb.setState('listening');
         orb.setAudioLevel(0.2);
@@ -634,7 +634,7 @@
     }
 
     async function q3_communicationStyle() {
-        setStep(2);
+        setStep(3);
         clearInput();
         orb.setState('idle');
         orb.setAudioLevel(0);
@@ -652,7 +652,7 @@
     }
 
     async function q4_accent() {
-        setStep(3);
+        setStep(4);
         clearInput();
         orb.setState('idle');
         orb.setAudioLevel(0.1);
@@ -672,7 +672,7 @@
     }
 
     async function q5_profession() {
-        setStep(4);
+        setStep(5);
         clearInput();
         orb.setState('listening');
         orb.setAudioLevel(0.15);
@@ -685,7 +685,7 @@
     }
 
     async function q6_expectations() {
-        setStep(5);
+        setStep(6);
         clearInput();
         orb.setState('idle');
         orb.setAudioLevel(0);
@@ -705,7 +705,7 @@
     }
 
     async function q7_final() {
-        setStep(6);
+        setStep(7);
         clearInput();
 
         // ───── Save personality via API ─────
@@ -830,9 +830,109 @@
         window.location.href = '/';
     }
 
+    // ───── Q1.5: API Key (mente da Zaya) ─────
+    async function q1b_apiKey() {
+        setStep(1);
+        clearInput();
+        orb.setState('processing');
+        orb.setAudioLevel(0.3);
+
+        await typeMultiple([
+            'Antes de tudo, preciso de uma mente pra funcionar.',
+            'Escolhe qual IA eu vou usar:',
+        ]);
+        await sleep(200);
+
+        const provider = await createSingleSelect([
+            { emoji: '\uD83E\uDDE0', label: 'Groq (Gratis)', desc: 'Rapido e sem custo. Ideal pra comecar.', value: 'groq' },
+            { emoji: '\uD83D\uDCAB', label: 'ChatGPT (OpenAI)', desc: 'GPT-4o, o mais completo.', value: 'openai' },
+            { emoji: '\uD83E\uDD16', label: 'Claude (Anthropic)', desc: 'Inteligente e preciso.', value: 'anthropic' },
+            { emoji: '\uD83C\uDD93', label: 'HuggingFace (Gratis)', desc: 'DeepSeek, Llama, Qwen.', value: 'huggingface' },
+        ]);
+
+        clearInput();
+        const providerLinks = {
+            groq: 'console.groq.com/keys',
+            openai: 'platform.openai.com/api-keys',
+            anthropic: 'console.anthropic.com/settings/keys',
+            huggingface: 'huggingface.co/settings/tokens',
+        };
+        const providerModels = {
+            groq: { model: 'llama-3.3-70b-versatile', modelMini: 'llama-3.1-8b-instant', baseUrl: 'https://api.groq.com/openai/v1' },
+            openai: { model: 'gpt-4o', modelMini: 'gpt-4o-mini' },
+            anthropic: { model: 'claude-sonnet-4-20250514', modelMini: 'claude-haiku-4-5-20251001' },
+            huggingface: { model: 'deepseek-ai/DeepSeek-V3-0324', modelMini: 'meta-llama/Llama-3.3-70B-Instruct', baseUrl: 'https://router.huggingface.co/v1' },
+        };
+
+        await typeText('Agora cola a chave da API. Pega em: ' + providerLinks[provider]);
+        await sleep(200);
+
+        let apiKey = '';
+        let validated = false;
+        while (!validated) {
+            apiKey = await createTextInput('Cole a API key aqui...', 'Validar');
+            clearInput();
+
+            // Mostra processando
+            orb.setState('processing');
+            await typeText('Validando a chave...');
+            await sleep(500);
+
+            try {
+                const saveBody = {
+                    provider: provider,
+                    key: apiKey.trim(),
+                    ...(providerModels[provider].baseUrl ? { baseUrl: providerModels[provider].baseUrl } : {}),
+                    model: providerModels[provider].model,
+                    modelMini: providerModels[provider].modelMini,
+                };
+
+                const r = await fetch('/api/setup/save-mind', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(saveBody),
+                });
+
+                if (r.ok) {
+                    // Testa a chave
+                    const testR = await fetch('/api/setup/test-module', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ module: 'mind', config: saveBody }),
+                    });
+                    const testData = await testR.json();
+
+                    if (testR.ok && testData.success) {
+                        clearInput();
+                        orb.setState('speaking');
+                        await typeText('Perfeito! Minha mente ta funcionando!');
+                        await sleep(800);
+                        validated = true;
+                    } else {
+                        clearInput();
+                        orb.setState('idle');
+                        await typeText('Hmm, essa chave nao funcionou. Verifica e tenta de novo.');
+                        await sleep(500);
+                    }
+                } else {
+                    clearInput();
+                    await typeText('Erro ao salvar. Tenta de novo.');
+                    await sleep(500);
+                }
+            } catch (e) {
+                clearInput();
+                await typeText('Erro de conexao. Verifica a internet e tenta de novo.');
+                await sleep(500);
+            }
+        }
+
+        answers.provider = provider;
+    }
+
     // ───── Run Flow ─────
     try {
         await q1_intro();
+        await q1b_apiKey();
         await q2_callName();
         await q3_communicationStyle();
         await q4_accent();
