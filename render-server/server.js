@@ -192,6 +192,28 @@ app.post('/api/license/admin/revoke', async (req, res) => {
   }
 });
 
+// Editar licença (nome, email, plano, validade)
+app.post('/api/license/admin/update', async (req, res) => {
+  try {
+    if (!checkAdmin(req.body.password)) return res.status(401).json({ error: 'Senha invalida' });
+    const { token, name, email, plan, expires_at } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token obrigatorio' });
+
+    const updates = {};
+    if (name !== undefined) updates.name = name;
+    if (email !== undefined) updates.email = email;
+    if (plan !== undefined) updates.plan = plan;
+    if (expires_at !== undefined) updates.expires_at = expires_at;
+
+    if (Object.keys(updates).length === 0) return res.status(400).json({ error: 'Nenhum campo para atualizar' });
+
+    await sbUpdate(`token=eq.${encodeURIComponent(token)}`, updates);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Desativar (permitir reativar)
 app.post('/api/license/admin/deactivate', async (req, res) => {
   try {

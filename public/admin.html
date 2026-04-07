@@ -1031,8 +1031,9 @@
         }
 
         function getStatus(license) {
-            if (license.expires && new Date(license.expires) < new Date()) return 'expirado';
-            if (license.expiresAt && new Date(license.expiresAt) < new Date()) return 'expirado';
+            if (license.revoked) return 'revogado';
+            const exp = license.expires_at || license.expires || license.expiresAt;
+            if (exp && new Date(exp) < new Date()) return 'expirado';
             if (license.activated) return 'ativo';
             return 'pendente';
         }
@@ -1137,6 +1138,10 @@
                 const date = l.createdAt || l.created || '';
                 const dateDisplay = date ? new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-';
 
+                const expiresAt = l.expires_at || l.expires || l.expiresAt || '';
+                const expiresDisplay = expiresAt ? new Date(expiresAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-';
+                const safeData = btoa(JSON.stringify({ token, name: l.name||'', email: l.email||'', plan, expires_at: expiresAt }));
+
                 return `<tr>
                     <td class="token-cell" title="${token}" onclick="copyToken('${token}')">${truncToken}</td>
                     <td><span class="badge badge-${plan}">${planLabel}</span></td>
@@ -1145,8 +1150,10 @@
                     <td><span class="badge badge-${status}">${statusLabel}</span></td>
                     <td class="machine-cell ${machineClass}">${escapeHtml(machineDisplay)}</td>
                     <td class="date-cell">${dateDisplay}</td>
-                    <td>
-                        ${status === 'ativo' ? `<button class="btn btn-danger btn-sm" onclick="deactivateLicense('${token}')">Desativar</button>` : ''}
+                    <td style="white-space:nowrap">
+                        <button class="btn btn-sm" onclick="openEditModal('${safeData}')" title="Editar" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);margin:2px;min-width:32px">&#9998;</button>
+                        <button class="btn btn-sm" onclick="copyInstallCmd('${token}')" title="Copiar comando" style="background:linear-gradient(135deg,#00b894,#00e676);margin:2px;min-width:32px">&#128203;</button>
+                        ${status === 'ativo' ? `<button class="btn btn-danger btn-sm" onclick="deactivateLicense('${token}')" title="Desativar" style="margin:2px;min-width:32px">&#10006;</button>` : ''}
                     </td>
                 </tr>`;
             }).join('');
@@ -1177,6 +1184,58 @@
             });
         }
 
+        function copyInstallCmd(token) {
+            const cmd = buildInstallCommand(token);
+            navigator.clipboard.writeText(cmd).then(() => {
+                showToast('Comando de instalacao copiado!', 'success');
+            });
+        }
+
+        function openEditModal(safeData) {
+            const data = JSON.parse(atob(safeData));
+            document.getElementById('editToken').value = data.token;
+            document.getElementById('editName').value = data.name;
+            document.getElementById('editEmail').value = data.email;
+            document.getElementById('editPlan').value = data.plan;
+            const exp = data.expires_at ? new Date(data.expires_at).toISOString().slice(0, 16) : '';
+            document.getElementById('editExpires').value = exp;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        async function saveEditLicense(e) {
+            e.preventDefault();
+            const btn = document.getElementById('editSaveBtn');
+            btn.innerHTML = '<div class="spinner"></div> Salvando...';
+            btn.disabled = true;
+
+            try {
+                const expiresVal = document.getElementById('editExpires').value;
+                await apiCall('/api/license/admin/update', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        password: adminPassword,
+                        token: document.getElementById('editToken').value,
+                        name: document.getElementById('editName').value.trim(),
+                        email: document.getElementById('editEmail').value.trim(),
+                        plan: document.getElementById('editPlan').value,
+                        expires_at: expiresVal ? new Date(expiresVal).toISOString() : undefined
+                    })
+                });
+                showToast('Licenca atualizada!', 'success');
+                closeEditModal();
+                await refreshLicenses();
+            } catch (err) {
+                showToast(err.message || 'Erro ao atualizar', 'error');
+            } finally {
+                btn.innerHTML = 'Salvar';
+                btn.disabled = false;
+            }
+        }
+
         // ═══════ UI Helpers ═══════
         function showToast(message, type = 'success') {
             const container = document.getElementById('toastContainer');
@@ -1201,5 +1260,42 @@
             return div.innerHTML;
         }
     </script>
+
+    <!-- Modal Editar Licenca -->
+    <div id="editModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);align-items:center;justify-content:center">
+        <div style="background:linear-gradient(135deg,#1a1a2e,#16213e);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:32px;width:90%;max-width:460px;box-shadow:0 24px 80px rgba(0,0,0,0.5)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+                <span style="font-size:1.2rem;font-weight:700;color:#fff">Editar Licenca</span>
+                <button onclick="closeEditModal()" style="background:none;border:none;color:#888;font-size:1.4rem;cursor:pointer">&times;</button>
+            </div>
+            <form onsubmit="return saveEditLicense(event)">
+                <input type="hidden" id="editToken">
+                <div style="margin-bottom:14px">
+                    <label style="display:block;color:#aaa;font-size:0.8rem;margin-bottom:4px">Nome</label>
+                    <input type="text" id="editName" class="form-input" required>
+                </div>
+                <div style="margin-bottom:14px">
+                    <label style="display:block;color:#aaa;font-size:0.8rem;margin-bottom:4px">Email</label>
+                    <input type="email" id="editEmail" class="form-input" required>
+                </div>
+                <div style="margin-bottom:14px">
+                    <label style="display:block;color:#aaa;font-size:0.8rem;margin-bottom:4px">Plano</label>
+                    <select id="editPlan" class="form-select">
+                        <option value="basic">Basic</option>
+                        <option value="pro">Pro</option>
+                        <option value="enterprise">Enterprise</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:20px">
+                    <label style="display:block;color:#aaa;font-size:0.8rem;margin-bottom:4px">Validade</label>
+                    <input type="datetime-local" id="editExpires" class="form-input" style="color-scheme:dark">
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end">
+                    <button type="button" onclick="closeEditModal()" class="btn btn-sm" style="background:rgba(255,255,255,0.06);color:#aaa">Cancelar</button>
+                    <button type="submit" id="editSaveBtn" class="btn btn-sm" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
