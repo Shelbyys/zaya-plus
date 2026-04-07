@@ -215,7 +215,7 @@ const stmts = {
 
   // Contacts
   getContacts: db.prepare('SELECT * FROM contacts ORDER BY nome'),
-  searchContacts: db.prepare('SELECT * FROM contacts WHERE nome LIKE ? ORDER BY nome'),
+  searchContacts: db.prepare('SELECT * FROM contacts WHERE nome LIKE ? OR telefone LIKE ? ORDER BY nome'),
   upsertContact: db.prepare('INSERT INTO contacts (nome, telefone, jid) VALUES (?, ?, ?) ON CONFLICT(jid) DO UPDATE SET nome = excluded.nome, telefone = excluded.telefone'),
   getContactByJid: db.prepare('SELECT * FROM contacts WHERE jid = ?'),
 
@@ -298,7 +298,8 @@ export const contactsDB = {
   },
 
   search(query) {
-    return stmts.searchContacts.all(`%${query}%`);
+    const q = `%${query}%`;
+    return stmts.searchContacts.all(q, q);
   },
 
   upsert(nome, telefone, jid) {

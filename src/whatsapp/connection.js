@@ -1,4 +1,4 @@
-import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, makeInMemoryStore } from '@whiskeysockets/baileys';
 import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { WA_DIR, ROOT_DIR } from '../config.js';
@@ -16,6 +16,9 @@ export async function createClient(name) {
   const { state, saveCreds } = await useMultiFileAuthState(authDir);
   const { version } = await fetchLatestBaileysVersion();
 
+  // Store em memória — necessário para Baileys guardar contatos
+  const store = makeInMemoryStore({});
+
   const sock = makeWASocket({
     version,
     auth: state,
@@ -25,6 +28,10 @@ export async function createClient(name) {
     syncFullHistory: false,
     markOnlineOnConnect: false,
   });
+
+  // Vincula store ao socket (captura contatos, chats, etc)
+  store.bind(sock.ev);
+  sock.store = store;
 
   // Salva credenciais quando atualizam
   sock.ev.on('creds.update', saveCreds);
@@ -76,10 +83,12 @@ export async function waConnect(name) {
           waConnections[name].handlerSetup = true;
         }
 
-        // Sync contatos
-        syncContacts(sock, name).catch(e => {
-          log.wa.error({ err: e.message }, 'Erro sync contatos');
-        });
+        // Sync contatos — espera 3s para o store popular
+        setTimeout(() => {
+          syncAllContacts(sock, name).catch(e => {
+            log.wa.error({ err: e.message }, 'Erro sync contatos');
+          });
+        }, 3000);
       }
 
       if (connection === 'close') {
@@ -132,32 +141,96 @@ export async function waConnect(name) {
       }
     });
 
+    // Atualização incremental de contatos (nome mudou, etc)
+    sock.ev.on('contacts.update', (updates) => {
+      if (!updates?.length) return;
+      for (const u of updates) {
+        if (!u.id || u.id.includes('@g.us') || u.id.includes('@broadcast')) continue;
+        const nome = u.name || u.notify || u.id.split('@')[0];
+        const telefone = u.id.split('@')[0];
+        contactsDB.upsert(nome, telefone, u.id);
+      }
+      log.wa.info({ instance: name, count: updates.length }, 'Contatos atualizados incrementalmente');
+    });
+
   } catch (e) {
     log.wa.error({ instance: name, err: e.message }, 'Erro fatal na conexão Baileys');
     waConnections[name] = { client: null, status: 'error', handlerSetup: false };
   }
 }
 
-async function syncContacts(sock, name) {
+export async function syncAllContacts(sock, name) {
+  let total = 0;
+
+  // 1. Contatos do store (se disponível)
   try {
     const store = sock.store;
-    if (!store?.contacts) return;
+    if (store?.contacts) {
+      const contacts = Object.values(store.contacts);
+      const agenda = contacts
+        .filter(c => c.id && !c.id.includes('@g.us') && !c.id.includes('@broadcast'))
+        .map(c => ({
+          nome: c.name || c.notify || c.id.split('@')[0],
+          telefone: c.id.split('@')[0],
+          jid: c.id,
+        }));
 
-    const contacts = Object.values(store.contacts);
-    const agenda = contacts
-      .filter(c => c.id && !c.id.includes('@g.us'))
-      .map(c => ({
-        nome: c.name || c.notify || c.id.split('@')[0],
-        telefone: c.id.split('@')[0],
-        jid: c.id,
-      }));
-
-    for (const c of agenda) {
-      contactsDB.upsert(c.nome, c.telefone, c.jid);
+      for (const c of agenda) {
+        contactsDB.upsert(c.nome, c.telefone, c.jid);
+      }
+      total += agenda.length;
     }
+  } catch (e) {
+    log.wa.warn({ err: e.message }, 'Sync store contacts falhou');
+  }
 
-    log.wa.info({ instance: name, count: agenda.length }, 'Contatos synced do store');
+  // 2. Puxa contatos de TODOS os chats existentes (pega quem já conversou)
+  try {
+    const chats = await sock.groupFetchAllParticipating().catch(() => ({}));
+    // Chats 1:1 vêm do store, mas vamos garantir pegando dos chats ativos
+    const store = sock.store;
+    if (store?.chats) {
+      const allChats = Object.values(store.chats);
+      for (const chat of allChats) {
+        const id = chat.id || chat.jid;
+        if (!id || id.includes('@g.us') || id.includes('@broadcast')) continue;
+        const phone = id.split('@')[0];
+        if (phone.length >= 8) {
+          const nome = chat.name || chat.pushname || chat.notify || phone;
+          contactsDB.upsert(nome, phone, id);
+          total++;
+        }
+      }
+    }
+  } catch (e) {
+    log.wa.warn({ err: e.message }, 'Sync chat contacts falhou');
+  }
+
+  // 3. Salva JSON atualizado com TODOS os contatos do banco
+  try {
+    const allContacts = contactsDB.getAll();
+    const dataDir = join(ROOT_DIR, 'data');
+    if (!existsSync(dataDir)) mkdirSync(dataDir, { recursive: true });
+    writeFileSync(
+      join(dataDir, 'contatos.json'),
+      JSON.stringify(allContacts.sort((a, b) => (a.nome || '').localeCompare(b.nome || '')), null, 2),
+      'utf-8'
+    );
   } catch {}
+
+  // 4. Sync tudo pro Supabase (se habilitado)
+  if (isSupabaseEnabled()) {
+    try {
+      const allContacts = contactsDB.getAll();
+      const formatted = allContacts.map(c => ({ nome: c.nome, telefone: c.telefone, jid: c.jid }));
+      const result = await syncContactsBatchToSupabase(formatted);
+      log.wa.info({ synced: result.synced, errors: result.errors }, 'Contatos sincronizados com Supabase');
+    } catch (e) {
+      log.wa.warn({ err: e.message }, 'Sync Supabase contacts falhou');
+    }
+  }
+
+  log.wa.info({ instance: name, total }, 'Sync completo de contatos');
 }
 
 export async function waAutoConnect() {

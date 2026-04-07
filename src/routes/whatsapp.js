@@ -6,8 +6,9 @@ import { WA_DIR, OUTBOX } from '../config.js';
 import { waConnections } from '../state.js';
 import { waLoadConfig, waSaveConfig } from '../whatsapp/utils.js';
 import { normalizeBRPhone, sendWhatsApp } from '../services/messaging.js';
-import { waConnect, createClient } from '../whatsapp/connection.js';
+import { waConnect, createClient, syncAllContacts } from '../whatsapp/connection.js';
 import { setupMessageHandler } from '../whatsapp/handler.js';
+import { contactsDB } from '../database.js';
 import { log } from '../logger.js';
 
 const router = Router();
@@ -41,6 +42,28 @@ router.get('/instances', async (req, res) => {
   }
 
   res.json({ instances, defaultInstance: config.defaultInstance });
+});
+
+// ================================================================
+// CONTACTS SYNC
+// ================================================================
+router.get('/contacts', (req, res) => {
+  const q = (req.query.q || '').trim();
+  const contacts = q ? contactsDB.search(q) : contactsDB.getAll();
+  res.json({ total: contacts.length, contacts });
+});
+
+router.post('/sync-contacts', async (req, res) => {
+  try {
+    const connected = Object.entries(waConnections).find(([, c]) => c.status === 'connected' && c.client);
+    if (!connected) return res.status(400).json({ error: 'Nenhuma instancia conectada' });
+    const [instName, conn] = connected;
+    await syncAllContacts(conn.client, instName);
+    const total = contactsDB.getAll().length;
+    res.json({ success: true, total, message: `${total} contatos sincronizados` });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 // ================================================================
