@@ -350,6 +350,7 @@ const MODULE_ENV_MAP = {
   twilio: ['VOICE_PROVIDER', 'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_PHONE_NUMBER', 'TWILIO_NGROK_DOMAIN', 'PLIVO_AUTH_ID', 'PLIVO_AUTH_TOKEN', 'PLIVO_PHONE_NUMBER', 'TELNYX_API_KEY', 'TELNYX_PHONE_NUMBER', 'TELNYX_CONNECTION_ID', 'VONAGE_API_KEY', 'VONAGE_API_SECRET', 'VONAGE_APPLICATION_ID', 'VONAGE_PHONE_NUMBER'],
   meta: ['FACEBOOK_ACCESS_TOKEN', 'META_PAGE_ID', 'META_IG_ID', 'META_AD_ACCOUNT_ID', 'IG_SESSION_ID'],
   supabase: ['SUPABASE_URL', 'SUPABASE_KEY'],
+  evolution: ['EVOLUTION_API_URL', 'EVOLUTION_API_KEY', 'EVOLUTION_INSTANCE'],
   firecrawl: ['FIRECRAWL_API_KEY'],
   google_ai: ['GOOGLE_AI_STUDIO_KEY'],
   freepik: ['FREEPIK_API_KEY'],
@@ -463,6 +464,15 @@ router.post('/test-module', async (req, res) => {
         if (!response.ok && response.status !== 402) {
           throw new Error(`Freepik API returned ${response.status}`);
         }
+        return res.json({ success: true });
+      }
+
+      case 'evolution': {
+        const evoUrl = (config.EVOLUTION_API_URL || '').replace(/\/$/, '');
+        const response = await fetch(evoUrl + '/instance/fetchInstances', {
+          headers: { 'apikey': config.EVOLUTION_API_KEY },
+        });
+        if (!response.ok) throw new Error('Evolution API retornou ' + response.status);
         return res.json({ success: true });
       }
 

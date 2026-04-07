@@ -937,8 +937,8 @@
         await sleep(200);
 
         const waMethod = await createSingleSelect([
-            { emoji: '\uD83D\uDCF1', label: 'Gratis (padrao)', desc: 'Conecta direto, sem pagar nada', value: 'direto' },
-            { emoji: '\u2B50', label: 'WaSender (pago)', desc: 'Mais estavel, $6/mes, sem quedas', value: 'wasender' },
+            { emoji: '\uD83D\uDCF1', label: 'Evolution API (padrao)', desc: 'Gratis, estavel, auto-reconexao', value: 'evolution' },
+            { emoji: '\u2B50', label: 'WaSender (pago)', desc: '$6/mes, sem quedas, mais simples', value: 'wasender' },
             { emoji: '\u23E9', label: 'Pular', desc: 'Configura depois', value: 'skip' },
         ]);
 
@@ -962,86 +962,158 @@
 
             clearInput();
             orb.setState('speaking');
-            await typeText('WaSender configurado! WhatsApp pronto, sem quedas.');
+            await typeText('WaSender configurado! WhatsApp pronto.');
             await sleep(1000);
             return;
         }
 
-        // Conexao direta (Baileys) — padrao gratis
+        // Evolution API (padrao)
         clearInput();
-        await typeText('Digita teu numero com DDD pra gerar o codigo.');
+        await typeMultiple([
+            'Pra usar o Evolution API, precisa ter ele rodando.',
+            'Se ainda nao tem, instala com: docker pull atendai/evolution-api',
+        ]);
         await sleep(200);
 
-        const phone = await createTextInput('Numero com DDD (ex: 5511999999999)', 'Conectar');
+        await typeText('Cola a URL do teu Evolution API:');
+        const evoUrl = await createTextInput('http://localhost:8080', 'Proximo');
         clearInput();
-        orb.setState('processing');
-        await typeText('Gerando codigo de pareamento...');
 
+        await typeText('Agora a API Key (AUTHENTICATION_API_KEY do Evolution):');
+        const evoKey = await createTextInput('SUA_CHAVE', 'Conectar');
+        clearInput();
+
+        orb.setState('processing');
+        await typeText('Conectando ao Evolution API...');
+
+        // Salva config
+        await saveToBackend('/api/setup/save-module', {
+            module: 'evolution',
+            config: {
+                EVOLUTION_API_URL: evoUrl.trim(),
+                EVOLUTION_API_KEY: evoKey.trim(),
+                EVOLUTION_INSTANCE: 'principal',
+            },
+        });
+
+        // Testa conexao
         try {
-            const instName = 'principal';
-            const r = await fetch('/api/whatsapp/pair', {
+            const testR = await fetch('/api/setup/test-module', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: instName, phone: phone.trim(), label: 'Principal' }),
+                body: JSON.stringify({ module: 'evolution', config: { EVOLUTION_API_URL: evoUrl.trim(), EVOLUTION_API_KEY: evoKey.trim() } }),
             });
-            const data = await r.json();
+            const testData = await testR.json();
 
-            if (data.success && data.code) {
+            if (testR.ok && testData.success) {
                 clearInput();
                 orb.setState('speaking');
+                orb.setAudioLevel(0.5);
+                await typeText('Evolution API conectado! WhatsApp funcionando.');
+                await sleep(1000);
 
-                const codeDiv = document.createElement('div');
-                codeDiv.style.cssText = 'font-family:monospace;font-size:32px;letter-spacing:8px;color:#00e676;text-align:center;padding:20px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);border-radius:12px;margin:12px 0;';
-                codeDiv.textContent = data.code;
-                inputArea.innerHTML = '';
-                inputArea.appendChild(codeDiv);
-                showInput();
-
-                await typeText('Abre o WhatsApp no celular > Aparelhos conectados > Conectar com numero. Cola esse codigo:');
-
-                const timerEl = document.createElement('div');
-                timerEl.style.cssText = 'text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;';
-                inputArea.appendChild(timerEl);
-
-                let connected = false;
-                for (let i = 0; i < 60; i++) {
-                    timerEl.textContent = (60 - i) + 's restantes';
-                    await sleep(2000);
-                    try {
-                        const check = await fetch('/api/whatsapp/instances');
-                        const instData = await check.json();
-                        const inst = instData.instances?.find(x => x.name === instName);
-                        if (inst && inst.status === 'connected') { connected = true; break; }
-                    } catch {}
-                }
-
+                // Tenta criar instancia e pegar pairing code
                 clearInput();
-                if (connected) {
-                    orb.setState('speaking');
-                    orb.setAudioLevel(0.5);
-                    await typeText('WhatsApp conectado! Ja consigo mandar e receber mensagens.');
-                    await sleep(1000);
-                    answers.phone = phone.trim();
-                    try {
-                        await fetch('/api/setup/save-identity', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: adminName || '', phone: phone.trim() }),
-                        });
-                    } catch {}
-                } else {
-                    orb.setState('idle');
-                    await typeText('Nao conectou a tempo, mas pode tentar depois pelo painel WhatsApp.');
+                await typeText('Digita teu numero de WhatsApp com DDD:');
+                const waPhone = await createTextInput('5511999999999', 'Parear');
+                clearInput();
+                orb.setState('processing');
+                await typeText('Criando instancia e gerando codigo...');
+
+                try {
+                    // Cria instancia no Evolution
+                    const webhookUrl = 'http://localhost:' + (window.location.port || '3001') + '/webhook/evolution';
+                    const createR = await fetch(evoUrl.trim().replace(/\/$/, '') + '/instance/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'apikey': evoKey.trim() },
+                        body: JSON.stringify({
+                            instanceName: 'principal',
+                            integration: 'WHATSAPP-BAILEYS',
+                            qrcode: true,
+                            rejectCall: true,
+                            alwaysOnline: true,
+                            readMessages: true,
+                            webhook: { url: webhookUrl, byEvents: true, base64: false, events: ['MESSAGES_UPSERT','CONNECTION_UPDATE','QRCODE_UPDATED','CONTACTS_UPSERT'] },
+                        }),
+                    });
+                    const createData = await createR.json();
+
+                    // Pega pairing code
+                    const pairR = await fetch(evoUrl.trim().replace(/\/$/, '') + '/instance/connect/principal?number=' + waPhone.trim().replace(/\D/g, ''), {
+                        headers: { 'apikey': evoKey.trim() },
+                    });
+                    const pairData = await pairR.json();
+
+                    if (pairData.pairingCode) {
+                        clearInput();
+                        orb.setState('speaking');
+
+                        const codeDiv = document.createElement('div');
+                        codeDiv.style.cssText = 'font-family:monospace;font-size:32px;letter-spacing:8px;color:#00e676;text-align:center;padding:20px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);border-radius:12px;margin:12px 0;';
+                        codeDiv.textContent = pairData.pairingCode;
+                        inputArea.innerHTML = '';
+                        inputArea.appendChild(codeDiv);
+                        showInput();
+
+                        await typeText('Abre o WhatsApp > Aparelhos conectados > Conectar com numero. Cola esse codigo:');
+                        answers.phone = waPhone.trim();
+
+                        // Polling: espera conectar
+                        const timerEl = document.createElement('div');
+                        timerEl.style.cssText = 'text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;';
+                        inputArea.appendChild(timerEl);
+
+                        let connected = false;
+                        for (let i = 0; i < 60; i++) {
+                            timerEl.textContent = (60 - i) + 's restantes';
+                            await sleep(2000);
+                            try {
+                                const stR = await fetch(evoUrl.trim().replace(/\/$/, '') + '/instance/connectionState/principal', { headers: { 'apikey': evoKey.trim() } });
+                                const stData = await stR.json();
+                                if (stData?.instance?.state === 'open') { connected = true; break; }
+                            } catch {}
+                        }
+
+                        clearInput();
+                        if (connected) {
+                            orb.setState('speaking');
+                            await typeText('WhatsApp conectado via Evolution API!');
+                            await sleep(1000);
+                        } else {
+                            await typeText('Nao conectou a tempo, mas pode parear depois pelo painel.');
+                            await sleep(1500);
+                        }
+                    } else if (createData?.qrcode?.base64) {
+                        // Mostra QR code se pairing code nao disponivel
+                        clearInput();
+                        const qrImg = document.createElement('img');
+                        qrImg.src = createData.qrcode.base64;
+                        qrImg.style.cssText = 'max-width:250px;border-radius:12px;margin:12px auto;display:block;';
+                        inputArea.innerHTML = '';
+                        inputArea.appendChild(qrImg);
+                        showInput();
+                        await typeText('Escaneia esse QR Code no WhatsApp > Aparelhos conectados:');
+                        await sleep(30000);
+                        clearInput();
+                    } else {
+                        clearInput();
+                        await typeText('Instancia criada! Pode parear pelo painel WhatsApp.');
+                        await sleep(1500);
+                    }
+                } catch (e) {
+                    clearInput();
+                    await typeText('Instancia criada, mas nao consegui parear agora. Faz pelo painel.');
                     await sleep(1500);
                 }
             } else {
                 clearInput();
-                await typeText('Erro ao gerar codigo. Pode conectar depois pelo painel WhatsApp.');
+                orb.setState('idle');
+                await typeText('Nao consegui conectar. Verifica a URL e chave no Setup.');
                 await sleep(1500);
             }
-        } catch (e) {
+        } catch {
             clearInput();
-            await typeText('Erro de conexao. Pode configurar o WhatsApp depois no painel.');
+            await typeText('Erro de conexao. Configura depois no Setup.');
             await sleep(1500);
         }
     }
