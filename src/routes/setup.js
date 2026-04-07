@@ -592,14 +592,16 @@ router.post('/update', async (req, res) => {
       exec(cmd, { cwd, timeout: 120000 }, (err) => {
         if (err) {
           console.error('Update falhou:', err.message);
-        } else {
-          console.log('Update concluído! Reiniciando servidor...');
+          return;
         }
-        // Reinicia o servidor: spawna novo processo e mata o atual
-        const child = spawn(process.argv[0], [path.join(cwd, 'server.js')], {
+        console.log('Update concluído! Reiniciando servidor...');
+
+        // Script que espera o processo antigo morrer, libera a porta, e inicia o novo
+        const restartScript = `sleep 2 && lsof -ti:${process.env.PORT || 3001} | xargs kill -9 2>/dev/null; sleep 1 && cd "${cwd}" && node server.js &`;
+        const child = spawn('bash', ['-c', restartScript], {
           cwd,
           detached: true,
-          stdio: 'inherit',
+          stdio: 'ignore',
           env: { ...process.env },
         });
         child.unref();
