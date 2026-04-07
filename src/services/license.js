@@ -226,9 +226,11 @@ async function autoReactivate(token) {
 // ================================================================
 // VERIFICACAO PERIODICA (a cada 5min via render-server)
 // Checa online se a licenca foi revogada/expirada
+// Tambem recebe notificacoes de update do servidor central
 // ================================================================
 
 let lastCheck = 0;
+let _lastUpdateVersion = '';
 
 export async function periodicLicenseCheck() {
   if (Date.now() - lastCheck < 5 * 60 * 1000) return;
@@ -243,6 +245,37 @@ export async function periodicLicenseCheck() {
         fs.unlinkSync(LICENSE_FILE);
         log.server.warn('Licenca revogada/expirada remotamente');
         setTimeout(() => { console.log('\n  \x1b[31m\x1b[1m  LICENCA REVOGADA\x1b[0m\n'); process.exit(1); }, 2000);
+        return;
+      }
+
+      // Notificação de update do servidor central
+      if (data.update && data.update.version !== _lastUpdateVersion) {
+        _lastUpdateVersion = data.update.version;
+        log.server.info({ update: data.update }, 'Notificacao de update recebida do servidor');
+
+        // Notifica dashboard via Socket.IO
+        try {
+          const { io } = await import('../state.js');
+          io?.emit('zaya-update', {
+            message: data.update.message,
+            version: data.update.version,
+            timestamp: data.update.timestamp
+          });
+          io?.emit('zaya-proactive', {
+            text: data.update.message,
+            tipo: 'update',
+            timestamp: new Date().toISOString()
+          });
+        } catch {}
+
+        // Notifica admin via WhatsApp
+        try {
+          const { sendWhatsApp } = await import('./messaging.js');
+          const { ADMIN_JID } = await import('../config.js');
+          if (ADMIN_JID) {
+            await sendWhatsApp(ADMIN_JID.replace('@s.whatsapp.net', ''), `*ZAYA PLUS*\n\n${data.update.message}\n\nPara atualizar, abra a Zaya e clique em ATUALIZAR AGORA.`);
+          }
+        } catch {}
       }
     }
   } catch (e) {}

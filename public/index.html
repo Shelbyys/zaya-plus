@@ -3060,6 +3060,15 @@ function toggleAutoScroll(){
         catch(e) { setState('idle'); }
       }
     });
+
+    // Notificação de update do servidor central
+    socket.on('zaya-update', (data) => {
+      console.log('[UPDATE] Notificação do servidor:', data);
+      if(!_updateDismissed) {
+        document.getElementById('updateMsg').textContent = data.message || 'Nova atualizacao disponivel!';
+        document.getElementById('updateBar').classList.add('show');
+      }
+    });
   };
   document.head.appendChild(s);
 })();

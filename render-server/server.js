@@ -109,7 +109,7 @@ app.post('/api/license/validate', async (req, res) => {
   }
 });
 
-// Verificar status (para check periódico)
+// Verificar status (para check periódico) + notificação de update
 app.get('/api/license/check/:token', async (req, res) => {
   try {
     const rows = await sbSelect(`token=eq.${encodeURIComponent(req.params.token)}&select=revoked,expires_at,plan`);
@@ -119,10 +119,34 @@ app.get('/api/license/check/:token', async (req, res) => {
     if (r.revoked) return res.json({ valid: false, reason: 'revoked' });
     if (r.expires_at && new Date(r.expires_at) < new Date()) return res.json({ valid: false, reason: 'expired' });
 
-    return res.json({ valid: true, plan: r.plan });
+    // Inclui info de update se houver
+    const result = { valid: true, plan: r.plan };
+    if (_latestUpdate) {
+      result.update = _latestUpdate;
+    }
+    return res.json(result);
   } catch (err) {
     res.status(500).json({ valid: false });
   }
+});
+
+// ================================================================
+// UPDATE BROADCAST (admin define, clientes recebem no check periódico)
+// ================================================================
+let _latestUpdate = null;
+
+app.post('/api/license/admin/broadcast-update', (req, res) => {
+  const { password, message, version } = req.body;
+  if (!checkAdmin(password)) return res.status(403).json({ error: 'Senha incorreta' });
+  _latestUpdate = { message: message || 'Nova atualizacao disponivel!', version: version || Date.now().toString(), timestamp: new Date().toISOString() };
+  res.json({ success: true, update: _latestUpdate });
+});
+
+app.delete('/api/license/admin/broadcast-update', (req, res) => {
+  const { password } = req.body;
+  if (!checkAdmin(password)) return res.status(403).json({ error: 'Senha incorreta' });
+  _latestUpdate = null;
+  res.json({ success: true, message: 'Broadcast removido' });
 });
 
 // ================================================================
