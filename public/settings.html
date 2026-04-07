@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Configuracoes — ZAYA PLUS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a25;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+  --text:#eee;--text2:#999;--text3:#666;
+  --accent:#6c5ce7;--accent2:#a29bfe;
+  --green:#00e676;--green2:#00c853;
+  --red:#ff5252;--yellow:#ffd740;
+  --radius:12px;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
+a{color:var(--accent2);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* Header */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.header-left{display:flex;align-items:center;gap:12px}
+.header-title{font-size:1.1rem;font-weight:700}
+.header-sub{font-size:0.75rem;color:var(--text2)}
+.back-btn{background:rgba(255,255,255,0.06);border:1px solid var(--border2);color:var(--text);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:0.8rem;font-family:'Inter',sans-serif;transition:all 0.2s}
+.back-btn:hover{background:rgba(255,255,255,0.1)}
+
+/* Progress */
+.progress-bar{margin:24px;background:var(--bg2);border-radius:20px;overflow:hidden;border:1px solid var(--border)}
+.progress-inner{height:6px;background:linear-gradient(90deg,var(--accent),var(--green));transition:width 0.6s ease}
+.progress-text{text-align:center;font-size:0.7rem;color:var(--text2);padding:8px 0 0;margin:0 24px}
+
+/* Layout */
+.container{max-width:900px;margin:0 auto;padding:0 24px 60px}
+.section-title{font-size:0.65rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin:32px 0 12px;padding-left:4px}
+
+/* Module Card */
+.module{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;overflow:hidden;transition:border-color 0.3s}
+.module:hover{border-color:var(--border2)}
+.module.active{border-left:3px solid var(--green)}
+.module.pending{border-left:3px solid var(--red)}
+
+.module-header{padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;user-select:none}
+.module-icon{font-size:1.4rem;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);border-radius:10px}
+.module-info{flex:1}
+.module-label{font-size:0.9rem;font-weight:600}
+.module-desc{font-size:0.75rem;color:var(--text2);margin-top:2px}
+.module-status{font-size:0.65rem;font-weight:600;padding:4px 10px;border-radius:20px}
+.module-status.ok{background:rgba(0,230,118,0.1);color:var(--green)}
+.module-status.pending{background:rgba(255,82,82,0.1);color:var(--red)}
+.module-chevron{color:var(--text3);transition:transform 0.3s;font-size:0.8rem}
+.module-chevron.open{transform:rotate(90deg)}
+
+/* Module Body */
+.module-body{display:none;border-top:1px solid var(--border);padding:20px;animation:fadeIn 0.3s}
+.module-body.open{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Steps */
+.steps{margin-bottom:20px}
+.step{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--accent);color:#fff;font-size:0.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:0.8rem;color:var(--text2);line-height:1.5}
+
+/* Links */
+.links{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.link{font-size:0.75rem;padding:5px 12px;border:1px solid var(--border2);border-radius:6px;color:var(--accent2);transition:all 0.2s;font-family:'JetBrains Mono',monospace}
+.link:hover{background:rgba(108,92,231,0.1);border-color:var(--accent);text-decoration:none}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:600px){.form-grid{grid-template-columns:1fr 1fr}.form-grid .full{grid-column:1/-1}}
+
+.field{display:flex;flex-direction:column;gap:4px}
+.field-label{font-size:0.7rem;color:var(--text2);font-weight:500;letter-spacing:0.3px}
+.field-input,.field-select{background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 12px;border-radius:8px;font-size:0.85rem;font-family:'Inter',sans-serif;transition:border-color 0.2s;width:100%}
+.field-input:focus,.field-select:focus{outline:none;border-color:var(--accent)}
+.field-input::placeholder{color:var(--text3)}
+.field-active-tag{font-size:0.55rem;color:var(--green);font-weight:600;margin-left:6px}
+
+/* Buttons */
+.btn-row{display:flex;gap:8px;margin-top:16px;align-items:center}
+.btn{padding:8px 20px;border:none;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all 0.2s}
+.btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff}
+.btn-primary:hover{opacity:0.9;transform:translateY(-1px)}
+.btn-secondary{background:rgba(255,255,255,0.06);color:var(--text2);border:1px solid var(--border2)}
+.btn-secondary:hover{background:rgba(255,255,255,0.1)}
+.btn-green{background:linear-gradient(135deg,var(--green2),var(--green));color:#000}
+.btn-green:hover{opacity:0.9}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.save-msg{font-size:0.75rem;color:var(--green);margin-left:8px}
+.save-msg.error{color:var(--red)}
+
+/* Toast */
+.toast-container{position:fixed;top:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 20px;border-radius:10px;font-size:0.8rem;font-weight:500;animation:slideIn 0.3s;backdrop-filter:blur(8px)}
+.toast.success{background:rgba(0,230,118,0.15);color:var(--green);border:1px solid rgba(0,230,118,0.2)}
+.toast.error{background:rgba(255,82,82,0.15);color:var(--red);border:1px solid rgba(255,82,82,0.2)}
+@keyframes slideIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+
+/* Personality Section */
+.personality-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px}
+@media(max-width:500px){.personality-grid{grid-template-columns:1fr}}
+.personality-option{padding:12px;border:1px solid var(--border2);border-radius:8px;cursor:pointer;text-align:center;transition:all 0.2s;font-size:0.8rem}
+.personality-option:hover{border-color:var(--accent)}
+.personality-option.selected{border-color:var(--accent);background:rgba(108,92,231,0.1)}
+
+/* Update section */
+.update-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-top:32px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.update-info{font-size:0.8rem;color:var(--text2)}
+.update-badge{font-size:0.65rem;padding:3px 8px;border-radius:4px;font-weight:600}
+
+/* Spinner */
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:#fff;border-radius:50%;animation:spin 0.6s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span style="font-size:1.4rem">&#9881;</span>
+    <div>
+      <div class="header-title">Configuracoes</div>
+      <div class="header-sub">ZAYA PLUS</div>
+    </div>
+  </div>
+  <button class="back-btn" onclick="location.href='/'">&#8592; Voltar</button>
+</div>
+
+<div class="progress-bar"><div class="progress-inner" id="progressBar" style="width:0%"></div></div>
+<div class="progress-text" id="progressText">Carregando...</div>
+
+<div class="container" id="modulesContainer">
+  <div style="text-align:center;padding:60px 0;color:var(--text3)"><div class="spinner"></div><br><br>Carregando configuracoes...</div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ================================================================
+// STATE
+// ================================================================
+let _status = null;
+let _masked = {};
+let _modules = [];
+
+// ================================================================
+// MODULES DEFINITION
+// ================================================================
+const MODULES = [
+  {
+    id:'ai', label:'Inteligencia Artificial', desc:'Motor de IA — OpenAI, Anthropic ou Groq', required:true, icon:'&#129504;', category:'essencial',
+    steps:['Escolha um provedor: OpenAI, Anthropic ou Groq','Crie uma conta no site do provedor','Gere uma API Key no painel','Cole a chave abaixo'],
+    fields:[
+      {key:'_provider',type:'select',label:'Provedor',options:[{v:'openai',l:'OpenAI (GPT-4o)'},{v:'anthropic',l:'Anthropic (Claude)'},{v:'groq',l:'Groq (Llama — gratuito)'}]},
+      {key:'key',type:'password',label:'API Key',placeholder:'sk-...'},
+      {key:'baseUrl',type:'text',label:'Base URL (apenas Groq)',placeholder:'https://api.groq.com/openai/v1',condition:'_provider=groq',cls:'full'}
+    ],
+    links:[{url:'https://platform.openai.com/api-keys',label:'OpenAI'},{url:'https://console.anthropic.com/settings/keys',label:'Anthropic'},{url:'https://console.groq.com/keys',label:'Groq (gratis)'}],
+    save:{endpoint:'/api/setup/save-mind',buildPayload:f=>({provider:f._provider,key:f.key,baseUrl:f.baseUrl||undefined})}
+  },
+  {
+    id:'identity', label:'Identidade', desc:'Seu nome e telefone — como a Zaya vai te reconhecer', required:true, icon:'&#128100;', category:'essencial',
+    steps:['Informe seu nome (como a Zaya vai te chamar)','Informe seu telefone com DDD e codigo do pais'],
+    fields:[
+      {key:'name',type:'text',label:'Seu Nome',placeholder:'Ex: Alisson'},
+      {key:'phone',type:'text',label:'Telefone',placeholder:'5579999999999'}
+    ],
+    links:[],
+    save:{endpoint:'/api/setup/save-identity',buildPayload:f=>({name:f.name,phone:f.phone})}
+  },
+  {
+    id:'personality', label:'Personalidade', desc:'Estilo de comunicacao, sotaque e contexto profissional', required:false, icon:'&#127917;', category:'essencial',
+    steps:['Escolha como a Zaya deve falar com voce','Informe sua profissao para respostas mais relevantes'],
+    fields:[
+      {key:'ZAYA_STYLE',type:'select',label:'Estilo',options:[{v:'amigavel',l:'Amigavel'},{v:'formal',l:'Formal'},{v:'informal',l:'Informal'},{v:'direto',l:'Direto'}]},
+      {key:'ZAYA_ACCENT',type:'select',label:'Sotaque',options:[{v:'neutro',l:'Neutro'},{v:'nordestino',l:'Nordestino'},{v:'paulista',l:'Paulista'},{v:'mineiro',l:'Mineiro'},{v:'carioca',l:'Carioca'},{v:'sem_preferencia',l:'Sem preferencia'}]},
+      {key:'ZAYA_USER_PROFESSION',type:'text',label:'Sua Profissao',placeholder:'Ex: Dentista, Advogado, Dev...',cls:'full'},
+      {key:'ZAYA_USER_EXPECTATIONS',type:'text',label:'O que espera da Zaya',placeholder:'Ex: Marketing, Financeiro, Agenda...',cls:'full'}
+    ],
+    links:[],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'personality',config:f})}
+  },
+  {
+    id:'voice', label:'Voz / TTS', desc:'ElevenLabs ou OpenAI para voz premium da Zaya', required:false, icon:'&#128266;', category:'comunicacao',
+    steps:['Crie uma conta em elevenlabs.io','Va em Profile Settings > API Keys','Copie sua API Key','Escolha uma voz na biblioteca e copie o Voice ID'],
+    fields:[
+      {key:'ELEVENLABS_API_KEY',type:'password',label:'ElevenLabs API Key',placeholder:'xi-...'},
+      {key:'ELEVENLABS_VOICE_ID',type:'text',label:'Voice ID',placeholder:'21m00Tcm4TlvDq8ikWAM'}
+    ],
+    links:[{url:'https://elevenlabs.io/app/settings/api-keys',label:'API Keys'},{url:'https://elevenlabs.io/app/voice-library',label:'Vozes'}],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'voice',config:f})}
+  },
+  {
+    id:'whatsapp', label:'WhatsApp', desc:'Conexao via QR Code para enviar e receber mensagens', required:false, icon:'&#128172;', category:'comunicacao',
+    steps:['Va na tela principal da Zaya','Clique no botao WA na barra lateral','Preencha nome e telefone da instancia','Escaneie o QR Code pelo WhatsApp do celular'],
+    fields:[],
+    links:[],
+    noForm:true, actionLabel:'Abrir Painel WhatsApp', actionFn:function(){ location.href='/'; }
+  },
+  {
+    id:'twilio', label:'Ligacoes Telefonicas', desc:'Fazer e receber ligacoes — Twilio, Plivo, Telnyx ou Vonage', required:false, icon:'&#128222;', category:'comunicacao',
+    steps:[
+      'Escolha um provedor abaixo',
+      'TWILIO: twilio.com > Console > copie SID + Token > compre numero',
+      'PLIVO: plivo.com > Dashboard > copie Auth ID + Token > compre numero',
+      'TELNYX: telnyx.com > API Keys > crie chave > compre numero',
+      'VONAGE: vonage.com > API Settings > copie Key + Secret > compre numero',
+      'Configure o dominio publico (ngrok) para webhooks'
+    ],
+    fields:[
+      {key:'VOICE_PROVIDER',type:'select',label:'Provedor',options:[{v:'twilio',l:'Twilio'},{v:'plivo',l:'Plivo'},{v:'telnyx',l:'Telnyx'},{v:'vonage',l:'Vonage'}],cls:'full'},
+      {key:'TWILIO_ACCOUNT_SID',type:'text',label:'Account SID',placeholder:'AC...',group:'twilio'},
+      {key:'TWILIO_AUTH_TOKEN',type:'password',label:'Auth Token',group:'twilio'},
+      {key:'TWILIO_PHONE_NUMBER',type:'text',label:'Numero',placeholder:'+15551234567',group:'twilio'},
+      {key:'PLIVO_AUTH_ID',type:'text',label:'Auth ID',placeholder:'MA...',group:'plivo'},
+      {key:'PLIVO_AUTH_TOKEN',type:'password',label:'Auth Token',group:'plivo'},
+      {key:'PLIVO_PHONE_NUMBER',type:'text',label:'Numero',placeholder:'+15551234567',group:'plivo'},
+      {key:'TELNYX_API_KEY',type:'password',label:'API Key',placeholder:'KEY...',group:'telnyx'},
+      {key:'TELNYX_PHONE_NUMBER',type:'text',label:'Numero',placeholder:'+15551234567',group:'telnyx'},
+      {key:'TELNYX_CONNECTION_ID',type:'text',label:'Connection ID',group:'telnyx'},
+      {key:'VONAGE_API_KEY',type:'text',label:'API Key',group:'vonage'},
+      {key:'VONAGE_API_SECRET',type:'password',label:'API Secret',group:'vonage'},
+      {key:'VONAGE_PHONE_NUMBER',type:'text',label:'Numero',placeholder:'+15551234567',group:'vonage'},
+      {key:'TWILIO_NGROK_DOMAIN',type:'text',label:'Dominio ngrok / PUBLIC_URL',placeholder:'seu-dominio.ngrok-free.app',cls:'full'}
+    ],
+    links:[{url:'https://console.twilio.com',label:'Twilio'},{url:'https://console.plivo.com',label:'Plivo'},{url:'https://portal.telnyx.com',label:'Telnyx'},{url:'https://dashboard.nexmo.com',label:'Vonage'},{url:'https://dashboard.ngrok.com',label:'ngrok'}],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'twilio',config:f})}
+  },
+  {
+    id:'meta', label:'Meta (Instagram / Facebook)', desc:'Postar, gerenciar Ads e DMs do Instagram', required:false, icon:'&#128241;', category:'integracao',
+    steps:['Acesse developers.facebook.com e crie um App','Adicione "Instagram Graph API"','Gere um Access Token de longa duracao','Copie os IDs da Pagina, Instagram e Ads'],
+    fields:[
+      {key:'FACEBOOK_ACCESS_TOKEN',type:'password',label:'Access Token',placeholder:'EAA...',cls:'full'},
+      {key:'META_PAGE_ID',type:'text',label:'Page ID',placeholder:'123456789'},
+      {key:'META_IG_ID',type:'text',label:'Instagram ID',placeholder:'17841...'},
+      {key:'META_AD_ACCOUNT_ID',type:'text',label:'Ad Account ID',placeholder:'act_123...'}
+    ],
+    links:[{url:'https://developers.facebook.com/apps',label:'Meta Developers'},{url:'https://developers.facebook.com/tools/explorer',label:'Graph Explorer'}],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'meta',config:f})}
+  },
+  {
+    id:'supabase', label:'Supabase (Nuvem)', desc:'Banco de dados e storage na nuvem para historico', required:false, icon:'&#9729;', category:'integracao',
+    steps:['Crie conta em supabase.com','Crie um novo projeto','Va em Settings > API','Copie Project URL e anon key','Apos salvar, clique em CRIAR TABELAS'],
+    fields:[
+      {key:'SUPABASE_URL',type:'text',label:'Project URL',placeholder:'https://xxx.supabase.co'},
+      {key:'SUPABASE_KEY',type:'password',label:'anon/public Key',placeholder:'eyJ...'}
+    ],
+    links:[{url:'https://supabase.com/dashboard',label:'Supabase Dashboard'}],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'supabase',config:f})},
+    extraAction:{label:'Criar Tabelas',fn:'createTables'}
+  },
+  {
+    id:'firecrawl', label:'Pesquisa Web', desc:'Pesquisas profundas na internet com IA', required:false, icon:'&#128269;', category:'integracao',
+    steps:['Acesse firecrawl.dev e crie uma conta','Copie sua API Key no Dashboard'],
+    fields:[{key:'FIRECRAWL_API_KEY',type:'password',label:'API Key',placeholder:'fc-...'}],
+    links:[{url:'https://firecrawl.dev',label:'Firecrawl'}],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'firecrawl',config:f})}
+  },
+  {
+    id:'google_ai', label:'Google AI Studio', desc:'Geracao de imagens realistas com Gemini', required:false, icon:'&#127912;', category:'integracao',
+    steps:['Acesse aistudio.google.com','Clique em "Get API Key"','Copie a chave gerada'],
+    fields:[{key:'GOOGLE_AI_STUDIO_KEY',type:'password',label:'API Key',placeholder:'AIza...'}],
+    links:[{url:'https://aistudio.google.com/apikey',label:'Google AI Studio'}],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'google_ai',config:f})}
+  },
+  {
+    id:'freepik', label:'Video IA (Freepik)', desc:'Geracao de videos com Kling AI via Freepik', required:false, icon:'&#127916;', category:'integracao',
+    steps:['Crie conta em freepik.com','Va em freepik.com/api/keys','Gere uma nova API Key'],
+    fields:[{key:'FREEPIK_API_KEY',type:'password',label:'API Key'}],
+    links:[{url:'https://www.freepik.com/api/keys',label:'Freepik API'}],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'freepik',config:f})}
+  }
+];
+
+// ================================================================
+// INIT
+// ================================================================
+async function init() {
+  try {
+    const [statusR, configR] = await Promise.all([
+      fetch('/api/setup/status'),
+      fetch('/api/public-config')
+    ]);
+    _status = await statusR.json();
+    _masked = _status.masked || {};
+    render();
+  } catch (e) {
+    document.getElementById('modulesContainer').innerHTML = '<div style="text-align:center;padding:40px;color:var(--red)">Erro ao carregar: ' + e.message + '</div>';
+  }
+}
+
+function isActive(mod) {
+  if (!_status) return false;
+  const s = _status.steps || {};
+  if (mod.id === 'ai') return !!s.mind;
+  if (mod.id === 'identity') return !!s.identity;
+  if (mod.id === 'voice') return !!s.voice;
+  if (mod.id === 'personality') return !!(_masked.ai_key); // active if AI configured
+  return !!(s.modules && s.modules[mod.id]);
+}
+
+function getMaskedValue(key) {
+  const map = {
+    '_provider': _masked.ai_provider || 'openai',
+    'key': _masked.ai_key || '',
+    'baseUrl': _masked.ai_baseUrl || '',
+    'name': _masked.identity_name || '',
+    'phone': _masked.identity_phone || '',
+    'ELEVENLABS_API_KEY': _masked.elevenlabs_key || '',
+    'ELEVENLABS_VOICE_ID': _masked.elevenlabs_voice || '',
+    'TWILIO_ACCOUNT_SID': _masked.twilio_sid || '',
+    'TWILIO_AUTH_TOKEN': _masked.twilio_token || '',
+    'TWILIO_PHONE_NUMBER': _masked.twilio_phone || '',
+    'TWILIO_NGROK_DOMAIN': _masked.twilio_ngrok || '',
+    'FACEBOOK_ACCESS_TOKEN': _masked.meta_token || '',
+    'META_PAGE_ID': _masked.meta_page || '',
+    'META_IG_ID': _masked.meta_ig || '',
+    'META_AD_ACCOUNT_ID': _masked.meta_ad || '',
+    'SUPABASE_URL': _masked.supabase_url || '',
+    'SUPABASE_KEY': _masked.supabase_key || '',
+    'FIRECRAWL_API_KEY': _masked.firecrawl_key || '',
+    'GOOGLE_AI_STUDIO_KEY': _masked.google_ai_key || '',
+    'FREEPIK_API_KEY': _masked.freepik_key || '',
+  };
+  return map[key] || '';
+}
+
+// ================================================================
+// RENDER
+// ================================================================
+function render() {
+  const container = document.getElementById('modulesContainer');
+  const categories = {essencial:'Essencial', comunicacao:'Comunicacao', integracao:'Integracoes'};
+  const activeCount = MODULES.filter(m => isActive(m)).length;
+  const pct = Math.round(activeCount / MODULES.length * 100);
+
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${activeCount} de ${MODULES.length} modulos configurados (${pct}%)`;
+  if (pct === 100) document.getElementById('progressBar').style.background = 'linear-gradient(90deg,var(--green2),var(--green))';
+
+  let html = '';
+  for (const [catKey, catLabel] of Object.entries(categories)) {
+    const mods = MODULES.filter(m => m.category === catKey);
+    if (!mods.length) continue;
+    html += `<div class="section-title">${catLabel}</div>`;
+    for (const m of mods) {
+      html += renderModule(m);
+    }
+  }
+
+  // Update section
+  html += `<div class="update-card" id="updateCard">
+    <div><div style="font-size:0.85rem;font-weight:600">Atualizacoes</div><div class="update-info" id="updateInfo">Verificando...</div></div>
+    <button class="btn btn-secondary" onclick="checkUpdate()" id="updateBtn">Verificar</button>
+  </div>`;
+
+  container.innerHTML = html;
+  checkUpdate();
+}
+
+function renderModule(m) {
+  const active = isActive(m);
+  const cls = active ? 'active' : 'pending';
+  const statusLabel = active ? 'Ativo' : 'Pendente';
+  const statusCls = active ? 'ok' : 'pending';
+
+  let stepsHtml = '';
+  if (m.steps?.length) {
+    stepsHtml = '<div class="steps">' + m.steps.map((s, i) =>
+      `<div class="step"><span class="step-num">${i+1}</span><span class="step-text">${s}</span></div>`
+    ).join('') + '</div>';
+  }
+
+  let linksHtml = '';
+  if (m.links?.length) {
+    linksHtml = '<div class="links">' + m.links.map(l =>
+      `<a href="${l.url}" target="_blank" class="link">${l.label} &#8599;</a>`
+    ).join('') + '</div>';
+  }
+
+  let formHtml = '';
+  if (!m.noForm && m.fields?.length) {
+    formHtml = `<div class="form-grid" id="form_${m.id}">`;
+    for (const f of m.fields) {
+      const val = active ? getMaskedValue(f.key) : '';
+      const groupAttr = f.group ? ` data-group="${f.group}"` : '';
+      const condAttr = f.condition ? ` data-condition="${f.condition}"` : '';
+      const clsAttr = f.cls ? ` ${f.cls}` : '';
+      const activeTag = active && val ? '<span class="field-active-tag">ATIVO</span>' : '';
+
+      if (f.type === 'select') {
+        let opts = f.options.map(o => {
+          const sel = (active && val === o.v) ? ' selected' : (!active && o.v === (f.options[0]?.v) ? ' selected' : '');
+          return `<option value="${o.v}"${sel}>${o.l}</option>`;
+        }).join('');
+        formHtml += `<div class="field${clsAttr}"${groupAttr}${condAttr}><label class="field-label">${f.label}</label><select class="field-select" data-key="${f.key}" onchange="onFieldChange('${m.id}')">${opts}</select></div>`;
+      } else {
+        const ph = active && val ? val : (f.placeholder || '');
+        formHtml += `<div class="field${clsAttr}"${groupAttr}${condAttr}><label class="field-label">${f.label}${activeTag}</label><input class="field-input" type="${f.type}" data-key="${f.key}" placeholder="${ph}"></div>`;
+      }
+    }
+    formHtml += '</div>';
+    formHtml += `<div class="btn-row">
+      <button class="btn btn-primary" onclick="saveModule('${m.id}')" id="saveBtn_${m.id}">${active ? 'Atualizar' : 'Salvar'}</button>
+      <span class="save-msg" id="msg_${m.id}"></span>
+    </div>`;
+    if (active) formHtml += '<div style="font-size:0.65rem;color:var(--text3);margin-top:8px">Deixe campos vazios para manter valores atuais.</div>';
+    if (m.extraAction) {
+      formHtml += `<button class="btn btn-green" style="margin-top:12px" onclick="${m.extraAction.fn}()">${m.extraAction.label}</button>`;
+    }
+  }
+
+  if (m.noForm && m.actionLabel) {
+    formHtml = `<div class="btn-row"><button class="btn btn-primary" onclick="(${m.actionFn})()">${m.actionLabel}</button></div>`;
+  }
+
+  return `<div class="module ${cls}" id="mod_${m.id}">
+    <div class="module-header" onclick="toggleModule('${m.id}')">
+      <div class="module-icon">${m.icon}</div>
+      <div class="module-info">
+        <div class="module-label">${m.label}</div>
+        <div class="module-desc">${m.desc}</div>
+      </div>
+      <span class="module-status ${statusCls}">${statusLabel}</span>
+      <span class="module-chevron" id="chev_${m.id}">&#9654;</span>
+    </div>
+    <div class="module-body" id="body_${m.id}">
+      ${stepsHtml}${linksHtml}${formHtml}
+    </div>
+  </div>`;
+}
+
+// ================================================================
+// ACTIONS
+// ================================================================
+function toggleModule(id) {
+  const body = document.getElementById('body_' + id);
+  const chev = document.getElementById('chev_' + id);
+  const isOpen = body.classList.toggle('open');
+  chev.classList.toggle('open', isOpen);
+  if (isOpen) onFieldChange(id);
+}
+
+function onFieldChange(modId) {
+  const form = document.getElementById('form_' + modId);
+  if (!form) return;
+  // Show/hide grouped fields based on provider select
+  const providerSelect = form.querySelector('[data-key="VOICE_PROVIDER"]') || form.querySelector('[data-key="_provider"]');
+  if (!providerSelect) return;
+  const val = providerSelect.value;
+
+  form.querySelectorAll('[data-group]').forEach(el => {
+    el.style.display = el.dataset.group === val ? '' : 'none';
+  });
+  form.querySelectorAll('[data-condition]').forEach(el => {
+    const [k, v] = el.dataset.condition.split('=');
+    const sel = form.querySelector(`[data-key="${k}"]`);
+    el.style.display = sel && sel.value === v ? '' : 'none';
+  });
+}
+
+async function saveModule(modId) {
+  const mod = MODULES.find(m => m.id === modId);
+  if (!mod || !mod.save) return;
+
+  const btn = document.getElementById('saveBtn_' + modId);
+  const msg = document.getElementById('msg_' + modId);
+  const form = document.getElementById('form_' + modId);
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  msg.textContent = '';
+  msg.className = 'save-msg';
+
+  const fields = {};
+  form.querySelectorAll('input, select').forEach(el => {
+    const key = el.dataset.key;
+    if (!key) return;
+    const val = el.value.trim();
+    if (val) fields[key] = val;
+  });
+
+  try {
+    const res = await fetch(mod.save.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(mod.save.buildPayload(fields))
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao salvar');
+
+    msg.textContent = 'Salvo!';
+    msg.className = 'save-msg';
+    showToast('Configuracao salva!', 'success');
+
+    // Refresh status
+    setTimeout(async () => {
+      await init();
+      // Reopen this module
+      const body = document.getElementById('body_' + modId);
+      const chev = document.getElementById('chev_' + modId);
+      if (body && !body.classList.contains('open')) {
+        body.classList.add('open');
+        if (chev) chev.classList.add('open');
+      }
+    }, 500);
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'save-msg error';
+    showToast(e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = isActive(mod) ? 'Atualizar' : 'Salvar';
+  }
+}
+
+async function createTables() {
+  try {
+    showToast('Criando tabelas...', 'success');
+    const res = await fetch('/api/setup/create-tables', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      showToast(`${data.created || 0} tabelas criadas!`, 'success');
+    } else {
+      showToast(data.error || 'Erro', 'error');
+    }
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+async function checkUpdate() {
+  const info = document.getElementById('updateInfo');
+  const btn = document.getElementById('updateBtn');
+  try {
+    const res = await fetch('/api/setup/check-update');
+    const data = await res.json();
+    if (data.hasUpdate) {
+      info.innerHTML = `<strong>${data.count || '?'} atualizacao(oes)</strong> disponivel(eis)`;
+      btn.textContent = 'Atualizar';
+      btn.className = 'btn btn-green';
+      btn.onclick = runUpdate;
+    } else {
+      info.textContent = 'Tudo atualizado';
+      btn.textContent = 'Verificar';
+    }
+  } catch (e) {
+    info.textContent = 'Erro ao verificar';
+  }
+}
+
+async function runUpdate() {
+  const btn = document.getElementById('updateBtn');
+  const info = document.getElementById('updateInfo');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>';
+  info.textContent = 'Atualizando...';
+  try {
+    await fetch('/api/setup/update', { method: 'POST' });
+    info.textContent = 'Atualizado! Reconectando...';
+    let attempts = 0;
+    const tryReload = setInterval(async () => {
+      attempts++;
+      try {
+        const r = await fetch('/api/setup/status', { signal: AbortSignal.timeout(3000) });
+        if (r.ok) { clearInterval(tryReload); location.reload(); }
+      } catch {}
+      if (attempts > 30) { clearInterval(tryReload); info.textContent = 'Reinicie manualmente: npm start'; btn.disabled = false; }
+    }, 3000);
+  } catch (e) {
+    info.textContent = 'Erro: ' + e.message;
+    btn.disabled = false;
+    btn.textContent = 'Tentar novamente';
+  }
+}
+
+// ================================================================
+// UI HELPERS
+// ================================================================
+function showToast(message, type) {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = (type === 'success' ? '\u2713 ' : '\u2717 ') + message;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+// ================================================================
+// START
+// ================================================================
+init();
+</script>
+</body>
+</html>
