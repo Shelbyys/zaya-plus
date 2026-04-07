@@ -624,13 +624,17 @@ async function executeVoiceTool(name, args) {
       }
 
       if (!imagePath) return 'Erro ao gerar imagem.';
-      // Auto-upload to Supabase Storage
+
+      // Gera URL local acessível pelo navegador (/files/* serve /tmp/*)
+      const localUrl = `/files/${imagePath.replace('/tmp/', '')}`;
+
+      // Tenta upload pro Supabase Storage (se configurado)
       try {
         const result = await uploadToStorage(imagePath, 'zaya-files', 'imagens');
-        return `Imagem gerada!\nLocal: ${imagePath}\nLink: ${result.publicUrl}`;
+        return `Imagem gerada!\nLink: ${result.publicUrl}\nLocal: ${localUrl}`;
       } catch (e) {
-        log.ai.warn({ err: e.message }, 'Auto-upload imagem falhou');
-        return `Imagem gerada e salva em: ${imagePath}`;
+        log.ai.warn({ err: e.message }, 'Supabase não disponível, usando link local');
+        return `Imagem gerada!\nLink: ${localUrl}`;
       }
     }
 
@@ -1344,23 +1348,24 @@ async function executeVoiceTool(name, args) {
       try {
         const result = await gerarImagemNanoBanana(args.prompt);
         if (!result.success) throw new Error(result.error);
+        const nbLocalUrl = `/files/${result.path.replace('/tmp/', '')}`;
         try {
           const upload = await uploadToStorage(result.path, 'zaya-files', 'imagens');
-          return `Imagem gerada com Nano Banana!\nLocal: ${result.path}\nLink: ${upload.publicUrl}`;
+          return `Imagem gerada com Nano Banana!\nLink: ${upload.publicUrl}\nLocal: ${nbLocalUrl}`;
         } catch (e) {
-          return `Imagem gerada!\nLocal: ${result.path}\n(Upload falhou: ${e.message})`;
+          return `Imagem gerada!\nLink: ${nbLocalUrl}`;
         }
       } catch (e) {
         log.ai.warn({ err: e.message }, 'NanoBanana falhou, tentando DALL-E 3 como fallback');
-        // Fallback: DALL-E 3
         try {
           const imagePath = await generateImage(args.prompt);
           if (!imagePath) return 'Erro: Nano Banana sem quota e DALL-E 3 também falhou.';
+          const fbLocalUrl = `/files/${imagePath.replace('/tmp/', '')}`;
           try {
             const upload = await uploadToStorage(imagePath, 'zaya-files', 'imagens');
-            return `Nano Banana indisponível, usei DALL-E 3.\nLocal: ${imagePath}\nLink: ${upload.publicUrl}`;
+            return `Nano Banana indisponível, usei DALL-E 3.\nLink: ${upload.publicUrl}\nLocal: ${fbLocalUrl}`;
           } catch (ue) {
-            return `Nano Banana indisponível, usei DALL-E 3.\nLocal: ${imagePath}`;
+            return `Nano Banana indisponível, usei DALL-E 3.\nLink: ${fbLocalUrl}`;
           }
         } catch (de) {
           return `Erro: Nano Banana sem quota (${e.message.slice(0, 80)}). DALL-E 3 também falhou (${de.message.slice(0, 80)}).`;
