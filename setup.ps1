@@ -78,7 +78,8 @@ if (-not $nodeExists) {
         $nodeInstaller = "$env:TEMP\node-install.msi"
         Invoke-WebRequest -Uri $nodeUrl -OutFile $nodeInstaller -UseBasicParsing
         Write-Host "  -> Instalando (pode pedir permissao de admin)..." -ForegroundColor Cyan
-        Start-Process msiexec.exe -ArgumentList "/i `"$nodeInstaller`" /qn" -Wait -Verb RunAs
+        $msiArgs = '/i "' + $nodeInstaller + '" /qn'
+        Start-Process msiexec.exe -ArgumentList $msiArgs -Wait -Verb RunAs
         Remove-Item $nodeInstaller -Force -ErrorAction SilentlyContinue
     }
 
@@ -177,15 +178,16 @@ if (-not (Test-Path $PROFILE)) { New-Item -ItemType File -Path $PROFILE -Force |
 $aliasLine = "function zaya { Set-Location '$INSTALL_DIR'; npm start }"
 $profileContent = Get-Content $PROFILE -Raw -ErrorAction SilentlyContinue
 if (-not $profileContent -or $profileContent -notmatch 'function zaya') {
-    Add-Content $PROFILE "`n# Zaya Plus`n$aliasLine"
+    $nl = [Environment]::NewLine
+    Add-Content $PROFILE ($nl + '# Zaya Plus' + $nl + $aliasLine)
     Write-Host "  OK Atalho 'zaya' criado no PowerShell" -ForegroundColor Green
 }
 
 # CMD alias via batch file
 $cmdDir = "$env:USERPROFILE\AppData\Local\Microsoft\WindowsApps"
 if (Test-Path $cmdDir) {
-    $batContent = "@echo off`r`ncd /d `"$INSTALL_DIR`" && npm start"
-    Set-Content "$cmdDir\zaya.cmd" $batContent -Force
+    $batLines = @('@echo off', "cd /d ""$INSTALL_DIR"" && npm start")
+    Set-Content "$cmdDir\zaya.cmd" ($batLines -join [Environment]::NewLine) -Force
     Write-Host "  OK Atalho 'zaya' criado no CMD" -ForegroundColor Green
 }
 
