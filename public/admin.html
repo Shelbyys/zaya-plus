@@ -851,9 +851,12 @@
                         <button class="btn btn-copy btn-sm" onclick="copyActivateCommand()" style="background:linear-gradient(135deg,#00b894,#00e676)">Copiar Comando 2</button>
                     </div>
                     <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
-                        <div class="token-label">Tudo em 1 comando (alternativa)</div>
+                        <div class="token-label">Tudo em 1 comando</div>
                         <div class="token-value" id="fullCommand" style="font-size:0.6rem;color:#a29bfe"></div>
-                        <button class="btn btn-copy btn-sm" onclick="copyFullCommand()" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)">Copiar Comando Completo</button>
+                        <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap">
+                            <button class="btn btn-copy btn-sm" onclick="copyFullCommand()" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe)">&#127822; Mac / Linux</button>
+                            <button class="btn btn-copy btn-sm" onclick="copyFullCommandWin()" style="background:linear-gradient(135deg,#0078d4,#00bcf2)">&#128187; Windows</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1073,13 +1076,21 @@
             copyText(`cd ~/zaya-plus && node activate.js ${generatedToken} && npm start`);
         }
 
-        function buildInstallCommand(token) {
+        function buildInstallCommand(token, os) {
+            if (os === 'windows') {
+                return `powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.ps1 -OutFile setup.ps1; .\\setup.ps1 ${token}"`;
+            }
             return `curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.sh | bash -s ${token}`;
         }
 
         function copyFullCommand() {
             if (!generatedToken) return;
             copyText(buildInstallCommand(generatedToken));
+        }
+
+        function copyFullCommandWin() {
+            if (!generatedToken) return;
+            copyText(buildInstallCommand(generatedToken, 'windows'));
         }
 
         // ═══════ Trial ═══════
@@ -1293,7 +1304,8 @@
                     <td class="date-cell">${dateDisplay}</td>
                     <td style="white-space:nowrap">
                         <button class="btn btn-sm" onclick="openEditModal('${safeData}')" title="Editar" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);margin:2px;min-width:32px">&#9998;</button>
-                        <button class="btn btn-sm" onclick="copyInstallCmd('${token}')" title="Copiar comando" style="background:linear-gradient(135deg,#00b894,#00e676);margin:2px;min-width:32px">&#128203;</button>
+                        <button class="btn btn-sm" onclick="copyInstallCmd('${token}')" title="Copiar comando Mac/Linux" style="background:linear-gradient(135deg,#00b894,#00e676);margin:2px;min-width:32px">&#127822;</button>
+                        <button class="btn btn-sm" onclick="copyInstallCmdWin('${token}')" title="Copiar comando Windows" style="background:linear-gradient(135deg,#0078d4,#00bcf2);margin:2px;min-width:32px">&#128187;</button>
                         ${status === 'ativo' ? `<button class="btn btn-danger btn-sm" onclick="deactivateLicense('${token}')" title="Desativar" style="margin:2px;min-width:32px">&#10006;</button>` : ''}
                         ${status !== 'expirado' && !l.revoked ? `<button class="btn btn-sm" onclick="revokeLicense('${token}')" title="Revogar" style="background:rgba(255,82,82,0.15);color:#ff5252;border:1px solid rgba(255,82,82,0.3);margin:2px;min-width:32px">&#128683;</button>` : ''}
                     </td>
@@ -1346,7 +1358,14 @@
         function copyInstallCmd(token) {
             const cmd = buildInstallCommand(token);
             navigator.clipboard.writeText(cmd).then(() => {
-                showToast('Comando de instalacao copiado!', 'success');
+                showToast('Comando Mac/Linux copiado!', 'success');
+            });
+        }
+
+        function copyInstallCmdWin(token) {
+            const cmd = buildInstallCommand(token, 'windows');
+            navigator.clipboard.writeText(cmd).then(() => {
+                showToast('Comando Windows copiado!', 'success');
             });
         }
 
