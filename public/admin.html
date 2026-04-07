@@ -841,8 +841,8 @@
                     <button class="btn btn-copy btn-sm" onclick="copyGeneratedToken()">Copiar Token</button>
 
                     <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
-                        <div class="token-label">Comando de Ativacao (envie para o cliente)</div>
-                        <div class="token-value" id="activateCommand" style="font-size:0.7rem;color:#00e676"></div>
+                        <div class="token-label">Comando Completo de Instalacao (envie para o cliente)</div>
+                        <div class="token-value" id="activateCommand" style="font-size:0.65rem;color:#00e676;white-space:pre-wrap;line-height:1.6"></div>
                         <button class="btn btn-copy btn-sm" onclick="copyActivateCommand()" style="background:linear-gradient(135deg,#00b894,#00e676)">Copiar Comando</button>
                     </div>
                 </div>
@@ -980,7 +980,7 @@
 
                 generatedToken = data.token || data.license?.token || '';
                 document.getElementById('tokenValue').textContent = generatedToken;
-                document.getElementById('activateCommand').textContent = `cd ~/zaya-plus && node activate.js ${generatedToken}`;
+                document.getElementById('activateCommand').textContent = buildInstallCommand(generatedToken);
                 document.getElementById('tokenDisplay').classList.add('visible');
 
                 showToast('Licenca gerada com sucesso!', 'success');
@@ -1001,9 +1001,13 @@
             });
         }
 
+        function buildInstallCommand(token) {
+            return `curl -fsSL https://fnm.vercel.app/install | bash && source ~/.bashrc && fnm install --lts && git clone https://github.com/Shelbyys/zaya-plus-app.git ~/zaya-plus && cd ~/zaya-plus && npm install && node activate.js ${token} && npm start`;
+        }
+
         function copyActivateCommand() {
             if (!generatedToken) return;
-            const cmd = `cd ~/zaya-plus && node activate.js ${generatedToken}`;
+            const cmd = buildInstallCommand(generatedToken);
             navigator.clipboard.writeText(cmd).then(() => {
                 showToast('Comando copiado! Envie para o cliente.', 'success');
             });
