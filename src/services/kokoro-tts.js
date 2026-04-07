@@ -40,25 +40,34 @@ async function getKokoro() {
 
 // Vozes disponíveis no Kokoro
 const KOKORO_VOICES = {
-  // Femininas
-  'af_heart': 'Heart (feminina, calorosa)',
-  'af_alloy': 'Alloy (feminina, neutra)',
-  'af_aoede': 'Aoede (feminina, suave)',
-  'af_bella': 'Bella (feminina, expressiva)',
-  'af_jessica': 'Jessica (feminina, clara)',
-  'af_kore': 'Kore (feminina, jovem)',
-  'af_nicole': 'Nicole (feminina, madura)',
-  'af_nova': 'Nova (feminina, energética)',
-  'af_river': 'River (feminina, calma)',
-  'af_sarah': 'Sarah (feminina, profissional)',
-  'af_sky': 'Sky (feminina, leve)',
-  // Masculinas
-  'am_adam': 'Adam (masculina, grave)',
-  'am_echo': 'Echo (masculina, ressonante)',
-  'am_eric': 'Eric (masculina, firme)',
-  'am_liam': 'Liam (masculina, jovem)',
-  'am_michael': 'Michael (masculina, madura)',
-  'am_onyx': 'Onyx (masculina, profunda)',
+  // Português Brasileiro
+  'pt_br_faber': 'Faber (PT-BR, masculina)',
+  'pt_br_camoes': 'Camões (PT-BR, masculina)',
+  // Inglês Americano - Femininas
+  'af_heart': 'Heart (EN, feminina, calorosa)',
+  'af_alloy': 'Alloy (EN, feminina, neutra)',
+  'af_aoede': 'Aoede (EN, feminina, suave)',
+  'af_bella': 'Bella (EN, feminina, expressiva)',
+  'af_jessica': 'Jessica (EN, feminina, clara)',
+  'af_kore': 'Kore (EN, feminina, jovem)',
+  'af_nicole': 'Nicole (EN, feminina, madura)',
+  'af_nova': 'Nova (EN, feminina, energética)',
+  'af_river': 'River (EN, feminina, calma)',
+  'af_sarah': 'Sarah (EN, feminina, profissional)',
+  'af_sky': 'Sky (EN, feminina, leve)',
+  // Inglês Americano - Masculinas
+  'am_adam': 'Adam (EN, masculina, grave)',
+  'am_echo': 'Echo (EN, masculina, ressonante)',
+  'am_eric': 'Eric (EN, masculina, firme)',
+  'am_liam': 'Liam (EN, masculina, jovem)',
+  'am_michael': 'Michael (EN, masculina, madura)',
+  'am_onyx': 'Onyx (EN, masculina, profunda)',
+  // Espanhol
+  'es_carlos': 'Carlos (ES, masculina)',
+  // Francês
+  'fr_pierre': 'Pierre (FR, masculina)',
+  // Italiano
+  'it_marco': 'Marco (IT, masculina)',
 };
 
 /**
@@ -69,7 +78,7 @@ const KOKORO_VOICES = {
  */
 export async function generateSpeech(text, voice = null) {
   const kokoro = await getKokoro();
-  const voiceId = voice || process.env.KOKORO_VOICE || 'af_heart';
+  const voiceId = voice || process.env.KOKORO_VOICE || 'pt_br_faber';
 
   try {
     const audio = await kokoro.generate(text.slice(0, 500), { voice: voiceId });
@@ -90,7 +99,7 @@ export async function generateSpeech(text, voice = null) {
  */
 export async function generateSpeechToFile(text, voice = null) {
   const kokoro = await getKokoro();
-  const voiceId = voice || process.env.KOKORO_VOICE || 'af_heart';
+  const voiceId = voice || process.env.KOKORO_VOICE || 'pt_br_faber';
 
   try {
     const audio = await kokoro.generate(text.slice(0, 500), { voice: voiceId });
