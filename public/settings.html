@@ -458,11 +458,19 @@ function renderModule(m) {
     // Vozes preview section (para módulo voice)
     if (m.id === 'voice') {
       formHtml += `<div id="voicePreview" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
-        <div style="font-size:0.75rem;color:var(--text2);margin-bottom:8px;font-weight:600">Testar voz</div>
+        <div style="font-size:0.75rem;color:var(--text2);margin-bottom:10px;font-weight:600">Testar voz</div>
+        <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
+          <select class="field-select" id="voiceTestLang" style="width:auto;min-width:140px">
+            <option value="pt">Portugues</option>
+            <option value="en">English</option>
+            <option value="es">Espanol</option>
+          </select>
+        </div>
         <div class="btn-row">
           <input class="field-input" id="voiceTestText" placeholder="Digite um texto para testar a voz..." value="Oi, eu sou a Zaya, sua assistente pessoal." style="flex:1">
           <button class="btn btn-secondary" onclick="testVoice()">&#9654; Testar</button>
         </div>
+        <div style="font-size:0.6rem;color:var(--text3);margin-top:6px">Selecione a voz acima, depois clique em Testar para ouvir. Mude a voz e teste quantas vezes quiser antes de salvar.</div>
       </div>`;
     }
   }
@@ -658,15 +666,48 @@ function showToast(message, type) {
 // ================================================================
 // VOICE TEST
 // ================================================================
+// Muda texto de exemplo ao trocar idioma
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'voiceTestLang') {
+    const texts = {
+      pt: 'Oi, eu sou a Zaya, sua assistente pessoal.',
+      en: 'Hi, I am Zaya, your personal assistant.',
+      es: 'Hola, soy Zaya, tu asistente personal.'
+    };
+    const input = document.getElementById('voiceTestText');
+    if (input) input.value = texts[e.target.value] || texts.pt;
+  }
+});
+
 async function testVoice() {
-  const text = document.getElementById('voiceTestText')?.value || 'Oi, eu sou a Zaya.';
+  const text = document.getElementById('voiceTestText')?.value || 'Oi, eu sou a Zaya, sua assistente pessoal.';
+  const form = document.getElementById('form_voice');
+  if (!form) return;
+
+  // Ler provedor e voz selecionados no formulário
+  const providerEl = form.querySelector('[data-key="TTS_PROVIDER"]');
+  const provider = providerEl ? providerEl.value : '';
+
+  let voice = '';
+  if (provider === 'kokoro') {
+    const v = form.querySelector('[data-key="KOKORO_VOICE"]');
+    voice = v ? v.value : 'af_heart';
+  } else if (provider === 'openai') {
+    const v = form.querySelector('[data-key="OPENAI_TTS_VOICE"]');
+    voice = v ? v.value : 'nova';
+  } else {
+    const v = form.querySelector('[data-key="ELEVENLABS_VOICE_ID"]');
+    voice = v ? v.value : '';
+  }
+
   try {
     showToast('Gerando voz...', 'success');
     const res = await fetch('/api/speak', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text, provider: provider || undefined, voice: voice || undefined })
     });
+    if (res.status === 204) { showToast('Nenhum provedor de voz configurado', 'error'); return; }
     if (!res.ok) { showToast('Erro ao gerar voz', 'error'); return; }
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);

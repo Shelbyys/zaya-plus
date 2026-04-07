@@ -41,6 +41,10 @@ router.all('/speak', async (req, res) => {
     const text = req.body?.text || req.query?.text;
     if (!text) return res.status(400).json({ error: 'text obrigatorio' });
 
+    // Parâmetros opcionais (para teste no setup)
+    const reqProvider = req.body?.provider || req.query?.provider || '';
+    const reqVoice = req.body?.voice || req.query?.voice || '';
+
     // Reler .env para pegar config atualizada pelo setup
     let envVars = {};
     try {
@@ -52,28 +56,29 @@ router.all('/speak', async (req, res) => {
     } catch {}
     const apiKey = envVars.OPENAI_API_KEY || process.env.OPENAI_API_KEY || '';
     const baseUrl = envVars.OPENAI_BASE_URL || process.env.OPENAI_BASE_URL || '';
-    const ttsProvider = envVars.TTS_PROVIDER || process.env.TTS_PROVIDER || '';
+    const ttsProvider = reqProvider || envVars.TTS_PROVIDER || process.env.TTS_PROVIDER || '';
     const elKey = envVars.ELEVENLABS_API_KEY || process.env.ELEVENLABS_API_KEY || '';
 
     // Kokoro TTS local (grátis)
     if (ttsProvider === 'kokoro' || ttsProvider === 'kokoro-local') {
       try {
         const { generateSpeech } = await import('../services/kokoro-tts.js');
-        const wavBuffer = await generateSpeech(text);
+        const voice = reqVoice || envVars.KOKORO_VOICE || process.env.KOKORO_VOICE || 'af_heart';
+        const wavBuffer = await generateSpeech(text, voice);
         res.set('Content-Type', 'audio/wav');
         return res.send(wavBuffer);
       } catch (e) {
         console.log('[TTS] Kokoro erro:', e.message, '— tentando fallback...');
-        // Cai pro próximo provider
       }
     }
 
-    // OpenAI TTS (so funciona com OpenAI real, nao Groq/outros)
+    // OpenAI TTS
     const isGroq = baseUrl.includes('groq');
     const isRealOpenAI = apiKey && apiKey !== 'sk-placeholder' && !isGroq;
     const useOpenAI = isRealOpenAI && (!elKey || ttsProvider === 'openai');
 
     if (useOpenAI) {
+      const voice = reqVoice || envVars.OPENAI_TTS_VOICE || process.env.OPENAI_TTS_VOICE || 'nova';
       const response = await fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
         headers: {
@@ -83,14 +88,13 @@ router.all('/speak', async (req, res) => {
         body: JSON.stringify({
           model: 'tts-1-hd',
           input: text,
-          voice: envVars.OPENAI_TTS_VOICE || process.env.OPENAI_TTS_VOICE || 'nova',
+          voice,
           response_format: 'mp3'
         })
       });
       if (!response.ok) {
         const err = await response.text();
         console.log('[TTS] OpenAI erro:', response.status, err.slice(0, 200));
-        // Fallback silencioso — retorna audio vazio em vez de erro
         return res.status(204).end();
       }
       res.set('Content-Type', 'audio/mpeg');
@@ -99,8 +103,9 @@ router.all('/speak', async (req, res) => {
 
     // ElevenLabs TTS
     const elApiKey = elKey || process.env.ELEVENLABS_API_KEY;
-    if (!elApiKey) return res.status(204).end(); // Sem voz — silencioso
-    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${currentVoiceId}`, {
+    if (!elApiKey) return res.status(204).end();
+    const voiceId = reqVoice || currentVoiceId;
+    const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`, {
       method: 'POST',
       headers: { 'xi-api-key': elApiKey, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text, model_id: 'eleven_multilingual_v2', voice_settings: { stability: 0.4, similarity_boost: 0.8, style: 0.4 } }),
