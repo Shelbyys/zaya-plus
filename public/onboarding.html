@@ -933,10 +933,72 @@
         orb.setState('processing');
         orb.setAudioLevel(0.3);
 
-        await typeMultiple([
-            'Vamos conectar teu WhatsApp!',
-            'Digita teu numero com DDD pra gerar o codigo.',
+        await typeText('Como quer conectar o WhatsApp?');
+        await sleep(200);
+
+        const waMethod = await createSingleSelect([
+            { emoji: '\uD83D\uDCF1', label: 'Direto (Baileys)', desc: 'Gratis, conexao local', value: 'baileys' },
+            { emoji: '\u2601\uFE0F', label: 'Evolution API', desc: 'Mais estavel, precisa de servidor', value: 'evolution' },
+            { emoji: '\u23E9', label: 'Pular', desc: 'Configura depois', value: 'skip' },
         ]);
+
+        if (waMethod === 'skip') {
+            clearInput();
+            await typeText('Sem problema! Conecta depois pelo painel WhatsApp.');
+            await sleep(800);
+            return;
+        }
+
+        if (waMethod === 'evolution') {
+            clearInput();
+            await typeText('Cola a URL do teu Evolution API (ex: http://localhost:8080):');
+            const evoUrl = await createTextInput('http://localhost:8080', 'Proximo');
+            clearInput();
+            await typeText('Agora a API Key do Evolution:');
+            const evoKey = await createTextInput('SUA_CHAVE_AQUI', 'Salvar');
+
+            await saveToBackend('/api/setup/save-module', {
+                module: 'evolution',
+                config: {
+                    EVOLUTION_API_URL: evoUrl.trim(),
+                    EVOLUTION_API_KEY: evoKey.trim(),
+                    EVOLUTION_INSTANCE: 'principal',
+                },
+            });
+
+            clearInput();
+            orb.setState('processing');
+            await typeText('Testando conexao com Evolution API...');
+
+            try {
+                const testR = await fetch('/api/setup/test-module', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ module: 'evolution', config: { EVOLUTION_API_URL: evoUrl.trim(), EVOLUTION_API_KEY: evoKey.trim() } }),
+                });
+                const testData = await testR.json();
+
+                if (testR.ok && testData.success) {
+                    clearInput();
+                    orb.setState('speaking');
+                    await typeText('Evolution API conectado! WhatsApp vai funcionar por la.');
+                    await sleep(1000);
+                } else {
+                    clearInput();
+                    await typeText('Nao consegui conectar. Verifica a URL e chave. Pode ajustar depois no Setup.');
+                    await sleep(1500);
+                }
+            } catch {
+                clearInput();
+                await typeText('Erro de conexao. Configura depois no Setup.');
+                await sleep(1500);
+            }
+            return;
+        }
+
+        // Baileys (direto)
+        clearInput();
+        await typeText('Digita teu numero com DDD pra gerar o codigo.');
         await sleep(200);
 
         const phone = await createTextInput('Numero com DDD (ex: 5511999999999)', 'Conectar');
