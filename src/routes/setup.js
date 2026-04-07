@@ -510,6 +510,8 @@ router.get('/env-template', (req, res) => {
 
 // ─── GET /check-update ─────────────────────────────────────
 
+let _lastNotifiedUpdate = '';
+
 router.get('/check-update', async (req, res) => {
   try {
     const { execSync } = await import('child_process');
@@ -534,6 +536,30 @@ router.get('/check-update', async (req, res) => {
         return { hash: hash.slice(0, 7), msg: msg.join(' ') };
       });
     } catch {}
+
+    // Notifica TODOS os dashboards conectados via Socket.IO (uma vez por versão)
+    if (remote !== _lastNotifiedUpdate && commits.length > 0) {
+      _lastNotifiedUpdate = remote;
+      try {
+        const { io } = await import('../state.js');
+        const resumo = commits.slice(0, 3).map(c => c.msg).join(', ');
+        io?.emit('zaya-proactive', {
+          text: `Nova atualizacao disponivel! ${commits.length} mudanca(s): ${resumo}. Clique em ATUALIZAR AGORA no topo da tela.`,
+          tipo: 'update',
+          timestamp: new Date().toISOString()
+        });
+
+        // Notifica admin via WhatsApp
+        try {
+          const { sendWhatsApp } = await import('../services/messaging.js');
+          const { ADMIN_JID } = await import('../config.js');
+          if (ADMIN_JID) {
+            const msg = `*ZAYA PLUS — Atualizacao Disponivel*\n\n${commits.length} nova(s) mudanca(s):\n${commits.slice(0, 5).map(c => `• ${c.msg}`).join('\n')}\n\nAbra a Zaya e clique em ATUALIZAR AGORA, ou rode:\n\`cd ~/zaya-plus && git pull && npm start\``;
+            await sendWhatsApp(ADMIN_JID, msg);
+          }
+        } catch {}
+      } catch {}
+    }
 
     res.json({
       hasUpdate: true,
