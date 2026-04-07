@@ -236,14 +236,23 @@ router.post('/save-mind', (req, res) => {
 
 // ─── POST /save-identity ────────────────────────────────────
 
-router.post('/save-identity', (req, res) => {
+router.post('/save-identity', async (req, res) => {
   try {
     const { name, phone } = req.body;
     if (!name || !phone) {
       return res.status(400).json({ error: 'name and phone are required' });
     }
 
-    updateEnv({ ADMIN_NAME: name, ADMIN_NUMBER: phone });
+    updateEnv({ ADMIN_NAME: name, ADMIN_NUMBER: phone, ZAYA_CALL_NAME: name });
+
+    // Salvar callName no botConfig tambem
+    try {
+      const { getBotConfig, saveBotConfig } = await import('../database.js');
+      const cfg = getBotConfig();
+      cfg.callName = name;
+      saveBotConfig(cfg);
+    } catch {}
+
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });

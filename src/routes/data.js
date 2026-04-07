@@ -28,7 +28,17 @@ router.get('/public-config', (req, res) => {
       }
     });
   } catch {}
-  res.json({ adminName: name, metaAccessToken: metaToken });
+  // Pegar estilo/accent do botConfig
+  let style = 'amigavel', accent = 'neutro', callName = '';
+  try {
+    const { getBotConfig } = require('../database.js');
+    const cfg = getBotConfig();
+    if (cfg.style) style = cfg.style;
+    if (cfg.accent) accent = cfg.accent;
+    if (cfg.callName) callName = cfg.callName;
+  } catch {}
+
+  res.json({ adminName: callName || name, metaAccessToken: metaToken, style, accent });
 });
 
 // ================================================================

@@ -133,7 +133,7 @@ function twimlPlayOrSay(audioUrl, text) {
 router.post('/start', async (req, res) => {
   const callSid = req.body.CallSid || 'unknown';
   const session = getSession(callSid);
-  const initialMsg = req.query.msg || `Oi, aqui é a Zaya, assistente do ${ADMIN_NAME || 'nosso cliente'}. Como posso ajudar?`;
+  const initialMsg = req.query.msg || `Oi, aqui é a Zaya, assistente ${ADMIN_NAME ? 'do ' + ADMIN_NAME : 'pessoal'}. Me conta, como posso te ajudar?`;
   session.history.push({ role: 'assistant', content: initialMsg });
 
   log.ai.info({ callSid, msg: initialMsg.slice(0, 60) }, 'Ligação iniciada');

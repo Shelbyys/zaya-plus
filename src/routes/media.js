@@ -68,7 +68,7 @@ router.all('/speak', async (req, res) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model: 'tts-1',
+          model: 'tts-1-hd',
           input: text,
           voice: envVars.OPENAI_TTS_VOICE || process.env.OPENAI_TTS_VOICE || 'nova',
           response_format: 'mp3'

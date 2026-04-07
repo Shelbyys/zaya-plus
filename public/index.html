@@ -1839,9 +1839,9 @@ function setState(s){
   const ovs=$('orbVocalStatus');
   const oq=$('orbQuote');
   if(s==='speaking'){ovs.textContent='FALANDO';ovs.style.color='var(--green)';oq.textContent='"Processando resposta vocal..."';}
-  else if(s==='listening'){ovs.textContent='CAPTANDO';ovs.style.color='var(--red)';oq.textContent='"Ouvindo atentamente, macho..."';}
+  else if(s==='listening'){ovs.textContent='CAPTANDO';ovs.style.color='var(--red)';oq.textContent='"Ouvindo atentamente..."';}
   else if(s==='processing'){ovs.textContent='PROCESSANDO';ovs.style.color='var(--yellow)';oq.textContent='"Analisando sua solicitacao..."';}
-  else{ovs.textContent='ATIVA';ovs.style.color='var(--green)';oq.textContent='"Estou pronta para suas ordens, macho."';}
+  else{ovs.textContent='ATIVA';ovs.style.color='var(--green)';oq.textContent='"Estou pronta, pode falar."';}
 }
 function linkify(text){
   let h=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1886,6 +1886,8 @@ function stopRec(){if(rec){try{rec.abort();}catch(e){}try{rec.stop();}catch(e){}
 
 // Nome do admin carregado dinamicamente
 var _adminName = '';
+var _style = 'amigavel';
+var _accent = 'neutro';
 (async () => {
   try {
     const res = await fetch('/api/public-config');
@@ -1894,20 +1896,41 @@ var _adminName = '';
       _adminName = cfg.adminName;
       tickBase = `SISTEMA ATIVO — ${_adminName} — ZAYA PLUS v1.0 — CORTEX QUANTICO — `;
     }
+    if (cfg.style) _style = cfg.style;
+    if (cfg.accent) _accent = cfg.accent;
   } catch(e) {}
 })();
 
 function getGreeting(){
   const h=new Date().getHours();
   const p=h>=5&&h<12?'Bom dia':h>=12&&h<18?'Boa tarde':'Boa noite';
-  const nome = _adminName || 'chefe';
-  const f=[
-    `${p}, ${nome}! Zaya pronta, macho!`,
-    `${p}, ${nome}! Manda ver, macho!`,
-    `${p}, macho! Pode falar!`,
-    `Oxente, ${p.toLowerCase()}, ${nome}! Estou ouvindo, macho!`,
-  ];
-  return f[Math.floor(Math.random()*f.length)];
+  const nome = _adminName || '';
+
+  const greetings = {
+    amigavel: [
+      `${p}${nome?', '+nome:''}! Tô aqui, pode falar comigo.`,
+      `Oi${nome?', '+nome:''}! ${p.toLowerCase()}, tô pronta pra te ajudar.`,
+      `${p}${nome?', '+nome:''}! Me conta, no que posso te ajudar?`,
+    ],
+    formal: [
+      `${p}${nome?', '+nome:''}. Estou à disposição.`,
+      `${p}${nome?', '+nome:''}. Como posso ajudar?`,
+      `${p}${nome?', '+nome:''}. Pronta para atender.`,
+    ],
+    informal: [
+      `E aí${nome?', '+nome:''}! ${p.toLowerCase()}! Bora?`,
+      `Opa${nome?', '+nome:''}! Tô on, manda!`,
+      `${p}${nome?', '+nome:''}! Fala aí, tô ouvindo!`,
+    ],
+    direto: [
+      `${p}${nome?', '+nome:''}. Pode falar.`,
+      `Pronta${nome?', '+nome:''}. O que precisa?`,
+      `${p}. Estou ouvindo.`,
+    ],
+  };
+
+  const list = greetings[_style] || greetings.amigavel;
+  return list[Math.floor(Math.random()*list.length)];
 }
 
 // Executing loop audio
@@ -2710,7 +2733,7 @@ async function conversaLoop(){
             const d=await r.json();resp=d.response;
           }else{const res=await sendChatStream(texto);resp=res.response;}
         }else{const res=await sendChatStream(texto);resp=res.response;}
-      }catch(e){resp='Deu um erro, macho.';}
+      }catch(e){resp='Ops, deu um erro. Tenta de novo.';}
 
       if(!zayaOn){busy=false;break;}
 
@@ -4474,21 +4497,20 @@ async function announceNotifications() {
     const count = notifs.length;
     let announcement = '';
 
+    const _pre = _adminName ? _adminName + ', ' : '';
     if (count === 1) {
       const n = notifs[0];
-      const _nome = _adminName || 'chefe';
       if (n.type === 'group_mention') {
-        announcement = `${_nome}, ${n.senderName} te marcou no grupo ${n.groupName}. Quer que eu leia?`;
+        announcement = `${_pre}${n.senderName} te marcou no grupo ${n.groupName}. Quer que eu leia?`;
       } else {
-        announcement = `${_nome}, você recebeu uma mensagem de ${n.nome || n.phone}. Quer que eu leia?`;
+        announcement = `${_pre}você recebeu uma mensagem de ${n.nome || n.phone}. Quer que eu leia?`;
       }
     } else {
       const nomes = [...new Set(notifs.map(n => n.nome || n.senderName || n.phone))];
-      const _nome = _adminName || 'chefe';
       if (nomes.length === 1) {
-        announcement = `${_nome}, ${nomes[0]} enviou ${count} mensagens. Quer que eu leia?`;
+        announcement = `${_pre}${nomes[0]} enviou ${count} mensagens. Quer que eu leia?`;
       } else {
-        announcement = `${_nome}, ${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length-1]} mandaram mensagem. Quer que eu leia?`;
+        announcement = `${_pre}${nomes.slice(0, -1).join(', ')} e ${nomes[nomes.length-1]} mandaram mensagem. Quer que eu leia?`;
       }
     }
 
