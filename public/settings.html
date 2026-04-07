@@ -156,11 +156,11 @@ const MODULES = [
     id:'ai', label:'Inteligencia Artificial', desc:'Motor de IA — OpenAI, Anthropic ou Groq', required:true, icon:'&#129504;', category:'essencial',
     steps:['Escolha um provedor: OpenAI, Anthropic ou Groq','Crie uma conta no site do provedor','Gere uma API Key no painel','Cole a chave abaixo'],
     fields:[
-      {key:'_provider',type:'select',label:'Provedor',options:[{v:'openai',l:'OpenAI (GPT-4o)'},{v:'anthropic',l:'Anthropic (Claude)'},{v:'groq',l:'Groq (Llama — gratuito)'}]},
+      {key:'_provider',type:'select',label:'Provedor',options:[{v:'openai',l:'OpenAI (GPT-4o)'},{v:'anthropic',l:'Anthropic (Claude)'},{v:'groq',l:'Groq (Llama — gratuito)'},{v:'huggingface',l:'HuggingFace (DeepSeek/Llama — free tier)'}]},
       {key:'key',type:'password',label:'API Key',placeholder:'sk-...'},
       {key:'baseUrl',type:'text',label:'Base URL (apenas Groq)',placeholder:'https://api.groq.com/openai/v1',condition:'_provider=groq',cls:'full'}
     ],
-    links:[{url:'https://platform.openai.com/api-keys',label:'OpenAI'},{url:'https://console.anthropic.com/settings/keys',label:'Anthropic'},{url:'https://console.groq.com/keys',label:'Groq (gratis)'}],
+    links:[{url:'https://platform.openai.com/api-keys',label:'OpenAI'},{url:'https://console.anthropic.com/settings/keys',label:'Anthropic'},{url:'https://console.groq.com/keys',label:'Groq (gratis)'},{url:'https://huggingface.co/settings/tokens',label:'HuggingFace (gratis)'}],
     save:{endpoint:'/api/setup/save-mind',buildPayload:f=>({provider:f._provider,key:f.key,baseUrl:f.baseUrl||undefined})}
   },
   {
@@ -186,14 +186,35 @@ const MODULES = [
     save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'personality',config:f})}
   },
   {
-    id:'voice', label:'Voz / TTS', desc:'ElevenLabs ou OpenAI para voz premium da Zaya', required:false, icon:'&#128266;', category:'comunicacao',
-    steps:['Crie uma conta em elevenlabs.io','Va em Profile Settings > API Keys','Copie sua API Key','Escolha uma voz na biblioteca e copie o Voice ID'],
+    id:'voice', label:'Voz / TTS', desc:'ElevenLabs, OpenAI TTS ou Kokoro (grátis, local)', required:false, icon:'&#128266;', category:'comunicacao',
+    steps:['Escolha o provedor de voz abaixo','ELEVENLABS: Crie conta em elevenlabs.io > API Keys > copie key e Voice ID','OPENAI: Usa a mesma API Key da IA, voz "nova" por padrao','KOKORO: 100% grátis, roda local no seu Mac. Melhor em inglês'],
     fields:[
+      {key:'TTS_PROVIDER',type:'select',label:'Provedor TTS',options:[{v:'',l:'ElevenLabs (padrao)'},{v:'openai',l:'OpenAI TTS'},{v:'kokoro',l:'Kokoro (grátis, local)'}]},
       {key:'ELEVENLABS_API_KEY',type:'password',label:'ElevenLabs API Key',placeholder:'xi-...'},
-      {key:'ELEVENLABS_VOICE_ID',type:'text',label:'Voice ID',placeholder:'21m00Tcm4TlvDq8ikWAM'}
+      {key:'ELEVENLABS_VOICE_ID',type:'text',label:'ElevenLabs Voice ID',placeholder:'21m00Tcm4TlvDq8ikWAM'},
+      {key:'KOKORO_VOICE',type:'select',label:'Voz Kokoro',options:[{v:'af_heart',l:'Heart (feminina, calorosa)'},{v:'af_nova',l:'Nova (feminina, energética)'},{v:'af_bella',l:'Bella (feminina, expressiva)'},{v:'af_sarah',l:'Sarah (feminina, profissional)'},{v:'am_adam',l:'Adam (masculina, grave)'},{v:'am_michael',l:'Michael (masculina, madura)'}]}
     ],
-    links:[{url:'https://elevenlabs.io/app/settings/api-keys',label:'API Keys'},{url:'https://elevenlabs.io/app/voice-library',label:'Vozes'}],
+    links:[{url:'https://elevenlabs.io/app/settings/api-keys',label:'ElevenLabs'},{url:'https://elevenlabs.io/app/voice-library',label:'Vozes ElevenLabs'}],
     save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'voice',config:f})}
+  },
+  {
+    id:'stt', label:'Transcricao / STT', desc:'OpenAI Whisper ou Whisper local (grátis)', required:false, icon:'&#127908;', category:'comunicacao',
+    steps:['OPENAI WHISPER: Usa a API paga ($0.006/min) — padrao, mais preciso','WHISPER LOCAL: 100% grátis, roda no seu Mac. Usa modelo whisper-small via Transformers.js','Primeira transcrição local demora ~30s pra carregar o modelo, depois é instantâneo'],
+    fields:[
+      {key:'STT_PROVIDER',type:'select',label:'Provedor STT',options:[{v:'',l:'OpenAI Whisper API (padrao)'},{v:'whisper-local',l:'Whisper Local (grátis)'}]}
+    ],
+    links:[],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'stt',config:f})}
+  },
+  {
+    id:'images', label:'Geracao de Imagens', desc:'DALL-E 3, Google Gemini ou FLUX.1 (grátis)', required:false, icon:'&#128444;', category:'comunicacao',
+    steps:['DALL-E 3: Usa API OpenAI ($0.04-0.12/imagem) — padrao','GOOGLE GEMINI: Usa Google AI Studio (grátis com limites)','FLUX.1: Via HuggingFace, quase grátis. Qualidade comparavel ao DALL-E 3','Para FLUX, precisa de token HuggingFace (grátis em huggingface.co/settings/tokens)'],
+    fields:[
+      {key:'IMAGE_PROVIDER',type:'select',label:'Provedor de Imagens',options:[{v:'',l:'DALL-E 3 (padrao)'},{v:'flux',l:'FLUX.1 (HuggingFace — grátis)'},{v:'gemini',l:'Google Gemini'}]},
+      {key:'HUGGINGFACE_API_KEY',type:'password',label:'HuggingFace Token (para FLUX)',placeholder:'hf_...'}
+    ],
+    links:[{url:'https://huggingface.co/settings/tokens',label:'HuggingFace Token (gratis)'}],
+    save:{endpoint:'/api/setup/save-module',buildPayload:f=>({module:'images',config:f})}
   },
   {
     id:'whatsapp', label:'WhatsApp', desc:'Conexao via QR Code para enviar e receber mensagens', required:false, icon:'&#128172;', category:'comunicacao',

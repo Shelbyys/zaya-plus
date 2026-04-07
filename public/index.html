@@ -3864,7 +3864,7 @@ const SETUP_MODULES = [
       'Cole a chave no campo abaixo e clique em Salvar',
     ],
     fields:[
-      {key:'_provider',type:'select',label:'Provedor',options:[{v:'openai',l:'OpenAI (GPT-4o)'},{v:'anthropic',l:'Anthropic (Claude)'},{v:'groq',l:'Groq (Llama — gratuito)'}]},
+      {key:'_provider',type:'select',label:'Provedor',options:[{v:'openai',l:'OpenAI (GPT-4o)'},{v:'anthropic',l:'Anthropic (Claude)'},{v:'groq',l:'Groq (Llama — gratuito)'},{v:'huggingface',l:'HuggingFace (DeepSeek/Llama — free tier)'}]},
       {key:'key',type:'password',label:'API Key',placeholder:'sk-...'},
       {key:'baseUrl',type:'text',label:'Base URL (apenas Groq)',placeholder:'https://api.groq.com/openai/v1',condition:'_provider=groq'},
     ],

@@ -604,7 +604,25 @@ async function executeVoiceTool(name, args) {
     }
 
     case 'gerar_imagem': {
-      const imagePath = await generateImage(args.descricao);
+      let imagePath = null;
+
+      // Tenta FLUX.1 (HuggingFace) se configurado e preferido
+      const imgProvider = (process.env.IMAGE_PROVIDER || '').toLowerCase();
+      if (imgProvider === 'flux' || imgProvider === 'huggingface') {
+        try {
+          const { generateImage: fluxGen } = await import('./flux-image.js');
+          const result = await fluxGen(args.descricao);
+          imagePath = result.path;
+        } catch (e) {
+          log.ai.warn({ err: e.message }, 'FLUX falhou, tentando DALL-E...');
+        }
+      }
+
+      // Fallback: DALL-E 3 (padrão)
+      if (!imagePath) {
+        imagePath = await generateImage(args.descricao);
+      }
+
       if (!imagePath) return 'Erro ao gerar imagem.';
       // Auto-upload to Supabase Storage
       try {

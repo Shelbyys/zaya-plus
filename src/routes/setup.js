@@ -219,6 +219,12 @@ router.post('/save-mind', (req, res) => {
 
     if (provider === 'anthropic') {
       updates.ANTHROPIC_API_KEY = key;
+    } else if (provider === 'huggingface') {
+      updates.OPENAI_API_KEY = key;
+      updates.OPENAI_BASE_URL = 'https://router.huggingface.co/v1';
+      updates.HUGGINGFACE_API_KEY = key;
+      if (!model) updates.AI_MODEL = 'deepseek-ai/DeepSeek-V3-0324';
+      if (!modelMini) updates.AI_MODEL_MINI = 'meta-llama/Llama-3.3-70B-Instruct';
     } else {
       updates.OPENAI_API_KEY = key;
       if (baseUrl) updates.OPENAI_BASE_URL = baseUrl;
@@ -335,7 +341,9 @@ router.post('/validate-elevenlabs', async (req, res) => {
 
 const MODULE_ENV_MAP = {
   personality: ['ZAYA_CALL_NAME', 'ZAYA_STYLE', 'ZAYA_ACCENT', 'ZAYA_USER_PROFESSION', 'ZAYA_USER_EXPECTATIONS'],
-  voice: ['TTS_PROVIDER', 'OPENAI_TTS_VOICE', 'ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID'],
+  voice: ['TTS_PROVIDER', 'OPENAI_TTS_VOICE', 'ELEVENLABS_API_KEY', 'ELEVENLABS_VOICE_ID', 'KOKORO_VOICE'],
+  stt: ['STT_PROVIDER'],
+  images: ['IMAGE_PROVIDER', 'HUGGINGFACE_API_KEY', 'HF_TOKEN'],
   whatsapp: ['WASENDER_API_KEY', 'WASENDER_BASE_URL'],
   twilio: ['VOICE_PROVIDER', 'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_PHONE_NUMBER', 'TWILIO_NGROK_DOMAIN', 'PLIVO_AUTH_ID', 'PLIVO_AUTH_TOKEN', 'PLIVO_PHONE_NUMBER', 'TELNYX_API_KEY', 'TELNYX_PHONE_NUMBER', 'TELNYX_CONNECTION_ID', 'VONAGE_API_KEY', 'VONAGE_API_SECRET', 'VONAGE_APPLICATION_ID', 'VONAGE_PHONE_NUMBER'],
   meta: ['FACEBOOK_ACCESS_TOKEN', 'META_PAGE_ID', 'META_IG_ID', 'META_AD_ACCOUNT_ID', 'IG_SESSION_ID'],

@@ -55,6 +55,19 @@ router.all('/speak', async (req, res) => {
     const ttsProvider = envVars.TTS_PROVIDER || process.env.TTS_PROVIDER || '';
     const elKey = envVars.ELEVENLABS_API_KEY || process.env.ELEVENLABS_API_KEY || '';
 
+    // Kokoro TTS local (grátis)
+    if (ttsProvider === 'kokoro' || ttsProvider === 'kokoro-local') {
+      try {
+        const { generateSpeech } = await import('../services/kokoro-tts.js');
+        const wavBuffer = await generateSpeech(text);
+        res.set('Content-Type', 'audio/wav');
+        return res.send(wavBuffer);
+      } catch (e) {
+        console.log('[TTS] Kokoro erro:', e.message, '— tentando fallback...');
+        // Cai pro próximo provider
+      }
+    }
+
     // OpenAI TTS (so funciona com OpenAI real, nao Groq/outros)
     const isGroq = baseUrl.includes('groq');
     const isRealOpenAI = apiKey && apiKey !== 'sk-placeholder' && !isGroq;
@@ -106,6 +119,20 @@ router.post('/transcribe', async (req, res) => {
     const tmpFile = join(TMP_DIR, `mic-${Date.now()}.webm`);
     writeFileSync(tmpFile, buf);
 
+    // Whisper local (grátis)
+    const sttProvider = (process.env.STT_PROVIDER || '').toLowerCase();
+    if (sttProvider === 'local' || sttProvider === 'whisper-local') {
+      try {
+        const { transcribeLocal } = await import('../services/whisper-local.js');
+        const text = await transcribeLocal(tmpFile, 'pt');
+        try { unlinkSync(tmpFile); } catch {}
+        return res.json({ text });
+      } catch (e) {
+        console.log('[STT] Whisper local erro:', e.message, '— usando OpenAI...');
+      }
+    }
+
+    // OpenAI Whisper API (padrão)
     const boundary = '----ZayaMic' + Date.now();
     const body = Buffer.concat([
       Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="file"; filename="audio.webm"\r\nContent-Type: audio/webm\r\n\r\n`),
