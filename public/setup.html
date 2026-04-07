@@ -1,1413 +1,1254 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zaya Plus — Setup</title>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --bg: #0a0a0f;
-            --card: #12121a;
-            --card-hover: #1a1a28;
-            --accent: #6c5ce7;
-            --accent-glow: rgba(108, 92, 231, 0.4);
-            --green: #00e676;
-            --green-dim: rgba(0, 230, 118, 0.15);
-            --red: #ff5252;
-            --red-dim: rgba(255, 82, 82, 0.15);
-            --text: #eeeeee;
-            --text-dim: #888899;
-            --border: #1e1e2e;
-            --radius: 14px;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ───── Progress Bar ───── */
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            z-index: 100;
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(12px);
-            padding: 18px 0 14px;
-        }
-
-        .progress-track {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .progress-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--border);
-            transition: all 0.4s ease;
-            position: relative;
-        }
-
-        .progress-dot.active {
-            background: var(--accent);
-            box-shadow: 0 0 12px var(--accent-glow), 0 0 24px var(--accent-glow);
-            transform: scale(1.2);
-        }
-
-        .progress-dot.done {
-            background: var(--green);
-            box-shadow: 0 0 8px rgba(0, 230, 118, 0.3);
-        }
-
-        .progress-line {
-            width: 28px;
-            height: 2px;
-            background: var(--border);
-            transition: background 0.4s ease;
-        }
-
-        .progress-line.done {
-            background: var(--green);
-        }
-
-        /* ───── Main Container ───── */
-        .wizard-container {
-            width: 100%;
-            max-width: 640px;
-            padding: 80px 20px 40px;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        /* ───── Steps ───── */
-        .step {
-            display: none;
-            width: 100%;
-            opacity: 0;
-            transform: translateY(16px);
-            transition: opacity 0.45s ease, transform 0.45s ease;
-        }
-
-        .step.visible {
-            display: block;
-        }
-
-        .step.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .step-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 6px;
-            background: linear-gradient(135deg, var(--text), var(--accent));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .step-subtitle {
-            color: var(--text-dim);
-            font-size: 15px;
-            line-height: 1.6;
-            margin-bottom: 28px;
-        }
-
-        /* ───── Welcome Step ───── */
-        .welcome-logo {
-            width: 90px;
-            height: 90px;
-            border-radius: 24px;
-            background: linear-gradient(135deg, var(--accent), #a855f7);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 42px;
-            margin: 0 auto 28px;
-            box-shadow: 0 8px 40px var(--accent-glow);
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-
-        .welcome-title {
-            font-size: 36px;
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 8px;
-        }
-
-        .welcome-title span {
-            background: linear-gradient(135deg, var(--accent), #a855f7, #e040fb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .welcome-text {
-            text-align: center;
-            color: var(--text-dim);
-            font-size: 16px;
-            line-height: 1.7;
-            margin-bottom: 40px;
-        }
-
-        /* ───── Option Cards ───── */
-        .option-cards {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .option-card {
-            background: var(--card);
-            border: 1.5px solid var(--border);
-            border-radius: var(--radius);
-            padding: 18px 20px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .option-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: var(--radius);
-            opacity: 0;
-            background: radial-gradient(circle at 50% 50%, var(--accent-glow), transparent 70%);
-            transition: opacity 0.3s ease;
-        }
-
-        .option-card:hover {
-            border-color: #2a2a40;
-            background: var(--card-hover);
-        }
-
-        .option-card:hover::before {
-            opacity: 0.15;
-        }
-
-        .option-card.selected {
-            border-color: var(--accent);
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-
-        .option-card.selected::before {
-            opacity: 0.25;
-        }
-
-        .option-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: rgba(108, 92, 231, 0.12);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            flex-shrink: 0;
-            position: relative;
-            z-index: 1;
-        }
-
-        .option-info {
-            flex: 1;
-            position: relative;
-            z-index: 1;
-        }
-
-        .option-name {
-            font-weight: 600;
-            font-size: 15px;
-            margin-bottom: 2px;
-        }
-
-        .option-desc {
-            color: var(--text-dim);
-            font-size: 13px;
-        }
-
-        .option-radio {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            border: 2px solid var(--border);
-            flex-shrink: 0;
-            position: relative;
-            z-index: 1;
-            transition: all 0.25s ease;
-        }
-
-        .option-card.selected .option-radio {
-            border-color: var(--accent);
-            background: var(--accent);
-            box-shadow: inset 0 0 0 3px var(--card);
-        }
-
-        .option-check {
-            width: 20px;
-            height: 20px;
-            border-radius: 6px;
-            border: 2px solid var(--border);
-            flex-shrink: 0;
-            position: relative;
-            z-index: 1;
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: transparent;
-        }
-
-        .option-card.selected .option-check {
-            border-color: var(--accent);
-            background: var(--accent);
-            color: #fff;
-        }
-
-        /* ───── Inputs ───── */
-        .input-group {
-            margin-bottom: 16px;
-        }
-
-        .input-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-dim);
-            margin-bottom: 6px;
-        }
-
-        .input-field {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--card);
-            border: 1.5px solid var(--border);
-            border-radius: 10px;
-            color: var(--text);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            outline: none;
-            transition: all 0.25s ease;
-        }
-
-        .input-field::placeholder {
-            color: #555566;
-        }
-
-        .input-field:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
-        }
-
-        select.input-field {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888899' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 14px center;
-            padding-right: 36px;
-        }
-
-        .small-text {
-            font-size: 12px;
-            color: var(--text-dim);
-            margin-top: 6px;
-            line-height: 1.5;
-        }
-
-        .help-link {
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 8px;
-            transition: opacity 0.2s;
-        }
-
-        .help-link:hover { opacity: 0.8; }
-
-        /* ───── Buttons ───── */
-        .btn-row {
-            display: flex;
-            gap: 12px;
-            margin-top: 28px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 15px 24px;
-            border: none;
-            border-radius: 12px;
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn:disabled {
-            opacity: 0.35;
-            cursor: not-allowed;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent), #8b5cf6);
-            color: #fff;
-            box-shadow: 0 4px 20px var(--accent-glow);
-        }
-
-        .btn-primary:not(:disabled):hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 28px var(--accent-glow);
-        }
-
-        .btn-secondary {
-            background: var(--card);
-            color: var(--text-dim);
-            border: 1.5px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--card-hover);
-            color: var(--text);
-        }
-
-        .btn-test {
-            background: rgba(108, 92, 231, 0.12);
-            color: var(--accent);
-            border: 1.5px solid rgba(108, 92, 231, 0.25);
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-family: 'Inter', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-top: 8px;
-        }
-
-        .btn-test:hover {
-            background: rgba(108, 92, 231, 0.2);
-        }
-
-        .btn-activate {
-            background: linear-gradient(135deg, var(--accent), #8b5cf6, #a855f7);
-            color: #fff;
-            font-size: 18px;
-            font-weight: 700;
-            padding: 18px 32px;
-            border-radius: 16px;
-            box-shadow: 0 6px 32px var(--accent-glow);
-            animation: pulse-glow 2s ease-in-out infinite;
-            width: 100%;
-            border: none;
-            cursor: pointer;
-            font-family: 'Inter', sans-serif;
-            transition: transform 0.2s ease;
-        }
-
-        .btn-activate:hover {
-            transform: translateY(-2px) scale(1.01);
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 6px 32px var(--accent-glow); }
-            50% { box-shadow: 0 8px 48px rgba(108, 92, 231, 0.6), 0 0 60px rgba(108, 92, 231, 0.2); }
-        }
-
-        /* ───── Status messages ───── */
-        .msg {
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 13px;
-            font-weight: 500;
-            margin-top: 12px;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .msg.show { display: flex; }
-
-        .msg.success {
-            background: var(--green-dim);
-            color: var(--green);
-            border: 1px solid rgba(0, 230, 118, 0.2);
-        }
-
-        .msg.error {
-            background: var(--red-dim);
-            color: var(--red);
-            border: 1px solid rgba(255, 82, 82, 0.2);
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ───── Spinner ───── */
-        .spinner {
-            width: 16px;
-            height: 16px;
-            border: 2px solid transparent;
-            border-top-color: currentColor;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-            display: none;
-        }
-
-        .spinner.show { display: inline-block; }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ───── Module Grid ───── */
-        .module-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .module-grid .option-card {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-            padding: 16px;
-        }
-
-        .module-grid .option-card .module-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            width: 100%;
-        }
-
-        .module-grid .option-icon {
-            width: 38px;
-            height: 38px;
-            font-size: 18px;
-            border-radius: 10px;
-        }
-
-        .module-expand {
-            width: 100%;
-            display: none;
-            padding-top: 10px;
-            border-top: 1px solid var(--border);
-            margin-top: 4px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .option-card.selected .module-expand {
-            display: block;
-        }
-
-        .module-expand .input-field {
-            font-size: 12px;
-            padding: 10px 12px;
-        }
-
-        .module-expand .btn-test {
-            font-size: 11px;
-            padding: 7px 12px;
-        }
-
-        .module-expand .help-link {
-            font-size: 11px;
-        }
-
-        /* ───── Checklist (Step 5) ───── */
-        .checklist {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin: 24px 0 32px;
-        }
-
-        .check-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 18px;
-            background: var(--card);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        .check-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
-
-        .check-icon.ok {
-            background: var(--green-dim);
-            color: var(--green);
-        }
-
-        .check-icon.skip {
-            background: rgba(136, 136, 153, 0.1);
-            color: var(--text-dim);
-        }
-
-        .check-label {
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .check-value {
-            margin-left: auto;
-            font-size: 13px;
-            color: var(--text-dim);
-        }
-
-        /* ───── Final Avatar ───── */
-        .final-avatar {
-            width: 100px;
-            height: 100px;
-            border-radius: 28px;
-            background: linear-gradient(135deg, var(--accent), #a855f7, #e040fb);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 48px;
-            margin: 0 auto 24px;
-            box-shadow: 0 12px 48px var(--accent-glow);
-            animation: float 3s ease-in-out infinite;
-        }
-
-        /* ───── Voice dropdown ───── */
-        .voice-section {
-            display: none;
-            margin-top: 12px;
-        }
-
-        .voice-section.show { display: block; }
-
-        /* ───── Responsive ───── */
-        @media (max-width: 500px) {
-            .module-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .welcome-title {
-                font-size: 28px;
-            }
-
-            .step-title {
-                font-size: 24px;
-            }
-
-            .wizard-container {
-                padding: 70px 16px 30px;
-            }
-        }
-
-        /* ───── Scrollbar ───── */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zaya Plus — Setup</title>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+--bg: #0a0a0f;
+--card: #12121a;
+--card-hover: #1a1a28;
+--accent: #6c5ce7;
+--accent-glow: rgba(108, 92, 231, 0.4);
+--green: #00e676;
+--green-dim: rgba(0, 230, 118, 0.15);
+--red: #ff5252;
+--red-dim: rgba(255, 82, 82, 0.15);
+--text: #eeeeee;
+--text-dim: #888899;
+--border: #1e1e2e;
+--radius: 14px;
+}
+body {
+font-family: 'Inter', -apple-system, sans-serif;
+background: var(--bg);
+color: var(--text);
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+align-items: center;
+overflow-x: hidden;
+-webkit-font-smoothing: antialiased;
+}
+/* ───── Progress Bar ───── */
+.progress-bar {
+position: fixed;
+top: 0;
+left: 0;
+width: 100%;
+z-index: 100;
+background: rgba(10, 10, 15, 0.85);
+backdrop-filter: blur(12px);
+padding: 18px 0 14px;
+}
+.progress-track {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+max-width: 400px;
+margin: 0 auto;
+}
+.progress-dot {
+width: 10px;
+height: 10px;
+border-radius: 50%;
+background: var(--border);
+transition: all 0.4s ease;
+position: relative;
+}
+.progress-dot.active {
+background: var(--accent);
+box-shadow: 0 0 12px var(--accent-glow), 0 0 24px var(--accent-glow);
+transform: scale(1.2);
+}
+.progress-dot.done {
+background: var(--green);
+box-shadow: 0 0 8px rgba(0, 230, 118, 0.3);
+}
+.progress-line {
+width: 28px;
+height: 2px;
+background: var(--border);
+transition: background 0.4s ease;
+}
+.progress-line.done {
+background: var(--green);
+}
+/* ───── Main Container ───── */
+.wizard-container {
+width: 100%;
+max-width: 640px;
+padding: 80px 20px 40px;
+min-height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+/* ───── Steps ───── */
+.step {
+display: none;
+width: 100%;
+opacity: 0;
+transform: translateY(16px);
+transition: opacity 0.45s ease, transform 0.45s ease;
+}
+.step.visible {
+display: block;
+}
+.step.active {
+opacity: 1;
+transform: translateY(0);
+}
+.step-title {
+font-size: 28px;
+font-weight: 700;
+margin-bottom: 6px;
+background: linear-gradient(135deg, var(--text), var(--accent));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+}
+.step-subtitle {
+color: var(--text-dim);
+font-size: 15px;
+line-height: 1.6;
+margin-bottom: 28px;
+}
+/* ───── Welcome Step ───── */
+.welcome-logo {
+width: 90px;
+height: 90px;
+border-radius: 24px;
+background: linear-gradient(135deg, var(--accent), #a855f7);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 42px;
+margin: 0 auto 28px;
+box-shadow: 0 8px 40px var(--accent-glow);
+animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+0%, 100% { transform: translateY(0); }
+50% { transform: translateY(-8px); }
+}
+.welcome-title {
+font-size: 36px;
+font-weight: 800;
+text-align: center;
+margin-bottom: 8px;
+}
+.welcome-title span {
+background: linear-gradient(135deg, var(--accent), #a855f7, #e040fb);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+}
+.welcome-text {
+text-align: center;
+color: var(--text-dim);
+font-size: 16px;
+line-height: 1.7;
+margin-bottom: 40px;
+}
+/* ───── Option Cards ───── */
+.option-cards {
+display: flex;
+flex-direction: column;
+gap: 12px;
+margin-bottom: 20px;
+}
+.option-card {
+background: var(--card);
+border: 1.5px solid var(--border);
+border-radius: var(--radius);
+padding: 18px 20px;
+cursor: pointer;
+transition: all 0.25s ease;
+display: flex;
+align-items: center;
+gap: 16px;
+position: relative;
+overflow: hidden;
+}
+.option-card::before {
+content: '';
+position: absolute;
+inset: 0;
+border-radius: var(--radius);
+opacity: 0;
+background: radial-gradient(circle at 50% 50%, var(--accent-glow), transparent 70%);
+transition: opacity 0.3s ease;
+}
+.option-card:hover {
+border-color: #2a2a40;
+background: var(--card-hover);
+}
+.option-card:hover::before {
+opacity: 0.15;
+}
+.option-card.selected {
+border-color: var(--accent);
+box-shadow: 0 0 20px var(--accent-glow);
+}
+.option-card.selected::before {
+opacity: 0.25;
+}
+.option-icon {
+width: 48px;
+height: 48px;
+border-radius: 12px;
+background: rgba(108, 92, 231, 0.12);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 22px;
+flex-shrink: 0;
+position: relative;
+z-index: 1;
+}
+.option-info {
+flex: 1;
+position: relative;
+z-index: 1;
+}
+.option-name {
+font-weight: 600;
+font-size: 15px;
+margin-bottom: 2px;
+}
+.option-desc {
+color: var(--text-dim);
+font-size: 13px;
+}
+.option-radio {
+width: 20px;
+height: 20px;
+border-radius: 50%;
+border: 2px solid var(--border);
+flex-shrink: 0;
+position: relative;
+z-index: 1;
+transition: all 0.25s ease;
+}
+.option-card.selected .option-radio {
+border-color: var(--accent);
+background: var(--accent);
+box-shadow: inset 0 0 0 3px var(--card);
+}
+.option-check {
+width: 20px;
+height: 20px;
+border-radius: 6px;
+border: 2px solid var(--border);
+flex-shrink: 0;
+position: relative;
+z-index: 1;
+transition: all 0.25s ease;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 12px;
+color: transparent;
+}
+.option-card.selected .option-check {
+border-color: var(--accent);
+background: var(--accent);
+color: #fff;
+}
+/* ───── Inputs ───── */
+.input-group {
+margin-bottom: 16px;
+}
+.input-group label {
+display: block;
+font-size: 13px;
+font-weight: 500;
+color: var(--text-dim);
+margin-bottom: 6px;
+}
+.input-field {
+width: 100%;
+padding: 14px 16px;
+background: var(--card);
+border: 1.5px solid var(--border);
+border-radius: 10px;
+color: var(--text);
+font-family: 'Inter', sans-serif;
+font-size: 14px;
+outline: none;
+transition: all 0.25s ease;
+}
+.input-field::placeholder {
+color: #555566;
+}
+.input-field:focus {
+border-color: var(--accent);
+box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.15);
+}
+select.input-field {
+appearance: none;
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23888899' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+background-repeat: no-repeat;
+background-position: right 14px center;
+padding-right: 36px;
+}
+.small-text {
+font-size: 12px;
+color: var(--text-dim);
+margin-top: 6px;
+line-height: 1.5;
+}
+.help-link {
+color: var(--accent);
+text-decoration: none;
+font-size: 13px;
+font-weight: 500;
+display: inline-flex;
+align-items: center;
+gap: 4px;
+margin-top: 8px;
+transition: opacity 0.2s;
+}
+.help-link:hover { opacity: 0.8; }
+/* ───── Buttons ───── */
+.btn-row {
+display: flex;
+gap: 12px;
+margin-top: 28px;
+}
+.btn {
+flex: 1;
+padding: 15px 24px;
+border: none;
+border-radius: 12px;
+font-family: 'Inter', sans-serif;
+font-size: 15px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.25s ease;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+}
+.btn:disabled {
+opacity: 0.35;
+cursor: not-allowed;
+}
+.btn-primary {
+background: linear-gradient(135deg, var(--accent), #8b5cf6);
+color: #fff;
+box-shadow: 0 4px 20px var(--accent-glow);
+}
+.btn-primary:not(:disabled):hover {
+transform: translateY(-1px);
+box-shadow: 0 6px 28px var(--accent-glow);
+}
+.btn-secondary {
+background: var(--card);
+color: var(--text-dim);
+border: 1.5px solid var(--border);
+}
+.btn-secondary:hover {
+background: var(--card-hover);
+color: var(--text);
+}
+.btn-test {
+background: rgba(108, 92, 231, 0.12);
+color: var(--accent);
+border: 1.5px solid rgba(108, 92, 231, 0.25);
+padding: 10px 18px;
+border-radius: 10px;
+font-family: 'Inter', sans-serif;
+font-size: 13px;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.25s ease;
+display: inline-flex;
+align-items: center;
+gap: 6px;
+margin-top: 8px;
+}
+.btn-test:hover {
+background: rgba(108, 92, 231, 0.2);
+}
+.btn-activate {
+background: linear-gradient(135deg, var(--accent), #8b5cf6, #a855f7);
+color: #fff;
+font-size: 18px;
+font-weight: 700;
+padding: 18px 32px;
+border-radius: 16px;
+box-shadow: 0 6px 32px var(--accent-glow);
+animation: pulse-glow 2s ease-in-out infinite;
+width: 100%;
+border: none;
+cursor: pointer;
+font-family: 'Inter', sans-serif;
+transition: transform 0.2s ease;
+}
+.btn-activate:hover {
+transform: translateY(-2px) scale(1.01);
+}
+@keyframes pulse-glow {
+0%, 100% { box-shadow: 0 6px 32px var(--accent-glow); }
+50% { box-shadow: 0 8px 48px rgba(108, 92, 231, 0.6), 0 0 60px rgba(108, 92, 231, 0.2); }
+}
+/* ───── Status messages ───── */
+.msg {
+padding: 12px 16px;
+border-radius: 10px;
+font-size: 13px;
+font-weight: 500;
+margin-top: 12px;
+display: none;
+align-items: center;
+gap: 8px;
+animation: fadeIn 0.3s ease;
+}
+.msg.show { display: flex; }
+.msg.success {
+background: var(--green-dim);
+color: var(--green);
+border: 1px solid rgba(0, 230, 118, 0.2);
+}
+.msg.error {
+background: var(--red-dim);
+color: var(--red);
+border: 1px solid rgba(255, 82, 82, 0.2);
+}
+@keyframes fadeIn {
+from { opacity: 0; transform: translateY(4px); }
+to { opacity: 1; transform: translateY(0); }
+}
+/* ───── Spinner ───── */
+.spinner {
+width: 16px;
+height: 16px;
+border: 2px solid transparent;
+border-top-color: currentColor;
+border-radius: 50%;
+animation: spin 0.6s linear infinite;
+display: none;
+}
+.spinner.show { display: inline-block; }
+@keyframes spin {
+to { transform: rotate(360deg); }
+}
+/* ───── Module Grid ───── */
+.module-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+margin-bottom: 20px;
+}
+.module-grid .option-card {
+flex-direction: column;
+align-items: flex-start;
+gap: 10px;
+padding: 16px;
+}
+.module-grid .option-card .module-header {
+display: flex;
+align-items: center;
+gap: 10px;
+width: 100%;
+}
+.module-grid .option-icon {
+width: 38px;
+height: 38px;
+font-size: 18px;
+border-radius: 10px;
+}
+.module-expand {
+width: 100%;
+display: none;
+padding-top: 10px;
+border-top: 1px solid var(--border);
+margin-top: 4px;
+animation: fadeIn 0.3s ease;
+}
+.option-card.selected .module-expand {
+display: block;
+}
+.module-expand .input-field {
+font-size: 12px;
+padding: 10px 12px;
+}
+.module-expand .btn-test {
+font-size: 11px;
+padding: 7px 12px;
+}
+.module-expand .help-link {
+font-size: 11px;
+}
+/* ───── Checklist (Step 5) ───── */
+.checklist {
+display: flex;
+flex-direction: column;
+gap: 10px;
+margin: 24px 0 32px;
+}
+.check-item {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 14px 18px;
+background: var(--card);
+border-radius: 12px;
+border: 1px solid var(--border);
+}
+.check-icon {
+width: 28px;
+height: 28px;
+border-radius: 8px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 14px;
+font-weight: 700;
+flex-shrink: 0;
+}
+.check-icon.ok {
+background: var(--green-dim);
+color: var(--green);
+}
+.check-icon.skip {
+background: rgba(136, 136, 153, 0.1);
+color: var(--text-dim);
+}
+.check-label {
+font-size: 14px;
+font-weight: 500;
+}
+.check-value {
+margin-left: auto;
+font-size: 13px;
+color: var(--text-dim);
+}
+/* ───── Final Avatar ───── */
+.final-avatar {
+width: 100px;
+height: 100px;
+border-radius: 28px;
+background: linear-gradient(135deg, var(--accent), #a855f7, #e040fb);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 48px;
+margin: 0 auto 24px;
+box-shadow: 0 12px 48px var(--accent-glow);
+animation: float 3s ease-in-out infinite;
+}
+/* ───── Voice dropdown ───── */
+.voice-section {
+display: none;
+margin-top: 12px;
+}
+.voice-section.show { display: block; }
+/* ───── Responsive ───── */
+@media (max-width: 500px) {
+.module-grid {
+grid-template-columns: 1fr;
+}
+.welcome-title {
+font-size: 28px;
+}
+.step-title {
+font-size: 24px;
+}
+.wizard-container {
+padding: 70px 16px 30px;
+}
+}
+/* ───── Scrollbar ───── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a3a; border-radius: 3px; }
+</style>
 </head>
 <body>
-
 <!-- Progress Bar -->
 <div class="progress-bar">
-    <div class="progress-track" id="progressTrack"></div>
+<div class="progress-track" id="progressTrack"></div>
 </div>
-
 <!-- Wizard Container -->
 <div class="wizard-container">
-
-    <!-- Step 0: Welcome -->
-    <div class="step visible active" data-step="0">
-        <div style="text-align: center;">
-            <div class="welcome-logo">Z</div>
-            <h1 class="welcome-title"><span>Zaya Plus</span></h1>
-            <p class="welcome-text">
-                Ola! Eu sou a <strong style="color: var(--text);">Zaya</strong>, sua assistente pessoal de IA.<br>
-                Vamos configurar tudo juntos. Vai ser rapido!
-            </p>
-            <button class="btn btn-primary" style="max-width: 260px; margin: 0 auto;" onclick="goTo(1)">
-                Comecar
-                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-            </button>
-        </div>
-    </div>
-
-    <!-- Step 1: Mente -->
-    <div class="step" data-step="1">
-        <h2 class="step-title">Escolha minha mente</h2>
-        <p class="step-subtitle">Qual inteligencia vai me alimentar?</p>
-
-        <div class="option-cards" id="aiCards">
-            <div class="option-card" data-value="openai" onclick="selectAI(this)">
-                <div class="option-icon">&#129504;</div>
-                <div class="option-info">
-                    <div class="option-name">ChatGPT (OpenAI)</div>
-                    <div class="option-desc">O mais completo. Pago (~$5/mes)</div>
-                </div>
-                <div class="option-radio"></div>
-            </div>
-            <div class="option-card" data-value="groq" onclick="selectAI(this)">
-                <div class="option-icon">&#9889;</div>
-                <div class="option-info">
-                    <div class="option-name">Zaya IA (Groq)</div>
-                    <div class="option-desc">Gratuito e rapido. Usa Llama 70B</div>
-                </div>
-                <div class="option-radio"></div>
-            </div>
-            <div class="option-card" data-value="anthropic" onclick="selectAI(this)">
-                <div class="option-icon">&#10024;</div>
-                <div class="option-info">
-                    <div class="option-name">Claude (Anthropic)</div>
-                    <div class="option-desc">Alternativa premium. Muito inteligente</div>
-                </div>
-                <div class="option-radio"></div>
-            </div>
-        </div>
-
-        <div class="input-group" id="aiKeyGroup" style="display:none;">
-            <label>Chave API</label>
-            <input class="input-field" id="aiKey" type="password" placeholder="Cole sua chave API aqui">
-            <a class="help-link" id="aiHelpLink" href="#" target="_blank">Como pegar a chave? &#8599;</a>
-            <button class="btn-test" id="aiTestBtn" onclick="testAIKey()">
-                <span class="spinner" id="aiSpinner"></span>
-                Testar Conexao
-            </button>
-            <div class="msg" id="aiMsg"></div>
-        </div>
-
-        <div class="btn-row">
-            <button class="btn btn-secondary" onclick="goTo(0)">Voltar</button>
-            <button class="btn btn-primary" id="aiNextBtn" disabled onclick="saveStep1()">Proximo</button>
-        </div>
-    </div>
-
-    <!-- Step 2: Identidade -->
-    <div class="step" data-step="2">
-        <h2 class="step-title">Quem e voce?</h2>
-        <p class="step-subtitle">Vou usar seu nome para personalizar nossas conversas.</p>
-
-        <div class="input-group">
-            <label>Seu nome</label>
-            <input class="input-field" id="userName" type="text" placeholder="Ex: Maria" oninput="checkIdentity()">
-        </div>
-        <div class="input-group">
-            <label>Seu telefone com DDD</label>
-            <input class="input-field" id="userPhone" type="tel" placeholder="Ex: 5511999999999" oninput="checkIdentity()">
-        </div>
-        <p class="small-text">Essas informacoes ficam apenas no seu servidor.</p>
-
-        <div class="btn-row">
-            <button class="btn btn-secondary" onclick="goTo(1)">Voltar</button>
-            <button class="btn btn-primary" id="idNextBtn" disabled onclick="saveStep2()">Proximo</button>
-        </div>
-    </div>
-
-    <!-- Step 3: Voz -->
-    <div class="step" data-step="3">
-        <h2 class="step-title">Minha voz</h2>
-        <p class="step-subtitle">Quer que eu fale com voce?</p>
-
-        <div class="option-cards" id="voiceCards">
-            <div class="option-card" data-value="openai-tts" id="openaiTtsCard" onclick="selectVoice(this)" style="display:none">
-                <div class="option-icon">&#129302;</div>
-                <div class="option-info">
-                    <div class="option-name">OpenAI TTS</div>
-                    <div class="option-desc">Voz do ChatGPT (usa sua mesma API key)</div>
-                </div>
-                <div class="option-radio"></div>
-            </div>
-            <div class="option-card" data-value="elevenlabs" onclick="selectVoice(this)">
-                <div class="option-icon">&#127908;</div>
-                <div class="option-info">
-                    <div class="option-name">ElevenLabs</div>
-                    <div class="option-desc">Voz ultra realista (precisa de outra API key)</div>
-                </div>
-                <div class="option-radio"></div>
-            </div>
-            <div class="option-card" data-value="none" onclick="selectVoice(this)">
-                <div class="option-icon">&#128172;</div>
-                <div class="option-info">
-                    <div class="option-name">Sem voz</div>
-                    <div class="option-desc">Apenas texto, sem audio</div>
-                </div>
-                <div class="option-radio"></div>
-            </div>
-        </div>
-
-        <div class="voice-section" id="voiceSection">
-            <div class="input-group">
-                <label>Chave API ElevenLabs</label>
-                <input class="input-field" id="voiceKey" type="password" placeholder="Cole sua chave API aqui">
-                <a class="help-link" href="https://elevenlabs.io/app/settings/api-keys" target="_blank">Como pegar a chave? &#8599;</a>
-                <button class="btn-test" id="voiceTestBtn" onclick="testVoiceKey()">
-                    <span class="spinner" id="voiceSpinner"></span>
-                    Testar
-                </button>
-                <div class="msg" id="voiceMsg"></div>
-            </div>
-            <div class="input-group" id="voiceSelectGroup" style="display:none;">
-                <label>Escolha a voz</label>
-                <select class="input-field" id="voiceSelect">
-                    <option value="">Selecione uma voz...</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="btn-row">
-            <button class="btn btn-secondary" onclick="goTo(2)">Voltar</button>
-            <button class="btn btn-primary" onclick="saveStep3()">Proximo</button>
-        </div>
-    </div>
-
-    <!-- Step 4: Modulos -->
-    <div class="step" data-step="4">
-        <h2 class="step-title">O que quer que eu faca?</h2>
-        <p class="step-subtitle">Ative os modulos que quiser. Pode mudar depois.</p>
-
-        <div class="module-grid" id="moduleGrid">
-            <!-- WhatsApp -->
-            <div class="option-card" data-module="whatsapp" onclick="toggleModule(this)">
-                <div class="module-header">
-                    <div class="option-icon">&#128241;</div>
-                    <div class="option-info">
-                        <div class="option-name">WhatsApp Bot</div>
-                        <div class="option-desc">Respondo suas mensagens</div>
-                    </div>
-                    <div class="option-check">&#10003;</div>
-                </div>
-                <div class="module-expand">
-                    <div class="input-group" style="margin-bottom:4px;">
-                        <input class="input-field" data-key="whatsapp" type="text" placeholder="Numero do bot (ex: 5511...)">
-                    </div>
-                    <a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
-                </div>
-            </div>
-            <!-- Ligacoes -->
-            <div class="option-card" data-module="calls" onclick="toggleModule(this)">
-                <div class="module-header">
-                    <div class="option-icon">&#128222;</div>
-                    <div class="option-info">
-                        <div class="option-name">Ligacoes</div>
-                        <div class="option-desc">Faco e recebo ligacoes</div>
-                    </div>
-                    <div class="option-check">&#10003;</div>
-                </div>
-                <div class="module-expand">
-                    <div class="input-group" style="margin-bottom:4px;">
-                        <input class="input-field" data-key="calls" type="text" placeholder="Twilio SID / API Key">
-                    </div>
-                    <a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
-                </div>
-            </div>
-            <!-- Instagram & Facebook -->
-            <div class="option-card" data-module="social" onclick="toggleModule(this)">
-                <div class="module-header">
-                    <div class="option-icon">&#128248;</div>
-                    <div class="option-info">
-                        <div class="option-name">Instagram & Facebook</div>
-                        <div class="option-desc">Gerencio suas redes</div>
-                    </div>
-                    <div class="option-check">&#10003;</div>
-                </div>
-                <div class="module-expand">
-                    <div class="input-group" style="margin-bottom:4px;">
-                        <input class="input-field" data-key="social" type="text" placeholder="Meta Access Token">
-                    </div>
-                    <a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
-                </div>
-            </div>
-            <!-- Ads Dashboard -->
-            <div class="option-card" data-module="ads" onclick="toggleModule(this)">
-                <div class="module-header">
-                    <div class="option-icon">&#128202;</div>
-                    <div class="option-info">
-                        <div class="option-name">Ads Dashboard</div>
-                        <div class="option-desc">Analiso seus anuncios</div>
-                    </div>
-                    <div class="option-check">&#10003;</div>
-                </div>
-                <div class="module-expand">
-                    <div class="input-group" style="margin-bottom:4px;">
-                        <input class="input-field" data-key="ads" type="text" placeholder="Google Ads API Key">
-                    </div>
-                    <a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
-                </div>
-            </div>
-            <!-- Gerar Imagens -->
-            <div class="option-card" data-module="images" onclick="toggleModule(this)">
-                <div class="module-header">
-                    <div class="option-icon">&#127912;</div>
-                    <div class="option-info">
-                        <div class="option-name">Gerar Imagens</div>
-                        <div class="option-desc">Crio imagens com IA</div>
-                    </div>
-                    <div class="option-check">&#10003;</div>
-                </div>
-                <div class="module-expand">
-                    <div class="input-group" style="margin-bottom:4px;">
-                        <input class="input-field" data-key="images" type="text" placeholder="DALL-E / Stability Key">
-                    </div>
-                    <a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
-                </div>
-            </div>
-            <!-- Gerar Videos -->
-            <div class="option-card" data-module="videos" onclick="toggleModule(this)">
-                <div class="module-header">
-                    <div class="option-icon">&#127916;</div>
-                    <div class="option-info">
-                        <div class="option-name">Gerar Videos</div>
-                        <div class="option-desc">Crio videos com IA</div>
-                    </div>
-                    <div class="option-check">&#10003;</div>
-                </div>
-                <div class="module-expand">
-                    <div class="input-group" style="margin-bottom:4px;">
-                        <input class="input-field" data-key="videos" type="text" placeholder="Runway / Pika API Key">
-                    </div>
-                    <a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
-                </div>
-            </div>
-            <!-- Pesquisa Web -->
-            <div class="option-card" data-module="websearch" onclick="toggleModule(this)">
-                <div class="module-header">
-                    <div class="option-icon">&#128269;</div>
-                    <div class="option-info">
-                        <div class="option-name">Pesquisa Web</div>
-                        <div class="option-desc">Pesquiso na internet</div>
-                    </div>
-                    <div class="option-check">&#10003;</div>
-                </div>
-                <div class="module-expand">
-                    <div class="input-group" style="margin-bottom:4px;">
-                        <input class="input-field" data-key="websearch" type="text" placeholder="SerpAPI / Tavily Key">
-                    </div>
-                    <a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
-                </div>
-            </div>
-            <!-- Nuvem -->
-            <div class="option-card" data-module="cloud" onclick="toggleModule(this)">
-                <div class="module-header">
-                    <div class="option-icon">&#9729;&#65039;</div>
-                    <div class="option-info">
-                        <div class="option-name">Nuvem (Supabase)</div>
-                        <div class="option-desc">Salvo dados na nuvem</div>
-                    </div>
-                    <div class="option-check">&#10003;</div>
-                </div>
-                <div class="module-expand">
-                    <div class="input-group" style="margin-bottom:4px;">
-                        <input class="input-field" data-key="cloud" type="text" placeholder="Supabase URL + Key">
-                    </div>
-                    <a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="btn-row">
-            <button class="btn btn-secondary" onclick="goTo(3)">Voltar</button>
-            <button class="btn btn-primary" onclick="saveStep4()">Proximo</button>
-        </div>
-    </div>
-
-    <!-- Step 5: Ativacao -->
-    <div class="step" data-step="5">
-        <div style="text-align: center;">
-            <div class="final-avatar">Z</div>
-            <h2 class="step-title" style="text-align:center;">Tudo pronto!</h2>
-            <p class="step-subtitle" style="text-align:center;">Aqui esta o resumo da sua configuracao.</p>
-        </div>
-
-        <div class="checklist" id="checklist"></div>
-
-        <button class="btn-activate" id="activateBtn" onclick="activateZaya()">
-            Ativar Zaya!
-        </button>
-    </div>
-
-    <!-- ACTIVATION CINEMATIC OVERLAY -->
-    <div id="activationOverlay" style="display:none;position:fixed;inset:0;background:#0a0a0f;z-index:9999;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.8s">
-        <canvas id="activation-orb" style="width:250px;height:250px;margin-bottom:20px"></canvas>
-        <div id="activationText" style="font-size:1.1rem;color:#a29bfe;font-weight:600;text-align:center;min-height:30px;transition:all 0.5s"></div>
-        <div id="activationSub" style="font-size:0.85rem;color:#8888a0;margin-top:10px;text-align:center;min-height:24px;transition:all 0.5s"></div>
-        <div id="activationProgress" style="width:280px;height:4px;background:rgba(255,255,255,0.06);border-radius:4px;margin-top:30px;overflow:hidden">
-            <div id="activationBar" style="width:0%;height:100%;background:linear-gradient(90deg,#6c5ce7,#a29bfe,#00d4ff);border-radius:4px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
-        </div>
-    </div>
-
+<!-- Step 0: Welcome -->
+<div class="step visible active" data-step="0">
+<div style="text-align: center;">
+<div class="welcome-logo">Z</div>
+<h1 class="welcome-title"><span>Zaya Plus</span></h1>
+<p class="welcome-text">
+Ola! Eu sou a <strong style="color: var(--text);">Zaya</strong>, sua assistente pessoal de IA.<br>
+Vamos configurar tudo juntos. Vai ser rapido!
+</p>
+<button class="btn btn-primary" style="max-width: 260px; margin: 0 auto;" onclick="goTo(1)">
+Comecar
+<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</button>
 </div>
-
+</div>
+<!-- Step 1: Mente -->
+<div class="step" data-step="1">
+<h2 class="step-title">Escolha minha mente</h2>
+<p class="step-subtitle">Qual inteligencia vai me alimentar?</p>
+<div class="option-cards" id="aiCards">
+<div class="option-card" data-value="openai" onclick="selectAI(this)">
+<div class="option-icon">&#129504;</div>
+<div class="option-info">
+<div class="option-name">ChatGPT (OpenAI)</div>
+<div class="option-desc">O mais completo. Pago (~$5/mes)</div>
+</div>
+<div class="option-radio"></div>
+</div>
+<div class="option-card" data-value="groq" onclick="selectAI(this)">
+<div class="option-icon">&#9889;</div>
+<div class="option-info">
+<div class="option-name">Zaya IA (Groq)</div>
+<div class="option-desc">Gratuito e rapido. Usa Llama 70B</div>
+</div>
+<div class="option-radio"></div>
+</div>
+<div class="option-card" data-value="anthropic" onclick="selectAI(this)">
+<div class="option-icon">&#10024;</div>
+<div class="option-info">
+<div class="option-name">Claude (Anthropic)</div>
+<div class="option-desc">Alternativa premium. Muito inteligente</div>
+</div>
+<div class="option-radio"></div>
+</div>
+</div>
+<div class="input-group" id="aiKeyGroup" style="display:none;">
+<label>Chave API</label>
+<input class="input-field" id="aiKey" type="password" placeholder="Cole sua chave API aqui">
+<a class="help-link" id="aiHelpLink" href="#" target="_blank">Como pegar a chave? &#8599;</a>
+<button class="btn-test" id="aiTestBtn" onclick="testAIKey()">
+<span class="spinner" id="aiSpinner"></span>
+Testar Conexao
+</button>
+<div class="msg" id="aiMsg"></div>
+</div>
+<div class="btn-row">
+<button class="btn btn-secondary" onclick="goTo(0)">Voltar</button>
+<button class="btn btn-primary" id="aiNextBtn" disabled onclick="saveStep1()">Proximo</button>
+</div>
+</div>
+<!-- Step 2: Identidade -->
+<div class="step" data-step="2">
+<h2 class="step-title">Quem e voce?</h2>
+<p class="step-subtitle">Vou usar seu nome para personalizar nossas conversas.</p>
+<div class="input-group">
+<label>Seu nome</label>
+<input class="input-field" id="userName" type="text" placeholder="Ex: Maria" oninput="checkIdentity()">
+</div>
+<div class="input-group">
+<label>Seu telefone com DDD</label>
+<input class="input-field" id="userPhone" type="tel" placeholder="Ex: 5511999999999" oninput="checkIdentity()">
+</div>
+<p class="small-text">Essas informacoes ficam apenas no seu servidor.</p>
+<div class="btn-row">
+<button class="btn btn-secondary" onclick="goTo(1)">Voltar</button>
+<button class="btn btn-primary" id="idNextBtn" disabled onclick="saveStep2()">Proximo</button>
+</div>
+</div>
+<!-- Step 3: Voz -->
+<div class="step" data-step="3">
+<h2 class="step-title">Minha voz</h2>
+<p class="step-subtitle">Quer que eu fale com voce?</p>
+<div class="option-cards" id="voiceCards">
+<div class="option-card" data-value="openai-tts" id="openaiTtsCard" onclick="selectVoice(this)" style="display:none">
+<div class="option-icon">&#129302;</div>
+<div class="option-info">
+<div class="option-name">OpenAI TTS</div>
+<div class="option-desc">Voz do ChatGPT (usa sua mesma API key)</div>
+</div>
+<div class="option-radio"></div>
+</div>
+<div class="option-card" data-value="elevenlabs" onclick="selectVoice(this)">
+<div class="option-icon">&#127908;</div>
+<div class="option-info">
+<div class="option-name">ElevenLabs</div>
+<div class="option-desc">Voz ultra realista (precisa de outra API key)</div>
+</div>
+<div class="option-radio"></div>
+</div>
+<div class="option-card" data-value="none" onclick="selectVoice(this)">
+<div class="option-icon">&#128172;</div>
+<div class="option-info">
+<div class="option-name">Sem voz</div>
+<div class="option-desc">Apenas texto, sem audio</div>
+</div>
+<div class="option-radio"></div>
+</div>
+</div>
+<div class="voice-section" id="voiceSection">
+<div class="input-group">
+<label>Chave API ElevenLabs</label>
+<input class="input-field" id="voiceKey" type="password" placeholder="Cole sua chave API aqui">
+<a class="help-link" href="https://elevenlabs.io/app/settings/api-keys" target="_blank">Como pegar a chave? &#8599;</a>
+<button class="btn-test" id="voiceTestBtn" onclick="testVoiceKey()">
+<span class="spinner" id="voiceSpinner"></span>
+Testar
+</button>
+<div class="msg" id="voiceMsg"></div>
+</div>
+<div class="input-group" id="voiceSelectGroup" style="display:none;">
+<label>Escolha a voz</label>
+<select class="input-field" id="voiceSelect">
+<option value="">Selecione uma voz...</option>
+</select>
+</div>
+</div>
+<div class="btn-row">
+<button class="btn btn-secondary" onclick="goTo(2)">Voltar</button>
+<button class="btn btn-primary" onclick="saveStep3()">Proximo</button>
+</div>
+</div>
+<!-- Step 4: Modulos -->
+<div class="step" data-step="4">
+<h2 class="step-title">O que quer que eu faca?</h2>
+<p class="step-subtitle">Ative os modulos que quiser. Pode mudar depois.</p>
+<div class="module-grid" id="moduleGrid">
+<!-- WhatsApp -->
+<div class="option-card" data-module="whatsapp" onclick="toggleModule(this)">
+<div class="module-header">
+<div class="option-icon">&#128241;</div>
+<div class="option-info">
+<div class="option-name">WhatsApp Bot</div>
+<div class="option-desc">Respondo suas mensagens</div>
+</div>
+<div class="option-check">&#10003;</div>
+</div>
+<div class="module-expand">
+<div class="input-group" style="margin-bottom:4px;">
+<input class="input-field" data-key="whatsapp" type="text" placeholder="Numero do bot (ex: 5511...)">
+</div>
+<a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
+</div>
+</div>
+<!-- Ligacoes -->
+<div class="option-card" data-module="calls" onclick="toggleModule(this)">
+<div class="module-header">
+<div class="option-icon">&#128222;</div>
+<div class="option-info">
+<div class="option-name">Ligacoes</div>
+<div class="option-desc">Faco e recebo ligacoes</div>
+</div>
+<div class="option-check">&#10003;</div>
+</div>
+<div class="module-expand">
+<div class="input-group" style="margin-bottom:4px;">
+<input class="input-field" data-key="calls" type="text" placeholder="Twilio SID / API Key">
+</div>
+<a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
+</div>
+</div>
+<!-- Instagram & Facebook -->
+<div class="option-card" data-module="social" onclick="toggleModule(this)">
+<div class="module-header">
+<div class="option-icon">&#128248;</div>
+<div class="option-info">
+<div class="option-name">Instagram & Facebook</div>
+<div class="option-desc">Gerencio suas redes</div>
+</div>
+<div class="option-check">&#10003;</div>
+</div>
+<div class="module-expand">
+<div class="input-group" style="margin-bottom:4px;">
+<input class="input-field" data-key="social" type="text" placeholder="Meta Access Token">
+</div>
+<a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
+</div>
+</div>
+<!-- Ads Dashboard -->
+<div class="option-card" data-module="ads" onclick="toggleModule(this)">
+<div class="module-header">
+<div class="option-icon">&#128202;</div>
+<div class="option-info">
+<div class="option-name">Ads Dashboard</div>
+<div class="option-desc">Analiso seus anuncios</div>
+</div>
+<div class="option-check">&#10003;</div>
+</div>
+<div class="module-expand">
+<div class="input-group" style="margin-bottom:4px;">
+<input class="input-field" data-key="ads" type="text" placeholder="Google Ads API Key">
+</div>
+<a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
+</div>
+</div>
+<!-- Gerar Imagens -->
+<div class="option-card" data-module="images" onclick="toggleModule(this)">
+<div class="module-header">
+<div class="option-icon">&#127912;</div>
+<div class="option-info">
+<div class="option-name">Gerar Imagens</div>
+<div class="option-desc">Crio imagens com IA</div>
+</div>
+<div class="option-check">&#10003;</div>
+</div>
+<div class="module-expand">
+<div class="input-group" style="margin-bottom:4px;">
+<input class="input-field" data-key="images" type="text" placeholder="DALL-E / Stability Key">
+</div>
+<a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
+</div>
+</div>
+<!-- Gerar Videos -->
+<div class="option-card" data-module="videos" onclick="toggleModule(this)">
+<div class="module-header">
+<div class="option-icon">&#127916;</div>
+<div class="option-info">
+<div class="option-name">Gerar Videos</div>
+<div class="option-desc">Crio videos com IA</div>
+</div>
+<div class="option-check">&#10003;</div>
+</div>
+<div class="module-expand">
+<div class="input-group" style="margin-bottom:4px;">
+<input class="input-field" data-key="videos" type="text" placeholder="Runway / Pika API Key">
+</div>
+<a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
+</div>
+</div>
+<!-- Pesquisa Web -->
+<div class="option-card" data-module="websearch" onclick="toggleModule(this)">
+<div class="module-header">
+<div class="option-icon">&#128269;</div>
+<div class="option-info">
+<div class="option-name">Pesquisa Web</div>
+<div class="option-desc">Pesquiso na internet</div>
+</div>
+<div class="option-check">&#10003;</div>
+</div>
+<div class="module-expand">
+<div class="input-group" style="margin-bottom:4px;">
+<input class="input-field" data-key="websearch" type="text" placeholder="SerpAPI / Tavily Key">
+</div>
+<a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
+</div>
+</div>
+<!-- Nuvem -->
+<div class="option-card" data-module="cloud" onclick="toggleModule(this)">
+<div class="module-header">
+<div class="option-icon">&#9729;&#65039;</div>
+<div class="option-info">
+<div class="option-name">Nuvem (Supabase)</div>
+<div class="option-desc">Salvo dados na nuvem</div>
+</div>
+<div class="option-check">&#10003;</div>
+</div>
+<div class="module-expand">
+<div class="input-group" style="margin-bottom:4px;">
+<input class="input-field" data-key="cloud" type="text" placeholder="Supabase URL + Key">
+</div>
+<a class="help-link" href="#" target="_blank">Como configurar? &#8599;</a>
+</div>
+</div>
+</div>
+<div class="btn-row">
+<button class="btn btn-secondary" onclick="goTo(3)">Voltar</button>
+<button class="btn btn-primary" onclick="saveStep4()">Proximo</button>
+</div>
+</div>
+<!-- Step 5: Ativacao -->
+<div class="step" data-step="5">
+<div style="text-align: center;">
+<div class="final-avatar">Z</div>
+<h2 class="step-title" style="text-align:center;">Tudo pronto!</h2>
+<p class="step-subtitle" style="text-align:center;">Aqui esta o resumo da sua configuracao.</p>
+</div>
+<div class="checklist" id="checklist"></div>
+<button class="btn-activate" id="activateBtn" onclick="activateZaya()">
+Ativar Zaya!
+</button>
+</div>
+<!-- ACTIVATION CINEMATIC OVERLAY -->
+<div id="activationOverlay" style="display:none;position:fixed;inset:0;background:#0a0a0f;z-index:9999;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.8s">
+<canvas id="activation-orb" style="width:250px;height:250px;margin-bottom:20px"></canvas>
+<div id="activationText" style="font-size:1.1rem;color:#a29bfe;font-weight:600;text-align:center;min-height:30px;transition:all 0.5s"></div>
+<div id="activationSub" style="font-size:0.85rem;color:#8888a0;margin-top:10px;text-align:center;min-height:24px;transition:all 0.5s"></div>
+<div id="activationProgress" style="width:280px;height:4px;background:rgba(255,255,255,0.06);border-radius:4px;margin-top:30px;overflow:hidden">
+<div id="activationBar" style="width:0%;height:100%;background:linear-gradient(90deg,#6c5ce7,#a29bfe,#00d4ff);border-radius:4px;transition:width 0.6s cubic-bezier(0.16,1,0.3,1)"></div>
+</div>
+</div>
+</div>
 <script>
-    // ───── State ─────
-    const TOTAL_STEPS = 6;
-    let currentStep = 0;
-    let config = {
-        ai: { provider: '', key: '', validated: false },
-        identity: { name: '', phone: '' },
-        voice: { provider: '', key: '', voiceId: '' },
-        modules: {}
-    };
-
-    const helpLinks = {
-        openai: 'https://platform.openai.com/api-keys',
-        groq: 'https://console.groq.com/keys',
-        anthropic: 'https://console.anthropic.com/settings/keys'
-    };
-
-    // ───── Init ─────
-    document.addEventListener('DOMContentLoaded', async () => {
-        buildProgress();
-        try {
-            const res = await fetch('/api/setup/status');
-            if (res.ok) {
-                const data = await res.json();
-                if (data.complete) {
-                    window.location.href = '/';
-                    return;
-                }
-            }
-        } catch (e) { /* setup not available yet, continue */ }
-    });
-
-    // ───── Progress ─────
-    function buildProgress() {
-        const track = document.getElementById('progressTrack');
-        track.innerHTML = '';
-        for (let i = 0; i < TOTAL_STEPS; i++) {
-            const dot = document.createElement('div');
-            dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
-            dot.dataset.index = i;
-            track.appendChild(dot);
-            if (i < TOTAL_STEPS - 1) {
-                const line = document.createElement('div');
-                line.className = 'progress-line';
-                line.dataset.after = i;
-                track.appendChild(line);
-            }
-        }
-    }
-
-    function updateProgress(step) {
-        document.querySelectorAll('.progress-dot').forEach(d => {
-            const i = parseInt(d.dataset.index);
-            d.className = 'progress-dot';
-            if (i < step) d.classList.add('done');
-            else if (i === step) d.classList.add('active');
-        });
-        document.querySelectorAll('.progress-line').forEach(l => {
-            const i = parseInt(l.dataset.after);
-            l.className = 'progress-line' + (i < step ? ' done' : '');
-        });
-    }
-
-    // ───── Navigation ─────
-    function goTo(step) {
-        const prev = document.querySelector(`.step[data-step="${currentStep}"]`);
-        const next = document.querySelector(`.step[data-step="${step}"]`);
-        if (!prev || !next) return;
-
-        prev.classList.remove('active');
-        setTimeout(() => {
-            prev.classList.remove('visible');
-            next.classList.add('visible');
-            requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    next.classList.add('active');
-                });
-            });
-        }, 300);
-
-        currentStep = step;
-        updateProgress(step);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        if (step === 3) updateVoiceOptions();
-        if (step === 5) buildChecklist();
-    }
-
-    // ───── Step 1: AI Provider ─────
-    function selectAI(card) {
-        document.querySelectorAll('#aiCards .option-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        config.ai.provider = card.dataset.value;
-        config.ai.validated = false;
-        document.getElementById('aiNextBtn').disabled = true;
-        document.getElementById('aiKeyGroup').style.display = 'block';
-        document.getElementById('aiHelpLink').href = helpLinks[config.ai.provider] || '#';
-        showMsg('aiMsg', '', '');
-    }
-
-    async function testAIKey() {
-        const key = document.getElementById('aiKey').value.trim();
-        if (!key) return showMsg('aiMsg', 'error', 'Cole sua chave API primeiro.');
-
-        toggleSpinner('aiSpinner', true);
-        document.getElementById('aiTestBtn').disabled = true;
-
-        try {
-            const res = await fetch('/api/setup/validate-key', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ provider: config.ai.provider, key })
-            });
-            const data = await res.json();
-            if (res.ok && data.valid) {
-                config.ai.key = key;
-                config.ai.validated = true;
-                document.getElementById('aiNextBtn').disabled = false;
-                showMsg('aiMsg', 'success', 'Conexao bem sucedida!');
-            } else {
-                showMsg('aiMsg', 'error', data.message || 'Chave invalida. Verifique e tente novamente.');
-            }
-        } catch (e) {
-            // Allow proceeding for demo / offline
-            config.ai.key = key;
-            config.ai.validated = true;
-            document.getElementById('aiNextBtn').disabled = false;
-            showMsg('aiMsg', 'success', 'Chave salva (servidor offline, validacao pulada).');
-        }
-
-        toggleSpinner('aiSpinner', false);
-        document.getElementById('aiTestBtn').disabled = false;
-    }
-
-    async function saveStep1() {
-        try {
-            await fetch('/api/setup/save-mind', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    provider: config.ai.provider,
-                    key: config.ai.key,
-                    baseUrl: config.ai.provider === 'groq' ? 'https://api.groq.com/openai/v1' : undefined,
-                    model: config.ai.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o',
-                    modelMini: config.ai.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini'
-                })
-            });
-        } catch (e) { /* offline */ }
-        goTo(2);
-    }
-
-    // ───── Step 2: Identity ─────
-    function checkIdentity() {
-        const name = document.getElementById('userName').value.trim();
-        const phone = document.getElementById('userPhone').value.trim();
-        config.identity.name = name;
-        config.identity.phone = phone;
-        document.getElementById('idNextBtn').disabled = !(name.length >= 2 && phone.length >= 10);
-    }
-
-    async function saveStep2() {
-        try {
-            await fetch('/api/setup/save-identity', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: config.identity.name,
-                    phone: config.identity.phone
-                })
-            });
-        } catch (e) { /* offline */ }
-        goTo(3);
-    }
-
-    // ───── Step 3: Voice ─────
-    // Mostrar opção OpenAI TTS quando provider é OpenAI
-    function updateVoiceOptions() {
-        const openaiTtsCard = document.getElementById('openaiTtsCard');
-        if (config.ai.provider === 'openai') {
-            openaiTtsCard.style.display = 'flex';
-        } else {
-            openaiTtsCard.style.display = 'none';
-            if (config.voice.provider === 'openai-tts') {
-                config.voice.provider = '';
-                openaiTtsCard.classList.remove('selected');
-            }
-        }
-    }
-
-    function selectVoice(card) {
-        document.querySelectorAll('#voiceCards .option-card').forEach(c => c.classList.remove('selected'));
-        card.classList.add('selected');
-        config.voice.provider = card.dataset.value;
-        const section = document.getElementById('voiceSection');
-        section.classList.toggle('show', config.voice.provider === 'elevenlabs');
-    }
-
-    async function testVoiceKey() {
-        const key = document.getElementById('voiceKey').value.trim();
-        if (!key) return showMsg('voiceMsg', 'error', 'Cole sua chave API primeiro.');
-
-        toggleSpinner('voiceSpinner', true);
-
-        try {
-            const res = await fetch('https://api.elevenlabs.io/v1/voices', {
-                headers: { 'xi-api-key': key }
-            });
-            if (res.ok) {
-                const data = await res.json();
-                config.voice.key = key;
-                showMsg('voiceMsg', 'success', `Conectado! ${data.voices?.length || 0} vozes encontradas.`);
-                // Populate voice select
-                const sel = document.getElementById('voiceSelect');
-                sel.innerHTML = '<option value="">Selecione uma voz...</option>';
-                (data.voices || []).forEach(v => {
-                    sel.innerHTML += `<option value="${v.voice_id}">${v.name}</option>`;
-                });
-                document.getElementById('voiceSelectGroup').style.display = 'block';
-            } else {
-                showMsg('voiceMsg', 'error', 'Chave invalida.');
-            }
-        } catch (e) {
-            config.voice.key = key;
-            showMsg('voiceMsg', 'success', 'Chave salva (validacao offline).');
-        }
-
-        toggleSpinner('voiceSpinner', false);
-    }
-
-    async function saveStep3() {
-        config.voice.voiceId = document.getElementById('voiceSelect')?.value || '';
-        try {
-            if (config.voice.provider === 'openai-tts') {
-                // Salvar TTS_PROVIDER=openai no .env
-                await fetch('/api/setup/save-module', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ module: 'voice', config: { TTS_PROVIDER: 'openai' } })
-                });
-            } else if (config.voice.provider === 'elevenlabs') {
-                await fetch('/api/setup/save-voice', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(config.voice)
-                });
-            }
-        } catch (e) { /* offline */ }
-        goTo(4);
-    }
-
-    // ───── Step 4: Modules ─────
-    function toggleModule(card) {
-        // Prevent toggle when clicking inside expand area inputs
-        if (event && event.target.closest('.module-expand')) return;
-        card.classList.toggle('selected');
-        const mod = card.dataset.module;
-        if (card.classList.contains('selected')) {
-            config.modules[mod] = { enabled: true, key: '' };
-        } else {
-            delete config.modules[mod];
-        }
-    }
-
-    async function saveStep4() {
-        // Gather keys
-        document.querySelectorAll('#moduleGrid .option-card.selected').forEach(card => {
-            const mod = card.dataset.module;
-            const input = card.querySelector(`input[data-key="${mod}"]`);
-            if (input && config.modules[mod]) {
-                config.modules[mod].key = input.value.trim();
-            }
-        });
-        try {
-            await fetch('/api/setup/modules', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config.modules)
-            });
-        } catch (e) { /* offline */ }
-        goTo(5);
-    }
-
-    // ───── Step 5: Checklist ─────
-    const providerNames = { openai: 'ChatGPT', groq: 'Zaya IA (Groq)', anthropic: 'Claude' };
-    const moduleNames = {
-        whatsapp: 'WhatsApp Bot',
-        calls: 'Ligacoes',
-        social: 'Instagram & Facebook',
-        ads: 'Ads Dashboard',
-        images: 'Gerar Imagens',
-        videos: 'Gerar Videos',
-        websearch: 'Pesquisa Web',
-        cloud: 'Nuvem (Supabase)'
-    };
-
-    function buildChecklist() {
-        const cl = document.getElementById('checklist');
-        let html = '';
-
-        // Mente
-        const aiOk = config.ai.validated;
-        html += checkItem(aiOk, 'Mente', providerNames[config.ai.provider] || '---');
-
-        // Identidade
-        const idOk = config.identity.name.length >= 2;
-        html += checkItem(idOk, 'Identidade', config.identity.name || '---');
-
-        // Voz
-        const voiceOk = config.voice.provider === 'elevenlabs' && config.voice.key;
-        html += checkItem(
-            config.voice.provider ? true : false,
-            'Voz',
-            config.voice.provider === 'elevenlabs' ? 'ElevenLabs' : config.voice.provider === 'none' ? 'Sem voz' : '---'
-        );
-
-        // Modules
-        Object.keys(moduleNames).forEach(mod => {
-            const enabled = !!config.modules[mod];
-            if (enabled) {
-                html += checkItem(true, moduleNames[mod], 'Ativo');
-            }
-        });
-
-        cl.innerHTML = html;
-    }
-
-    function checkItem(ok, label, value) {
-        return `
-            <div class="check-item">
-                <div class="check-icon ${ok ? 'ok' : 'skip'}">${ok ? '&#10003;' : '&#10007;'}</div>
-                <span class="check-label">${label}</span>
-                <span class="check-value">${value}</span>
-            </div>
-        `;
-    }
-
-    async function activateZaya() {
-        const btn = document.getElementById('activateBtn');
-        btn.disabled = true;
-        btn.textContent = 'Ativando...';
-
-        // Save config
-        try {
-            await fetch('/api/setup/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config)
-            });
-        } catch (e) {}
-
-        // Show cinematic overlay
-        const overlay = document.getElementById('activationOverlay');
-        overlay.style.display = 'flex';
-        requestAnimationFrame(() => { overlay.style.opacity = '1'; });
-
-        // Init orb
-        let orb;
-        try {
-            orb = new JarvisOrb('activation-orb');
-            orb.setState('processing');
-        } catch(e) {}
-
-        const textEl = document.getElementById('activationText');
-        const subEl = document.getElementById('activationSub');
-        const bar = document.getElementById('activationBar');
-        const userName = config.identity.name || 'voce';
-
-        // Sequence of messages
-        const steps = [
-            { text: 'Iniciando sistemas...', sub: 'Preparando ambiente', pct: '10%', state: 'processing', delay: 1200 },
-            { text: 'Configurando mente...', sub: config.ai.provider === 'openai' ? 'Conectando ao ChatGPT' : config.ai.provider === 'groq' ? 'Conectando ao Groq' : 'Conectando ao Claude', pct: '25%', state: 'processing', delay: 1500 },
-            { text: `Prazer, ${userName}!`, sub: 'Aprendendo sobre voce...', pct: '40%', state: 'listening', delay: 1800 },
-            { text: 'Ativando modulos...', sub: 'Carregando funcionalidades', pct: '55%', state: 'processing', delay: 1500 },
-            { text: 'Calibrando inteligencia...', sub: 'Otimizando respostas', pct: '70%', state: 'processing', delay: 1200 },
-            { text: 'Quase la...', sub: 'Ultimos ajustes', pct: '85%', state: 'speaking', delay: 1000 },
-            { text: `Zaya viva para ser sua assistente, ${userName}!`, sub: '', pct: '100%', state: 'speaking', delay: 2500 },
-        ];
-
-        for (const step of steps) {
-            textEl.style.opacity = '0';
-            subEl.style.opacity = '0';
-            await new Promise(r => setTimeout(r, 300));
-
-            textEl.textContent = step.text;
-            subEl.textContent = step.sub;
-            bar.style.width = step.pct;
-            if (orb) { orb.setState(step.state); orb.setAudioLevel(Math.random() * 0.6 + 0.2); }
-
-            textEl.style.opacity = '1';
-            subEl.style.opacity = '1';
-            await new Promise(r => setTimeout(r, step.delay));
-        }
-
-        // Final glow
-        if (orb) { orb.setState('idle'); orb.setAudioLevel(0); }
-        bar.style.background = 'linear-gradient(90deg, #00e676, #00d4ff)';
-
-        await new Promise(r => setTimeout(r, 1500));
-
-        // Fade out and redirect to onboarding
-        overlay.style.opacity = '0';
-        await new Promise(r => setTimeout(r, 800));
-        window.location.href = '/onboarding.html';
-    }
-
-    // ───── Helpers ─────
-    function showMsg(id, type, text) {
-        const el = document.getElementById(id);
-        el.className = 'msg' + (text ? ' show ' + type : '');
-        el.innerHTML = text ? `<span>${type === 'success' ? '&#10003;' : '&#10007;'}</span> ${text}` : '';
-    }
-
-    function toggleSpinner(id, show) {
-        document.getElementById(id).classList.toggle('show', show);
-    }
+// ───── State ─────
+const TOTAL_STEPS = 6;
+let currentStep = 0;
+let config = {
+ai: { provider: '', key: '', validated: false },
+identity: { name: '', phone: '' },
+voice: { provider: '', key: '', voiceId: '' },
+modules: {}
+};
+const helpLinks = {
+openai: 'https://platform.openai.com/api-keys',
+groq: 'https://console.groq.com/keys',
+anthropic: 'https://console.anthropic.com/settings/keys'
+};
+// ───── Init ─────
+document.addEventListener('DOMContentLoaded', async () => {
+buildProgress();
+try {
+const res = await fetch('/api/setup/status');
+if (res.ok) {
+const data = await res.json();
+if (data.complete) {
+window.location.href = '/';
+return;
+}
+}
+} catch (e) { /* setup not available yet, continue */ }
+});
+// ───── Progress ─────
+function buildProgress() {
+const track = document.getElementById('progressTrack');
+track.innerHTML = '';
+for (let i = 0; i < TOTAL_STEPS; i++) {
+const dot = document.createElement('div');
+dot.className = 'progress-dot' + (i === 0 ? ' active' : '');
+dot.dataset.index = i;
+track.appendChild(dot);
+if (i < TOTAL_STEPS - 1) {
+const line = document.createElement('div');
+line.className = 'progress-line';
+line.dataset.after = i;
+track.appendChild(line);
+}
+}
+}
+function updateProgress(step) {
+document.querySelectorAll('.progress-dot').forEach(d => {
+const i = parseInt(d.dataset.index);
+d.className = 'progress-dot';
+if (i < step) d.classList.add('done');
+else if (i === step) d.classList.add('active');
+});
+document.querySelectorAll('.progress-line').forEach(l => {
+const i = parseInt(l.dataset.after);
+l.className = 'progress-line' + (i < step ? ' done' : '');
+});
+}
+// ───── Navigation ─────
+function goTo(step) {
+const prev = document.querySelector(`.step[data-step="${currentStep}"]`);
+const next = document.querySelector(`.step[data-step="${step}"]`);
+if (!prev || !next) return;
+prev.classList.remove('active');
+setTimeout(() => {
+prev.classList.remove('visible');
+next.classList.add('visible');
+requestAnimationFrame(() => {
+requestAnimationFrame(() => {
+next.classList.add('active');
+});
+});
+}, 300);
+currentStep = step;
+updateProgress(step);
+window.scrollTo({ top: 0, behavior: 'smooth' });
+if (step === 3) updateVoiceOptions();
+if (step === 5) buildChecklist();
+}
+// ───── Step 1: AI Provider ─────
+function selectAI(card) {
+document.querySelectorAll('#aiCards .option-card').forEach(c => c.classList.remove('selected'));
+card.classList.add('selected');
+config.ai.provider = card.dataset.value;
+config.ai.validated = false;
+document.getElementById('aiNextBtn').disabled = true;
+document.getElementById('aiKeyGroup').style.display = 'block';
+document.getElementById('aiHelpLink').href = helpLinks[config.ai.provider] || '#';
+showMsg('aiMsg', '', '');
+}
+async function testAIKey() {
+const key = document.getElementById('aiKey').value.trim();
+if (!key) return showMsg('aiMsg', 'error', 'Cole sua chave API primeiro.');
+toggleSpinner('aiSpinner', true);
+document.getElementById('aiTestBtn').disabled = true;
+try {
+const res = await fetch('/api/setup/validate-key', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ provider: config.ai.provider, key })
+});
+const data = await res.json();
+if (res.ok && data.valid) {
+config.ai.key = key;
+config.ai.validated = true;
+document.getElementById('aiNextBtn').disabled = false;
+showMsg('aiMsg', 'success', 'Conexao bem sucedida!');
+} else {
+showMsg('aiMsg', 'error', data.message || 'Chave invalida. Verifique e tente novamente.');
+}
+} catch (e) {
+// Allow proceeding for demo / offline
+config.ai.key = key;
+config.ai.validated = true;
+document.getElementById('aiNextBtn').disabled = false;
+showMsg('aiMsg', 'success', 'Chave salva (servidor offline, validacao pulada).');
+}
+toggleSpinner('aiSpinner', false);
+document.getElementById('aiTestBtn').disabled = false;
+}
+async function saveStep1() {
+try {
+await fetch('/api/setup/save-mind', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+provider: config.ai.provider,
+key: config.ai.key,
+baseUrl: config.ai.provider === 'groq' ? 'https://api.groq.com/openai/v1' : undefined,
+model: config.ai.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o',
+modelMini: config.ai.provider === 'groq' ? 'llama-3.3-70b-versatile' : 'gpt-4o-mini'
+})
+});
+} catch (e) { /* offline */ }
+goTo(2);
+}
+// ───── Step 2: Identity ─────
+function checkIdentity() {
+const name = document.getElementById('userName').value.trim();
+const phone = document.getElementById('userPhone').value.trim();
+config.identity.name = name;
+config.identity.phone = phone;
+document.getElementById('idNextBtn').disabled = !(name.length >= 2 && phone.length >= 10);
+}
+async function saveStep2() {
+try {
+await fetch('/api/setup/save-identity', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+name: config.identity.name,
+phone: config.identity.phone
+})
+});
+} catch (e) { /* offline */ }
+goTo(3);
+}
+// ───── Step 3: Voice ─────
+// Mostrar opção OpenAI TTS quando provider é OpenAI
+function updateVoiceOptions() {
+const openaiTtsCard = document.getElementById('openaiTtsCard');
+if (config.ai.provider === 'openai') {
+openaiTtsCard.style.display = 'flex';
+} else {
+openaiTtsCard.style.display = 'none';
+if (config.voice.provider === 'openai-tts') {
+config.voice.provider = '';
+openaiTtsCard.classList.remove('selected');
+}
+}
+}
+function selectVoice(card) {
+document.querySelectorAll('#voiceCards .option-card').forEach(c => c.classList.remove('selected'));
+card.classList.add('selected');
+config.voice.provider = card.dataset.value;
+const section = document.getElementById('voiceSection');
+section.classList.toggle('show', config.voice.provider === 'elevenlabs');
+}
+async function testVoiceKey() {
+const key = document.getElementById('voiceKey').value.trim();
+if (!key) return showMsg('voiceMsg', 'error', 'Cole sua chave API primeiro.');
+toggleSpinner('voiceSpinner', true);
+try {
+const res = await fetch('https://api.elevenlabs.io/v1/voices', {
+headers: { 'xi-api-key': key }
+});
+if (res.ok) {
+const data = await res.json();
+config.voice.key = key;
+showMsg('voiceMsg', 'success', `Conectado! ${data.voices?.length || 0} vozes encontradas.`);
+// Populate voice select
+const sel = document.getElementById('voiceSelect');
+sel.innerHTML = '<option value="">Selecione uma voz...</option>';
+(data.voices || []).forEach(v => {
+sel.innerHTML += `<option value="${v.voice_id}">${v.name}</option>`;
+});
+document.getElementById('voiceSelectGroup').style.display = 'block';
+} else {
+showMsg('voiceMsg', 'error', 'Chave invalida.');
+}
+} catch (e) {
+config.voice.key = key;
+showMsg('voiceMsg', 'success', 'Chave salva (validacao offline).');
+}
+toggleSpinner('voiceSpinner', false);
+}
+async function saveStep3() {
+config.voice.voiceId = document.getElementById('voiceSelect')?.value || '';
+try {
+if (config.voice.provider === 'openai-tts') {
+// Salvar TTS_PROVIDER=openai no .env
+await fetch('/api/setup/save-module', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ module: 'voice', config: { TTS_PROVIDER: 'openai' } })
+});
+} else if (config.voice.provider === 'elevenlabs') {
+await fetch('/api/setup/save-voice', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(config.voice)
+});
+}
+} catch (e) { /* offline */ }
+goTo(4);
+}
+// ───── Step 4: Modules ─────
+function toggleModule(card) {
+// Prevent toggle when clicking inside expand area inputs
+if (event && event.target.closest('.module-expand')) return;
+card.classList.toggle('selected');
+const mod = card.dataset.module;
+if (card.classList.contains('selected')) {
+config.modules[mod] = { enabled: true, key: '' };
+} else {
+delete config.modules[mod];
+}
+}
+async function saveStep4() {
+// Gather keys
+document.querySelectorAll('#moduleGrid .option-card.selected').forEach(card => {
+const mod = card.dataset.module;
+const input = card.querySelector(`input[data-key="${mod}"]`);
+if (input && config.modules[mod]) {
+config.modules[mod].key = input.value.trim();
+}
+});
+try {
+await fetch('/api/setup/modules', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(config.modules)
+});
+} catch (e) { /* offline */ }
+goTo(5);
+}
+// ───── Step 5: Checklist ─────
+const providerNames = { openai: 'ChatGPT', groq: 'Zaya IA (Groq)', anthropic: 'Claude' };
+const moduleNames = {
+whatsapp: 'WhatsApp Bot',
+calls: 'Ligacoes',
+social: 'Instagram & Facebook',
+ads: 'Ads Dashboard',
+images: 'Gerar Imagens',
+videos: 'Gerar Videos',
+websearch: 'Pesquisa Web',
+cloud: 'Nuvem (Supabase)'
+};
+function buildChecklist() {
+const cl = document.getElementById('checklist');
+let html = '';
+// Mente
+const aiOk = config.ai.validated;
+html += checkItem(aiOk, 'Mente', providerNames[config.ai.provider] || '---');
+// Identidade
+const idOk = config.identity.name.length >= 2;
+html += checkItem(idOk, 'Identidade', config.identity.name || '---');
+// Voz
+const voiceOk = config.voice.provider === 'elevenlabs' && config.voice.key;
+html += checkItem(
+config.voice.provider ? true : false,
+'Voz',
+config.voice.provider === 'elevenlabs' ? 'ElevenLabs' : config.voice.provider === 'none' ? 'Sem voz' : '---'
+);
+// Modules
+Object.keys(moduleNames).forEach(mod => {
+const enabled = !!config.modules[mod];
+if (enabled) {
+html += checkItem(true, moduleNames[mod], 'Ativo');
+}
+});
+cl.innerHTML = html;
+}
+function checkItem(ok, label, value) {
+return `
+<div class="check-item">
+<div class="check-icon ${ok ? 'ok' : 'skip'}">${ok ? '&#10003;' : '&#10007;'}</div>
+<span class="check-label">${label}</span>
+<span class="check-value">${value}</span>
+</div>
+`;
+}
+async function activateZaya() {
+const btn = document.getElementById('activateBtn');
+btn.disabled = true;
+btn.textContent = 'Ativando...';
+// Save config
+try {
+await fetch('/api/setup/complete', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(config)
+});
+} catch (e) {}
+// Show cinematic overlay
+const overlay = document.getElementById('activationOverlay');
+overlay.style.display = 'flex';
+requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+// Init orb
+let orb;
+try {
+orb = new JarvisOrb('activation-orb');
+orb.setState('processing');
+} catch(e) {}
+const textEl = document.getElementById('activationText');
+const subEl = document.getElementById('activationSub');
+const bar = document.getElementById('activationBar');
+const userName = config.identity.name || 'voce';
+// Sequence of messages
+const steps = [
+{ text: 'Iniciando sistemas...', sub: 'Preparando ambiente', pct: '10%', state: 'processing', delay: 1200 },
+{ text: 'Configurando mente...', sub: config.ai.provider === 'openai' ? 'Conectando ao ChatGPT' : config.ai.provider === 'groq' ? 'Conectando ao Groq' : 'Conectando ao Claude', pct: '25%', state: 'processing', delay: 1500 },
+{ text: `Prazer, ${userName}!`, sub: 'Aprendendo sobre voce...', pct: '40%', state: 'listening', delay: 1800 },
+{ text: 'Ativando modulos...', sub: 'Carregando funcionalidades', pct: '55%', state: 'processing', delay: 1500 },
+{ text: 'Calibrando inteligencia...', sub: 'Otimizando respostas', pct: '70%', state: 'processing', delay: 1200 },
+{ text: 'Quase la...', sub: 'Ultimos ajustes', pct: '85%', state: 'speaking', delay: 1000 },
+{ text: `Zaya viva para ser sua assistente, ${userName}!`, sub: '', pct: '100%', state: 'speaking', delay: 2500 },
+];
+for (const step of steps) {
+textEl.style.opacity = '0';
+subEl.style.opacity = '0';
+await new Promise(r => setTimeout(r, 300));
+textEl.textContent = step.text;
+subEl.textContent = step.sub;
+bar.style.width = step.pct;
+if (orb) { orb.setState(step.state); orb.setAudioLevel(Math.random() * 0.6 + 0.2); }
+textEl.style.opacity = '1';
+subEl.style.opacity = '1';
+await new Promise(r => setTimeout(r, step.delay));
+}
+// Final glow
+if (orb) { orb.setState('idle'); orb.setAudioLevel(0); }
+bar.style.background = 'linear-gradient(90deg, #00e676, #00d4ff)';
+await new Promise(r => setTimeout(r, 1500));
+// Fade out and redirect to onboarding
+overlay.style.opacity = '0';
+await new Promise(r => setTimeout(r, 800));
+window.location.href = '/onboarding.html';
+}
+// ───── Helpers ─────
+function showMsg(id, type, text) {
+const el = document.getElementById(id);
+el.className = 'msg' + (text ? ' show ' + type : '');
+el.innerHTML = text ? `<span>${type === 'success' ? '&#10003;' : '&#10007;'}</span> ${text}` : '';
+}
+function toggleSpinner(id, show) {
+document.getElementById(id).classList.toggle('show', show);
+}
 </script>
 <script src="/orb.js"></script>
-
 </body>
 </html>

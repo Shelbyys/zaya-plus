@@ -8,13 +8,13 @@
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a25;
-  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
-  --text:#eee;--text2:#999;--text3:#666;
-  --accent:#25d366;--accent2:#128c7e;
-  --purple:#6c5ce7;--purple2:#a29bfe;
-  --red:#ff5252;--yellow:#ffd740;
-  --radius:12px;
+--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a25;
+--border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.1);
+--text:#eee;--text2:#999;--text3:#666;
+--accent:#25d366;--accent2:#128c7e;
+--purple:#6c5ce7;--purple2:#a29bfe;
+--red:#ff5252;--yellow:#ffd740;
+--radius:12px;
 }
 body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh}
 .header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
@@ -88,195 +88,176 @@ body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-h
 </head>
 <body>
 <div class="header">
-  <div class="header-left">
-    <span style="font-size:1.4rem">&#128172;</span>
-    <div><div class="header-title">WhatsApp</div><div class="header-sub">Conexoes e configuracoes do bot</div></div>
-  </div>
-  <button class="back-btn" onclick="location.href='/'">&#8592; Voltar</button>
+<div class="header-left">
+<span style="font-size:1.4rem">&#128172;</span>
+<div><div class="header-title">WhatsApp</div><div class="header-sub">Conexoes e configuracoes do bot</div></div>
+</div>
+<button class="back-btn" onclick="location.href='/'">&#8592; Voltar</button>
 </div>
 <div class="container">
-  <div class="section-title">Instancias Conectadas</div>
-  <div id="instanceList"><div class="empty"><div class="spinner"></div><br>Carregando...</div></div>
-  <div class="section-title">Nova Conexao</div>
-  <div class="card">
-    <div class="card-title">&#128279; Conectar WhatsApp</div>
-    <div class="form-row">
-      <div class="field"><label class="field-label">Nome da instancia</label><input class="field-input" id="pairName" placeholder="Ex: principal"></div>
-      <div class="field"><label class="field-label">Telefone com DDD</label><input class="field-input" id="pairPhone" placeholder="5511999999999"></div>
-    </div>
-    <div class="form-row">
-      <div class="field"><label class="field-label">Label (opcional)</label><input class="field-input" id="pairLabel" placeholder="Ex: Comercial, Pessoal..."></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:12px">
-      <button class="btn btn-primary" onclick="connectQR()">&#9641; QR Code</button>
-      <button class="btn btn-secondary" onclick="connectCode()">&#128290; Codigo Numerico</button>
-    </div>
-    <div id="pairResult" style="margin-top:16px"></div>
-  </div>
-  <div class="section-title">Configuracoes do Bot</div>
-  <div class="card" id="botConfigCard"><div class="empty"><div class="spinner"></div><br>Carregando...</div></div>
+<div class="section-title">Instancias Conectadas</div>
+<div id="instanceList"><div class="empty"><div class="spinner"></div><br>Carregando...</div></div>
+<div class="section-title">Nova Conexao</div>
+<div class="card">
+<div class="card-title">&#128279; Conectar WhatsApp</div>
+<div class="form-row">
+<div class="field"><label class="field-label">Nome da instancia</label><input class="field-input" id="pairName" placeholder="Ex: principal"></div>
+<div class="field"><label class="field-label">Telefone com DDD</label><input class="field-input" id="pairPhone" placeholder="5511999999999"></div>
+</div>
+<div class="form-row">
+<div class="field"><label class="field-label">Label (opcional)</label><input class="field-input" id="pairLabel" placeholder="Ex: Comercial, Pessoal..."></div>
+</div>
+<div style="display:flex;gap:8px;margin-top:12px">
+<button class="btn btn-primary" onclick="connectQR()">&#9641; QR Code</button>
+<button class="btn btn-secondary" onclick="connectCode()">&#128290; Codigo Numerico</button>
+</div>
+<div id="pairResult" style="margin-top:16px"></div>
+</div>
+<div class="section-title">Configuracoes do Bot</div>
+<div class="card" id="botConfigCard"><div class="empty"><div class="spinner"></div><br>Carregando...</div></div>
 </div>
 <div class="toast-container" id="toastContainer"></div>
 <script>
 let _cfg={},_instances=[],_default='',_qrSource=null;
-
 async function init(){await Promise.all([loadInstances(),loadConfig()])}
-
 async function loadInstances(){
-  try{
-    const r=await fetch('/api/whatsapp/instances');const d=await r.json();
-    _instances=d.instances||[];_default=d.defaultInstance||'';renderInstances();
-  }catch(e){document.getElementById('instanceList').innerHTML='<div class="empty">Erro ao carregar</div>';}
+try{
+const r=await fetch('/api/whatsapp/instances');const d=await r.json();
+_instances=d.instances||[];_default=d.defaultInstance||'';renderInstances();
+}catch(e){document.getElementById('instanceList').innerHTML='<div class="empty">Erro ao carregar</div>';}
 }
-
 function renderInstances(){
-  const el=document.getElementById('instanceList');
-  if(!_instances.length){el.innerHTML='<div class="empty">Nenhuma instancia conectada. Use o formulario abaixo.</div>';return;}
-  el.innerHTML=_instances.map(i=>{
-    const isDef=i.name===_default;
-    const sMap={connected:'Conectado',connecting:'Conectando...',reconnecting:'Reconectando...'};
-    const sLabel=sMap[i.status]||'Desconectado';
-    const sCls=i.status==='connected'?'badge-green':i.status==='connecting'||i.status==='reconnecting'?'badge-yellow':'badge-red';
-    return `<div class="instance">
-      <div class="instance-icon">&#128241;</div>
-      <div class="instance-info">
-        <div class="instance-name">${i.name}${i.label?' — '+i.label:''}</div>
-        <div class="instance-phone">${i.phone||'Sem numero'}</div>
-        <div class="instance-badges">
-          <span class="badge ${sCls}">${sLabel}</span>
-          ${isDef?'<span class="badge badge-purple">PADRAO</span>':''}
-          ${i.active!==false?'<span class="badge badge-green">BOT IA</span>':''}
-        </div>
-      </div>
-      <div class="instance-actions">
-        ${!isDef?`<button class="btn btn-sm btn-secondary" onclick="setDefault('${i.name}')">Definir Padrao</button>`:''}
-        <button class="btn btn-sm btn-secondary" onclick="reconnect('${i.name}')">Reconectar</button>
-        <button class="btn btn-sm btn-danger" onclick="remove('${i.name}')">Remover</button>
-      </div>
-    </div>`;
-  }).join('');
+const el=document.getElementById('instanceList');
+if(!_instances.length){el.innerHTML='<div class="empty">Nenhuma instancia conectada. Use o formulario abaixo.</div>';return;}
+el.innerHTML=_instances.map(i=>{
+const isDef=i.name===_default;
+const sMap={connected:'Conectado',connecting:'Conectando...',reconnecting:'Reconectando...'};
+const sLabel=sMap[i.status]||'Desconectado';
+const sCls=i.status==='connected'?'badge-green':i.status==='connecting'||i.status==='reconnecting'?'badge-yellow':'badge-red';
+return `<div class="instance">
+<div class="instance-icon">&#128241;</div>
+<div class="instance-info">
+<div class="instance-name">${i.name}${i.label?' — '+i.label:''}</div>
+<div class="instance-phone">${i.phone||'Sem numero'}</div>
+<div class="instance-badges">
+<span class="badge ${sCls}">${sLabel}</span>
+${isDef?'<span class="badge badge-purple">PADRAO</span>':''}
+${i.active!==false?'<span class="badge badge-green">BOT IA</span>':''}
+</div>
+</div>
+<div class="instance-actions">
+${!isDef?`<button class="btn btn-sm btn-secondary" onclick="setDefault('${i.name}')">Definir Padrao</button>`:''}
+<button class="btn btn-sm btn-secondary" onclick="reconnect('${i.name}')">Reconectar</button>
+<button class="btn btn-sm btn-danger" onclick="remove('${i.name}')">Remover</button>
+</div>
+</div>`;
+}).join('');
 }
-
 async function setDefault(n){await fetch(`/api/whatsapp/default/${n}`,{method:'POST'});showToast('Padrao atualizado','success');loadInstances();}
 async function reconnect(n){showToast('Reconectando...','success');await fetch(`/api/whatsapp/reconnect/${n}`,{method:'POST'});setTimeout(loadInstances,2000);}
 async function remove(n){if(!confirm(`Remover "${n}"?`))return;await fetch(`/api/whatsapp/instances/${n}`,{method:'DELETE'});showToast('Removida','success');loadInstances();}
-
 function connectQR(){
-  const name=document.getElementById('pairName').value.trim()||'principal';
-  const phone=document.getElementById('pairPhone').value.trim();
-  const label=document.getElementById('pairLabel').value.trim();
-  if(!phone){showToast('Informe o telefone','error');return;}
-  const result=document.getElementById('pairResult');
-  result.innerHTML=`<div class="qr-area"><div class="spinner"></div><div class="qr-status">Gerando QR Code...</div></div>`;
-  if(_qrSource)_qrSource.close();
-  _qrSource=new EventSource(`/api/whatsapp/pair-qr?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&label=${encodeURIComponent(label)}`);
-  let qc=0;
-  _qrSource.addEventListener('qr',(e)=>{qc++;document.getElementById('pairResult').querySelector('.qr-area').innerHTML=`
-    <img src="${e.data}"><div class="qr-status">Escaneie com o WhatsApp (${qc}/8)</div>
-    <div class="qr-timer"><div class="qr-timer-bar" style="width:100%;animation:shrink 20s linear forwards"></div></div>
-    <style>@keyframes shrink{to{width:0}}</style>`;});
-  _qrSource.addEventListener('connected',()=>{_qrSource.close();result.innerHTML=`<div class="qr-area" style="border-color:var(--accent)"><div style="font-size:2rem">&#10003;</div><div style="font-size:1rem;font-weight:600;color:var(--accent)">Conectado!</div></div>`;showToast('WhatsApp conectado!','success');loadInstances();});
-  _qrSource.addEventListener('timeout',()=>{_qrSource.close();result.innerHTML=`<div class="qr-area" style="border-color:var(--red)"><div style="color:var(--red)">Tempo esgotado.</div><button class="btn btn-primary" onclick="connectQR()">Tentar Novamente</button></div>`;});
-  _qrSource.addEventListener('error',()=>{_qrSource.close();result.innerHTML=`<div class="qr-area" style="border-color:var(--red)"><div style="color:var(--red)">Erro na conexao.</div><button class="btn btn-primary" onclick="connectQR()">Tentar Novamente</button></div>`;});
+const name=document.getElementById('pairName').value.trim()||'principal';
+const phone=document.getElementById('pairPhone').value.trim();
+const label=document.getElementById('pairLabel').value.trim();
+if(!phone){showToast('Informe o telefone','error');return;}
+const result=document.getElementById('pairResult');
+result.innerHTML=`<div class="qr-area"><div class="spinner"></div><div class="qr-status">Gerando QR Code...</div></div>`;
+if(_qrSource)_qrSource.close();
+_qrSource=new EventSource(`/api/whatsapp/pair-qr?name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&label=${encodeURIComponent(label)}`);
+let qc=0;
+_qrSource.addEventListener('qr',(e)=>{qc++;document.getElementById('pairResult').querySelector('.qr-area').innerHTML=`
+<img src="${e.data}"><div class="qr-status">Escaneie com o WhatsApp (${qc}/8)</div>
+<div class="qr-timer"><div class="qr-timer-bar" style="width:100%;animation:shrink 20s linear forwards"></div></div>
+<style>@keyframes shrink{to{width:0}}</style>`;});
+_qrSource.addEventListener('connected',()=>{_qrSource.close();result.innerHTML=`<div class="qr-area" style="border-color:var(--accent)"><div style="font-size:2rem">&#10003;</div><div style="font-size:1rem;font-weight:600;color:var(--accent)">Conectado!</div></div>`;showToast('WhatsApp conectado!','success');loadInstances();});
+_qrSource.addEventListener('timeout',()=>{_qrSource.close();result.innerHTML=`<div class="qr-area" style="border-color:var(--red)"><div style="color:var(--red)">Tempo esgotado.</div><button class="btn btn-primary" onclick="connectQR()">Tentar Novamente</button></div>`;});
+_qrSource.addEventListener('error',()=>{_qrSource.close();result.innerHTML=`<div class="qr-area" style="border-color:var(--red)"><div style="color:var(--red)">Erro na conexao.</div><button class="btn btn-primary" onclick="connectQR()">Tentar Novamente</button></div>`;});
 }
-
 async function connectCode(){
-  const name=document.getElementById('pairName').value.trim()||'principal';
-  const phone=document.getElementById('pairPhone').value.trim();
-  const label=document.getElementById('pairLabel').value.trim();
-  if(!phone){showToast('Informe o telefone','error');return;}
-  const result=document.getElementById('pairResult');
-  result.innerHTML=`<div class="qr-area"><div class="spinner"></div><div class="qr-status">Gerando codigo...</div></div>`;
-  try{
-    const r=await fetch('/api/whatsapp/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,label})});
-    const d=await r.json();if(!d.code)throw new Error(d.error||'Erro');
-    result.innerHTML=`<div class="qr-area"><div class="qr-code-display">${d.code}</div><div class="qr-status">WhatsApp > Aparelhos conectados > Conectar > Inserir codigo</div><div class="qr-timer"><div class="qr-timer-bar" style="width:100%;animation:shrink 60s linear forwards"></div></div><style>@keyframes shrink{to{width:0}}</style></div>`;
-    let att=0;const poll=setInterval(async()=>{att++;try{const cr=await fetch('/api/whatsapp/instances');const cd=await cr.json();if((cd.instances||[]).find(i=>i.name===name&&i.status==='connected')){clearInterval(poll);result.innerHTML=`<div class="qr-area" style="border-color:var(--accent)"><div style="font-size:2rem">&#10003;</div><div style="font-size:1rem;font-weight:600;color:var(--accent)">Conectado!</div></div>`;showToast('WhatsApp conectado!','success');loadInstances();}}catch{}if(att>30)clearInterval(poll);},2000);
-  }catch(e){result.innerHTML=`<div class="qr-area" style="border-color:var(--red)"><div style="color:var(--red)">${e.message}</div></div>`;}
+const name=document.getElementById('pairName').value.trim()||'principal';
+const phone=document.getElementById('pairPhone').value.trim();
+const label=document.getElementById('pairLabel').value.trim();
+if(!phone){showToast('Informe o telefone','error');return;}
+const result=document.getElementById('pairResult');
+result.innerHTML=`<div class="qr-area"><div class="spinner"></div><div class="qr-status">Gerando codigo...</div></div>`;
+try{
+const r=await fetch('/api/whatsapp/pair',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,phone,label})});
+const d=await r.json();if(!d.code)throw new Error(d.error||'Erro');
+result.innerHTML=`<div class="qr-area"><div class="qr-code-display">${d.code}</div><div class="qr-status">WhatsApp > Aparelhos conectados > Conectar > Inserir codigo</div><div class="qr-timer"><div class="qr-timer-bar" style="width:100%;animation:shrink 60s linear forwards"></div></div><style>@keyframes shrink{to{width:0}}</style></div>`;
+let att=0;const poll=setInterval(async()=>{att++;try{const cr=await fetch('/api/whatsapp/instances');const cd=await cr.json();if((cd.instances||[]).find(i=>i.name===name&&i.status==='connected')){clearInterval(poll);result.innerHTML=`<div class="qr-area" style="border-color:var(--accent)"><div style="font-size:2rem">&#10003;</div><div style="font-size:1rem;font-weight:600;color:var(--accent)">Conectado!</div></div>`;showToast('WhatsApp conectado!','success');loadInstances();}}catch{}if(att>30)clearInterval(poll);},2000);
+}catch(e){result.innerHTML=`<div class="qr-area" style="border-color:var(--red)"><div style="color:var(--red)">${e.message}</div></div>`;}
 }
-
 async function loadConfig(){
-  try{const r=await fetch('/api/bot/config');_cfg=await r.json();renderConfig();}
-  catch(e){document.getElementById('botConfigCard').innerHTML='<div class="empty">Erro ao carregar</div>';}
+try{const r=await fetch('/api/bot/config');_cfg=await r.json();renderConfig();}
+catch(e){document.getElementById('botConfigCard').innerHTML='<div class="empty">Erro ao carregar</div>';}
 }
-
 function renderConfig(){
-  const c=_cfg;
-  document.getElementById('botConfigCard').innerHTML=`
-    <div class="card-title">&#9881; Configuracoes do Bot IA</div>
-
-    <div class="config-group">Identidade</div>
-    <div class="form-row">
-      <div class="field"><label class="field-label">Nome do Bot</label><input class="field-input" value="${c.botName||'ZAYA'}" onchange="cfgSet('botName',this.value)"></div>
-      <div class="field"><label class="field-label">Como chamar o usuario</label><input class="field-input" value="${c.callName||''}" placeholder="Deixe vazio = nome do admin" onchange="cfgSet('callName',this.value)"></div>
-    </div>
-    <div class="field" style="margin-top:8px"><label class="field-label">Mensagem de boas-vindas</label><textarea class="field-textarea" placeholder="Enviada quando novo contato escreve" onchange="cfgSet('welcomeMessage',this.value)">${c.welcomeMessage||''}</textarea></div>
-
-    <div class="config-group">Controle</div>
-    ${tgl('botActive','Bot Ativo','Responde mensagens automaticamente',c.botActive)}
-    ${tgl('readReceipts','Marcar como Lido','Envia ticks azuis',c.readReceipts)}
-    ${tgl('replyGroups','Responder em Grupos','Bot responde em grupos',c.replyGroups)}
-    ${tgl('autoLoginAdmin','Auto-login Admin','Pula login para acesso local',c.autoLoginAdmin)}
-
-    <div class="config-group">Funcionalidades</div>
-    ${tgl('transcribeAudio','Transcrever Audios','Converte audios em texto com Whisper',c.transcribeAudio)}
-    ${tgl('analyzeImages','Analisar Imagens','Analisa fotos com GPT-4 Vision',c.analyzeImages)}
-    ${tgl('editVideos','Editar Videos','Edita videos com instrucoes por texto',c.editVideos)}
-
-    <div class="config-group">Modelo IA</div>
-    <div class="form-row">
-      <div class="field"><label class="field-label">Modelo</label>
-        <select class="field-select" onchange="cfgSet('aiModel',this.value)">
-          ${['gpt-4o-mini','gpt-4o','gpt-4.1-mini','gpt-4.1','claude-sonnet-4-20250514','claude-haiku-4-5-20251001','llama-3.3-70b-versatile','llama-3.1-8b-instant','gemini-2.0-flash'].map(m=>`<option value="${m}"${c.aiModel===m?' selected':''}>${m}</option>`).join('')}
-        </select></div>
-      <div class="field"><label class="field-label">Max Tokens: <strong id="tv">${c.maxTokens||1024}</strong></label>
-        <input type="range" min="128" max="4096" step="128" value="${c.maxTokens||1024}" oninput="document.getElementById('tv').textContent=this.value" onchange="cfgSet('maxTokens',parseInt(this.value))" style="accent-color:var(--accent)"></div>
-    </div>
-
-    <div class="config-group">Permissoes</div>
-    <div class="form-row">
-      <div class="field"><label class="field-label">Quem pode usar</label>
-        <select class="field-select" onchange="cfgSet('replyMode',this.value);renderConfig()">
-          <option value="admin_only"${c.replyMode==='admin_only'?' selected':''}>Somente Admin</option>
-          <option value="whitelist"${c.replyMode==='whitelist'?' selected':''}>Lista de autorizados</option>
-          <option value="everyone"${c.replyMode==='everyone'?' selected':''}>Todos</option>
-        </select></div>
-    </div>
-    <div class="field" style="margin-top:8px"><label class="field-label">Numeros Admin</label>
-      <div class="tag-list">${(c.adminNumbers||[]).map(n=>`<span class="tag">${n}<span class="tag-remove" onclick="cfgRemove('adminNumbers','${n}')">x</span></span>`).join('')}</div>
-      <div class="tag-add"><input class="field-input" id="addAdmin" placeholder="5511999999999" style="flex:1"><button class="btn btn-sm btn-secondary" onclick="cfgAdd('adminNumbers','addAdmin')">+</button></div>
-    </div>
-    ${c.replyMode==='whitelist'?`<div class="field" style="margin-top:12px"><label class="field-label">Contatos Autorizados</label>
-      <div class="tag-list">${(c.whitelist||[]).map(n=>`<span class="tag">${n}<span class="tag-remove" onclick="cfgRemove('whitelist','${n}')">x</span></span>`).join('')}</div>
-      <div class="tag-add"><input class="field-input" id="addWl" placeholder="5511999999999" style="flex:1"><button class="btn btn-sm btn-secondary" onclick="cfgAdd('whitelist','addWl')">+</button></div>
-    </div>`:''}
-    <div class="field" style="margin-top:12px"><label class="field-label">Resposta para nao autorizados</label>
-      <textarea class="field-textarea" placeholder="Vazio = ignora silenciosamente" onchange="cfgSet('unauthorizedReply',this.value)">${c.unauthorizedReply||''}</textarea></div>
-
-    <div class="config-group">Monitoramento</div>
-    <div class="field"><label class="field-label">Numeros Monitorados</label>
-      <div class="tag-list">${(c.watchNumbers||[]).map(w=>`<span class="tag">${w.nome||w.numero} (${w.numero})<span class="tag-remove" onclick="cfgRemoveW('${w.numero}')">x</span></span>`).join('')}</div>
-      <div class="tag-add"><input class="field-input" id="wPhone" placeholder="Numero" style="flex:1"><input class="field-input" id="wName" placeholder="Nome" style="flex:1"><button class="btn btn-sm btn-secondary" onclick="cfgAddW()">+</button></div>
-    </div>
-    <div class="form-row" style="margin-top:8px"><div class="field"><label class="field-label">Como notificar</label>
-      <select class="field-select" onchange="cfgSet('watchNotifyMode',this.value)">
-        <option value="both"${c.watchNotifyMode==='both'?' selected':''}>Voz + WhatsApp</option>
-        <option value="whatsapp"${c.watchNotifyMode==='whatsapp'?' selected':''}>Somente WhatsApp</option>
-        <option value="voice"${c.watchNotifyMode==='voice'?' selected':''}>Somente Voz</option>
-      </select></div></div>`;
+const c=_cfg;
+document.getElementById('botConfigCard').innerHTML=`
+<div class="card-title">&#9881; Configuracoes do Bot IA</div>
+<div class="config-group">Identidade</div>
+<div class="form-row">
+<div class="field"><label class="field-label">Nome do Bot</label><input class="field-input" value="${c.botName||'ZAYA'}" onchange="cfgSet('botName',this.value)"></div>
+<div class="field"><label class="field-label">Como chamar o usuario</label><input class="field-input" value="${c.callName||''}" placeholder="Deixe vazio = nome do admin" onchange="cfgSet('callName',this.value)"></div>
+</div>
+<div class="field" style="margin-top:8px"><label class="field-label">Mensagem de boas-vindas</label><textarea class="field-textarea" placeholder="Enviada quando novo contato escreve" onchange="cfgSet('welcomeMessage',this.value)">${c.welcomeMessage||''}</textarea></div>
+<div class="config-group">Controle</div>
+${tgl('botActive','Bot Ativo','Responde mensagens automaticamente',c.botActive)}
+${tgl('readReceipts','Marcar como Lido','Envia ticks azuis',c.readReceipts)}
+${tgl('replyGroups','Responder em Grupos','Bot responde em grupos',c.replyGroups)}
+${tgl('autoLoginAdmin','Auto-login Admin','Pula login para acesso local',c.autoLoginAdmin)}
+<div class="config-group">Funcionalidades</div>
+${tgl('transcribeAudio','Transcrever Audios','Converte audios em texto com Whisper',c.transcribeAudio)}
+${tgl('analyzeImages','Analisar Imagens','Analisa fotos com GPT-4 Vision',c.analyzeImages)}
+${tgl('editVideos','Editar Videos','Edita videos com instrucoes por texto',c.editVideos)}
+<div class="config-group">Modelo IA</div>
+<div class="form-row">
+<div class="field"><label class="field-label">Modelo</label>
+<select class="field-select" onchange="cfgSet('aiModel',this.value)">
+${['gpt-4o-mini','gpt-4o','gpt-4.1-mini','gpt-4.1','claude-sonnet-4-20250514','claude-haiku-4-5-20251001','llama-3.3-70b-versatile','llama-3.1-8b-instant','gemini-2.0-flash'].map(m=>`<option value="${m}"${c.aiModel===m?' selected':''}>${m}</option>`).join('')}
+</select></div>
+<div class="field"><label class="field-label">Max Tokens: <strong id="tv">${c.maxTokens||1024}</strong></label>
+<input type="range" min="128" max="4096" step="128" value="${c.maxTokens||1024}" oninput="document.getElementById('tv').textContent=this.value" onchange="cfgSet('maxTokens',parseInt(this.value))" style="accent-color:var(--accent)"></div>
+</div>
+<div class="config-group">Permissoes</div>
+<div class="form-row">
+<div class="field"><label class="field-label">Quem pode usar</label>
+<select class="field-select" onchange="cfgSet('replyMode',this.value);renderConfig()">
+<option value="admin_only"${c.replyMode==='admin_only'?' selected':''}>Somente Admin</option>
+<option value="whitelist"${c.replyMode==='whitelist'?' selected':''}>Lista de autorizados</option>
+<option value="everyone"${c.replyMode==='everyone'?' selected':''}>Todos</option>
+</select></div>
+</div>
+<div class="field" style="margin-top:8px"><label class="field-label">Numeros Admin</label>
+<div class="tag-list">${(c.adminNumbers||[]).map(n=>`<span class="tag">${n}<span class="tag-remove" onclick="cfgRemove('adminNumbers','${n}')">x</span></span>`).join('')}</div>
+<div class="tag-add"><input class="field-input" id="addAdmin" placeholder="5511999999999" style="flex:1"><button class="btn btn-sm btn-secondary" onclick="cfgAdd('adminNumbers','addAdmin')">+</button></div>
+</div>
+${c.replyMode==='whitelist'?`<div class="field" style="margin-top:12px"><label class="field-label">Contatos Autorizados</label>
+<div class="tag-list">${(c.whitelist||[]).map(n=>`<span class="tag">${n}<span class="tag-remove" onclick="cfgRemove('whitelist','${n}')">x</span></span>`).join('')}</div>
+<div class="tag-add"><input class="field-input" id="addWl" placeholder="5511999999999" style="flex:1"><button class="btn btn-sm btn-secondary" onclick="cfgAdd('whitelist','addWl')">+</button></div>
+</div>`:''}
+<div class="field" style="margin-top:12px"><label class="field-label">Resposta para nao autorizados</label>
+<textarea class="field-textarea" placeholder="Vazio = ignora silenciosamente" onchange="cfgSet('unauthorizedReply',this.value)">${c.unauthorizedReply||''}</textarea></div>
+<div class="config-group">Monitoramento</div>
+<div class="field"><label class="field-label">Numeros Monitorados</label>
+<div class="tag-list">${(c.watchNumbers||[]).map(w=>`<span class="tag">${w.nome||w.numero} (${w.numero})<span class="tag-remove" onclick="cfgRemoveW('${w.numero}')">x</span></span>`).join('')}</div>
+<div class="tag-add"><input class="field-input" id="wPhone" placeholder="Numero" style="flex:1"><input class="field-input" id="wName" placeholder="Nome" style="flex:1"><button class="btn btn-sm btn-secondary" onclick="cfgAddW()">+</button></div>
+</div>
+<div class="form-row" style="margin-top:8px"><div class="field"><label class="field-label">Como notificar</label>
+<select class="field-select" onchange="cfgSet('watchNotifyMode',this.value)">
+<option value="both"${c.watchNotifyMode==='both'?' selected':''}>Voz + WhatsApp</option>
+<option value="whatsapp"${c.watchNotifyMode==='whatsapp'?' selected':''}>Somente WhatsApp</option>
+<option value="voice"${c.watchNotifyMode==='voice'?' selected':''}>Somente Voz</option>
+</select></div></div>`;
 }
-
 function tgl(k,l,d,v){return `<div class="config-row"><div class="config-left"><div class="config-label">${l}</div><div class="config-desc">${d}</div></div><label class="toggle"><input type="checkbox" ${v!==false?'checked':''} onchange="cfgSet('${k}',this.checked)"><span class="toggle-slider"></span></label></div>`;}
-
 async function cfgSet(k,v){_cfg[k]=v;try{await fetch('/api/bot/config',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({[k]:v})});showToast('Salvo!','success');}catch{showToast('Erro','error');}}
-
 async function cfgAdd(k,id){const i=document.getElementById(id);const v=i.value.trim();if(!v)return;const a=_cfg[k]||[];if(a.includes(v))return;a.push(v);await cfgSet(k,a);i.value='';renderConfig();}
 async function cfgRemove(k,v){_cfg[k]=(_cfg[k]||[]).filter(x=>x!==v);await cfgSet(k,_cfg[k]);renderConfig();}
 async function cfgAddW(){const p=document.getElementById('wPhone').value.trim();const n=document.getElementById('wName').value.trim();if(!p)return;(_cfg.watchNumbers||[]).push({numero:p,nome:n||p,notify:true});await cfgSet('watchNumbers',_cfg.watchNumbers);document.getElementById('wPhone').value='';document.getElementById('wName').value='';renderConfig();}
 async function cfgRemoveW(num){_cfg.watchNumbers=(_cfg.watchNumbers||[]).filter(w=>w.numero!==num);await cfgSet('watchNumbers',_cfg.watchNumbers);renderConfig();}
-
 function showToast(m,t){const c=document.getElementById('toastContainer');const e=document.createElement('div');e.className='toast '+t;e.textContent=(t==='success'?'\u2713 ':'\u2717 ')+m;c.appendChild(e);setTimeout(()=>{e.style.opacity='0';setTimeout(()=>e.remove(),300);},2500);}
-
 init();
 </script>
 </body>

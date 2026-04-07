@@ -22,3 +22,7 @@ music/
 .license
 licenses.json
 dist/
+.machine-id
+*.bak
+*-backup.html
+data/contatos.json

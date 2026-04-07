@@ -14,7 +14,6 @@ h1,h2,h3,.mono{font-family:'Space Mono',monospace}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px}
 ::-webkit-scrollbar-thumb:hover{background:var(--accent)}
-
 /* Sidebar */
 #sidebar{width:230px;min-width:230px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:transform .3s}
 #sidebar .logo{padding:22px 20px;border-bottom:1px solid var(--border);font-family:'Space Mono',monospace;font-size:16px;font-weight:700;color:var(--accent2);letter-spacing:3px;background:linear-gradient(135deg,var(--bg2),var(--bg3))}
@@ -25,7 +24,6 @@ h1,h2,h3,.mono{font-family:'Space Mono',monospace}
 #sidebar nav a .icon{font-size:17px;width:22px;text-align:center;filter:grayscale(.5)}
 #sidebar nav a.active .icon{filter:none}
 #menu-toggle{display:none;position:fixed;top:12px;left:12px;z-index:100;background:var(--bg2);border:1px solid var(--border);color:var(--accent);font-size:20px;padding:8px 11px;border-radius:8px;cursor:pointer;backdrop-filter:blur(10px)}
-
 /* Top bar */
 #top-bar{background:linear-gradient(180deg,var(--bg2),var(--bg));border-bottom:1px solid var(--border);padding:14px 24px;display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
 #top-bar>div{display:flex;flex-direction:column;gap:5px}
@@ -35,7 +33,6 @@ h1,h2,h3,.mono{font-family:'Space Mono',monospace}
 .account-status{font-size:10px;padding:5px 12px;border-radius:20px;font-family:'Space Mono',monospace;font-weight:700;letter-spacing:.5px;align-self:center}
 .account-status.connected{background:rgba(0,230,118,0.1);color:var(--green);border:1px solid rgba(0,230,118,0.2)}
 .account-status.error{background:rgba(255,82,82,0.1);color:var(--red);border:1px solid rgba(255,82,82,0.2)}
-
 /* Main */
 #main-wrap{flex:1;display:flex;flex-direction:column;overflow:hidden}
 #main{flex:1;overflow-y:auto;padding:28px 32px;background:linear-gradient(180deg,var(--bg) 0%,#08080d 100%)}
@@ -43,13 +40,11 @@ h1,h2,h3,.mono{font-family:'Space Mono',monospace}
 .section.active{display:block;animation:sectionIn .3s ease}
 @keyframes sectionIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .section-title{font-size:20px;margin-bottom:24px;color:var(--accent2);letter-spacing:1px;display:flex;align-items:center;gap:10px}
-
 /* Cards */
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:18px;transition:border-color .2s}
 .card:hover{border-color:var(--bg4)}
 .card h3{font-size:11px;color:var(--text3);margin-bottom:14px;text-transform:uppercase;letter-spacing:2px;display:flex;align-items:center;gap:8px}
 .card h3::before{content:'';display:inline-block;width:3px;height:14px;background:var(--accent);border-radius:2px}
-
 /* Stats */
 .stat-row{display:flex;gap:14px;flex-wrap:wrap}
 .stat{background:linear-gradient(135deg,var(--bg3),var(--bg4));border-radius:12px;padding:16px 20px;flex:1;min-width:120px;border:1px solid var(--border);transition:all .25s;position:relative;overflow:hidden}
@@ -58,7 +53,6 @@ h1,h2,h3,.mono{font-family:'Space Mono',monospace}
 .stat:hover::after{opacity:1}
 .stat .val{font-family:'Space Mono',monospace;font-size:20px;font-weight:700;color:var(--text);line-height:1.2}
 .stat .label{font-size:11px;color:var(--text2);margin-top:6px;letter-spacing:.3px}
-
 /* Forms */
 input,textarea,select{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;width:100%;transition:all .2s}
 input:focus,textarea:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(108,92,231,0.15)}
@@ -73,12 +67,10 @@ textarea{resize:vertical;min-height:80px}
 .btn-outline:hover{border-color:var(--accent);color:var(--accent2);background:var(--glass)}
 .form-group{margin-bottom:14px}
 .form-group label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;letter-spacing:.3px}
-
 /* Grid */
 .grid-6{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .grid-6 img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;cursor:pointer;border:1px solid var(--border);transition:all .25s}
 .grid-6 img:hover{border-color:var(--accent);transform:scale(1.03)}
-
 /* Post cards */
 .post-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:16px;transition:border-color .2s}
 .post-card:hover{border-color:var(--bg4)}
@@ -90,7 +82,6 @@ textarea{resize:vertical;min-height:80px}
 .post-card .post-stats span{color:var(--accent2);font-weight:700}
 .post-card .post-actions{display:flex;gap:8px;margin-top:12px}
 .expand-btn{color:var(--accent);font-size:12px;cursor:pointer;background:none;border:none;padding:0;font-family:'DM Sans',sans-serif}
-
 /* DM */
 .dm-wrap{display:flex;height:calc(100vh - 180px);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .dm-list{width:280px;min-width:280px;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto}
@@ -108,7 +99,6 @@ textarea{resize:vertical;min-height:80px}
 .msg .msg-time{font-size:10px;opacity:.5;margin-top:4px}
 .dm-input{display:flex;gap:8px;padding:14px;border-top:1px solid var(--border);background:var(--bg2)}
 .dm-input input{flex:1}
-
 /* Tables */
 table{width:100%;border-collapse:separate;border-spacing:0}
 th{text-align:left;padding:10px 14px;font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:1.2px;border-bottom:1px solid var(--border);background:var(--bg3);position:sticky;top:0}
@@ -118,7 +108,6 @@ td{text-align:left;padding:11px 14px;border-bottom:1px solid rgba(42,42,61,0.5);
 tr:hover td{background:var(--glass)}
 .status-active{color:var(--green);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px}
 .status-paused{color:var(--text3);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
-
 /* Bot config */
 .toggle-wrap{display:flex;align-items:center;gap:12px;margin-bottom:14px}
 .toggle{width:48px;height:26px;background:var(--bg4);border-radius:13px;cursor:pointer;position:relative;transition:background .3s;border:1px solid var(--border)}
@@ -131,7 +120,6 @@ tr:hover td{background:var(--glass)}
 .keyword-tag .remove:hover{color:var(--red)}
 .quick-reply-item{display:flex;gap:8px;margin-bottom:8px;align-items:center}
 .quick-reply-item input{flex:1}
-
 /* Toast */
 #toast-container{position:fixed;top:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px}
 .toast{padding:12px 20px;border-radius:10px;font-size:13px;animation:toastIn .4s ease;max-width:380px;word-break:break-word;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.05)}
@@ -139,18 +127,15 @@ tr:hover td{background:var(--glass)}
 .toast.success{background:rgba(0,230,118,0.9);color:#000;font-weight:600}
 .toast.info{background:rgba(28,28,40,0.95);color:var(--text);border:1px solid var(--border)}
 @keyframes toastIn{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
-
 /* Profile */
 .profile-card{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
 .profile-card img{width:85px;height:85px;border-radius:50%;border:3px solid var(--accent);padding:2px;background:var(--bg)}
 .profile-info .username{font-family:'Space Mono',monospace;font-size:17px;color:var(--accent2);font-weight:700}
 .profile-info .bio{font-size:13px;color:var(--text2);margin-top:6px;max-width:400px;line-height:1.5}
-
 /* Loading */
 .loading{text-align:center;padding:40px;color:var(--text2)}
 .spinner{display:inline-block;width:22px;height:22px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 /* Promo cards */
 .promo-card{background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:center;transition:all .2s}
 .promo-card:hover{border-color:var(--accent);background:var(--glass)}
@@ -160,7 +145,6 @@ tr:hover td{background:var(--glass)}
 .promo-card .promo-info .promo-stats{font-size:11px;color:var(--text2);margin-top:4px}
 .promo-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .promo-form .full{grid-column:1/-1}
-
 /* Follower tracker */
 .follower-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid rgba(42,42,61,0.4);font-size:13px;transition:background .15s}
 .follower-row:last-child{border-bottom:none}
@@ -176,7 +160,6 @@ tr:hover td{background:var(--glass)}
 .follower-bar-fill.ads{background:linear-gradient(90deg,var(--accent),var(--accent2))}
 .follower-bar-fill.organic{background:linear-gradient(90deg,var(--green),var(--green2))}
 .follower-label{font-size:10px;color:var(--text3);min-width:60px;text-align:right}
-
 /* Ads Dashboard */
 .dash-filters{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-bottom:0}
 .dash-filters .filter-group{display:flex;flex-direction:column;gap:5px}
@@ -185,19 +168,16 @@ tr:hover td{background:var(--glass)}
 .dash-filters select:focus,.dash-filters input[type="date"]:focus{outline:none;border-color:var(--accent)}
 .dash-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:0}
 .dash-summary .stat{text-align:center}
-
 /* Platform badges */
 .platform-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
 .platform-badge.ig{background:rgba(225,48,108,0.15);color:var(--pink);border:1px solid rgba(225,48,108,0.25)}
 .platform-badge.fb{background:rgba(68,138,255,0.15);color:var(--blue);border:1px solid rgba(68,138,255,0.25)}
 .platform-badge.all{background:var(--glass);color:var(--accent2);border:1px solid rgba(108,92,231,0.25)}
-
 /* Detail items */
 .ad-detail-item{background:linear-gradient(135deg,var(--bg3),var(--bg4));padding:12px 16px;border-radius:10px;border:1px solid var(--border);transition:all .2s}
 .ad-detail-item:hover{border-color:var(--accent);transform:translateY(-1px)}
 .ad-detail-item .val{font-family:'Space Mono',monospace;font-size:16px;color:var(--accent2);font-weight:700}
 .ad-detail-item .label{font-size:10px;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
-
 /* Chart bars */
 .chart-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:8px}
 .chart-bar{height:24px;border-radius:6px;min-width:4px;transition:width .6s ease}
@@ -205,13 +185,11 @@ tr:hover td{background:var(--glass)}
 .chart-bar.fb{background:linear-gradient(90deg,var(--blue),#42b72a)}
 .chart-bar-label{font-size:11px;color:var(--text2);min-width:90px}
 .chart-bar-val{font-size:12px;font-family:'Space Mono',monospace;color:var(--text);font-weight:700}
-
 /* Tabs */
 .tab-bar{display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px}
 .tab-btn{padding:11px 22px;background:none;border:none;color:var(--text3);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;letter-spacing:.3px}
 .tab-btn:hover{color:var(--text2)}
 .tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent)}
-
 /* AI Analysis */
 .ai-verdict{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;font-family:'Space Mono',monospace;letter-spacing:.5px;margin-bottom:12px}
 .ai-verdict.good{background:rgba(0,230,118,0.12);color:var(--green);border:1px solid rgba(0,230,118,0.25)}
@@ -219,1120 +197,1019 @@ tr:hover td{background:var(--glass)}
 .ai-verdict.bad{background:rgba(255,82,82,0.12);color:var(--red);border:1px solid rgba(255,82,82,0.25)}
 .ai-tips{margin-top:12px;padding:12px 16px;background:var(--bg3);border-radius:10px;border-left:3px solid var(--accent)}
 .ai-tips li{margin-bottom:6px;font-size:12px;color:var(--text2)}
-
 .expandable-row{cursor:pointer}
 .expandable-row:hover{background:var(--glass)}
 .ad-details{display:none;background:var(--bg);border-top:1px solid var(--border)}
 .ad-details.open{display:table-row}
 .ad-details td{padding:12px 14px 12px 40px;font-size:12px;color:var(--text2)}
 .ad-detail-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px}
-
 /* Responsive */
 @media(max-width:768px){
-  #sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%)}
-  #sidebar.open{transform:translateX(0)}
-  #menu-toggle{display:block}
-  #main{padding:15px;padding-top:50px}
-  #top-bar{flex-direction:column;gap:10px}
-  #top-bar select{min-width:100%}
-  .dm-wrap{flex-direction:column;height:auto}
-  .dm-list{width:100%;min-width:100%;max-height:200px}
-  .dm-chat{min-height:400px}
-  .grid-6{grid-template-columns:repeat(2,1fr)}
-  .profile-card{flex-direction:column;text-align:center}
-  .promo-form{grid-template-columns:1fr}
-  .dash-summary{grid-template-columns:repeat(2,1fr)}
+#sidebar{position:fixed;left:0;top:0;bottom:0;z-index:50;transform:translateX(-100%)}
+#sidebar.open{transform:translateX(0)}
+#menu-toggle{display:block}
+#main{padding:15px;padding-top:50px}
+#top-bar{flex-direction:column;gap:10px}
+#top-bar select{min-width:100%}
+.dm-wrap{flex-direction:column;height:auto}
+.dm-list{width:100%;min-width:100%;max-height:200px}
+.dm-chat{min-height:400px}
+.grid-6{grid-template-columns:repeat(2,1fr)}
+.profile-card{flex-direction:column;text-align:center}
+.promo-form{grid-template-columns:1fr}
+.dash-summary{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
 <body>
-
 <button id="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">&#9776;</button>
-
 <div id="sidebar">
-  <div class="logo">META DASH</div>
-  <nav>
-    <a class="active" data-section="ig-profile"><span class="icon">&#128100;</span> IG Perfil</a>
-    <a data-section="ig-posts"><span class="icon">&#128247;</span> IG Posts</a>
-    <a data-section="ig-dm"><span class="icon">&#128172;</span> IG DM</a>
-    <a data-section="ig-ads"><span class="icon">&#127919;</span> IG Ads</a>
-    <a data-section="fb-page"><span class="icon">&#128196;</span> FB Pagina</a>
-    <a data-section="ads-dashboard"><span class="icon">&#128202;</span> Ads Dashboard</a>
-    <a data-section="bot-config"><span class="icon">&#9881;</span> Bot Config</a>
-  </nav>
+<div class="logo">META DASH</div>
+<nav>
+<a class="active" data-section="ig-profile"><span class="icon">&#128100;</span> IG Perfil</a>
+<a data-section="ig-posts"><span class="icon">&#128247;</span> IG Posts</a>
+<a data-section="ig-dm"><span class="icon">&#128172;</span> IG DM</a>
+<a data-section="ig-ads"><span class="icon">&#127919;</span> IG Ads</a>
+<a data-section="fb-page"><span class="icon">&#128196;</span> FB Pagina</a>
+<a data-section="ads-dashboard"><span class="icon">&#128202;</span> Ads Dashboard</a>
+<a data-section="bot-config"><span class="icon">&#9881;</span> Bot Config</a>
+</nav>
 </div>
-
 <div id="main-wrap">
-  <!-- Top Bar: Account Selector -->
-  <div id="top-bar">
-    <div>
-      <label>Pagina Facebook</label>
-      <select id="page-selector" onchange="onPageChange()">
-        <option value="">Carregando...</option>
-      </select>
-    </div>
-    <div>
-      <label>Instagram</label>
-      <select id="ig-selector" onchange="onIGChange()">
-        <option value="">Carregando...</option>
-      </select>
-    </div>
-    <div>
-      <label>Conta de Anuncio</label>
-      <select id="ad-account-selector" onchange="onAdAccountChange()">
-        <option value="">Carregando...</option>
-      </select>
-    </div>
-    <span id="connection-status" class="account-status">...</span>
-  </div>
-
-  <div id="main">
-    <!-- IG Profile -->
-    <div id="ig-profile" class="section active">
-      <h2 class="section-title">Instagram Perfil</h2>
-      <div class="card">
-        <div id="ig-profile-card" class="profile-card"><div class="loading"><div class="spinner"></div></div></div>
-      </div>
-      <div class="card">
-        <h3>Estatisticas</h3>
-        <div id="ig-profile-stats" class="stat-row"></div>
-      </div>
-      <div class="card">
-        <h3>Ultimos Posts</h3>
-        <div id="ig-mini-grid" class="grid-6"></div>
-      </div>
-    </div>
-
-    <!-- IG Posts -->
-    <div id="ig-posts" class="section">
-      <h2 class="section-title">Instagram Posts</h2>
-      <div class="card">
-        <h3>Criar Post</h3>
-        <div class="form-group"><label>URL da Imagem</label><input id="ig-post-url" placeholder="https://..."></div>
-        <div class="form-group"><label>Legenda</label><textarea id="ig-post-caption" placeholder="Escreva a legenda..."></textarea></div>
-        <button class="btn btn-primary" onclick="createIGPost()">Publicar</button>
-      </div>
-      <div id="ig-posts-list"></div>
-    </div>
-
-    <!-- IG DM -->
-    <div id="ig-dm" class="section">
-      <h2 class="section-title">Instagram DM</h2>
-      <div class="dm-wrap">
-        <div class="dm-list" id="dm-list"><div class="loading"><div class="spinner"></div></div></div>
-        <div class="dm-chat">
-          <div class="dm-header" id="dm-header">Selecione uma conversa</div>
-          <div class="dm-messages" id="dm-messages"></div>
-          <div class="dm-input">
-            <input id="dm-input" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendDM()">
-            <button class="btn btn-primary" onclick="sendDM()">Enviar</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- IG Ads -->
-    <div id="ig-ads" class="section">
-      <h2 class="section-title">Instagram Ads</h2>
-
-      <!-- Filtro de periodo -->
-      <div class="card">
-        <div class="dash-filters">
-          <div class="filter-group">
-            <label>Periodo</label>
-            <select id="ig-ads-period" onchange="loadIGAds()">
-              <option value="maximum">Todo periodo</option>
-              <option value="today">Hoje</option>
-              <option value="yesterday">Ontem</option>
-              <option value="last_7d">Ultimos 7 dias</option>
-              <option value="last_14d">Ultimos 14 dias</option>
-              <option value="last_30d">Ultimos 30 dias</option>
-              <option value="this_month">Este mes</option>
-              <option value="last_month">Mes passado</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>&nbsp;</label>
-            <button class="btn btn-primary btn-sm" onclick="loadIGAds()" style="height:36px">Atualizar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Analise IA -->
-      <div class="card" id="ig-ai-analysis-card">
-        <h3>Analise da IA</h3>
-        <div id="ig-ai-analysis" style="font-size:13px;line-height:1.7;color:var(--text2)">
-          <div class="loading"><div class="spinner"></div></div>
-        </div>
-      </div>
-
-      <!-- Resumo geral -->
-      <div class="card">
-        <h3>Resumo Geral</h3>
-        <div id="ig-ads-summary" class="dash-summary"><div class="loading"><div class="spinner"></div></div></div>
-      </div>
-
-      <!-- Seguidores por Anuncio -->
-      <div class="card">
-        <h3>Seguidores por Anuncio</h3>
-        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-          <button class="btn btn-primary btn-sm" onclick="runIGScrape()">Escanear Agora</button>
-          <span id="scrape-status" style="font-size:11px;color:var(--text3)"></span>
-        </div>
-        <div id="ig-followers-dashboard"></div>
-      </div>
-
-      <!-- Metricas detalhadas -->
-      <div class="card">
-        <h3>Metricas Detalhadas</h3>
-        <div id="ig-ads-actions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
-      </div>
-
-      <!-- Video metrics -->
-      <div class="card" id="ig-ads-video-card" style="display:none">
-        <h3>Performance de Video</h3>
-        <div id="ig-ads-video" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
-      </div>
-
-      <!-- Custos por acao -->
-      <div class="card">
-        <h3>Custo por Acao</h3>
-        <div id="ig-ads-costs" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px"></div>
-      </div>
-
-      <!-- Campanhas detalhadas -->
-      <div class="card">
-        <h3>Campanhas</h3>
-        <div style="overflow-x:auto">
-          <table>
-            <thead><tr>
-              <th>Campanha</th><th>Status</th><th>Gasto</th><th>Impressoes</th><th>Alcance</th>
-              <th>Cliques</th><th>CTR</th><th>Curtidas</th><th>Comentarios</th><th>Salvos</th>
-              <th>Views</th><th>Engajamento</th><th>Acoes</th>
-            </tr></thead>
-            <tbody id="ig-ads-tbody"><tr><td colspan="13" class="loading"><div class="spinner"></div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-      <div class="card">
-        <h3>Promover Post Existente</h3>
-        <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Selecione um post para promover como anuncio no Instagram</p>
-        <div id="ig-promotable-posts"><div class="loading"><div class="spinner"></div></div></div>
-      </div>
-      <div class="card">
-        <h3>Criar Anuncio do Zero</h3>
-        <div class="promo-form">
-          <div class="form-group"><label>URL da Imagem</label><input id="ig-ad-image-url" placeholder="https://..."></div>
-          <div class="form-group"><label>Texto do Anuncio</label><input id="ig-ad-caption" placeholder="Texto do anuncio..."></div>
-          <div class="form-group"><label>Orcamento Diario (centavos)</label><input id="ig-ad-budget" type="number" value="2000" placeholder="2000 = R$20"></div>
-          <div class="form-group"><label>Duracao (dias)</label><input id="ig-ad-duration" type="number" value="7"></div>
-          <div class="form-group"><label>Idade Min</label><input id="ig-ad-age-min" type="number" value="25"></div>
-          <div class="form-group"><label>Idade Max</label><input id="ig-ad-age-max" type="number" value="55"></div>
-          <div class="form-group"><label>Pais</label><input id="ig-ad-country" value="BR"></div>
-          <div class="form-group"><label>Nome da Campanha</label><input id="ig-ad-name" value="Campanha Instagram"></div>
-          <div class="full">
-            <button class="btn btn-primary" onclick="createIGAd()">Criar Anuncio Instagram</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- FB Page -->
-    <div id="fb-page" class="section">
-      <h2 class="section-title">Facebook Pagina</h2>
-      <div class="card" id="fb-page-info"><div class="loading"><div class="spinner"></div></div></div>
-      <div class="card">
-        <h3>Criar Post</h3>
-        <div class="form-group"><label>Texto</label><textarea id="fb-post-text" placeholder="Escreva o post..."></textarea></div>
-        <div class="form-group"><label>URL da Imagem (opcional)</label><input id="fb-post-img" placeholder="https://..."></div>
-        <button class="btn btn-primary" onclick="createFBPost()">Publicar</button>
-      </div>
-      <div class="card">
-        <h3>Posts Recentes</h3>
-        <div id="fb-posts-list"><div class="loading"><div class="spinner"></div></div></div>
-      </div>
-    </div>
-
-    <!-- Ads Dashboard -->
-    <div id="ads-dashboard" class="section">
-      <h2 class="section-title">Ads Dashboard</h2>
-
-      <!-- Filters -->
-      <div class="card">
-        <div class="dash-filters">
-          <div class="filter-group">
-            <label>Plataforma</label>
-            <select id="dash-platform" onchange="loadAdsDashboard()">
-              <option value="all">Todas</option>
-              <option value="instagram">Instagram</option>
-              <option value="facebook">Facebook</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Conta</label>
-            <select id="dash-account" onchange="loadAdsDashboard()">
-              <option value="all">Todas as contas</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Status</label>
-            <select id="dash-status" onchange="filterDashTable()">
-              <option value="all">Todos</option>
-              <option value="ACTIVE">Ativos</option>
-              <option value="PAUSED">Pausados</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Periodo</label>
-            <select id="dash-period" onchange="loadAdsDashboard()">
-              <option value="maximum">Todo periodo</option>
-              <option value="today">Hoje</option>
-              <option value="yesterday">Ontem</option>
-              <option value="last_7d">Ultimos 7 dias</option>
-              <option value="last_14d">Ultimos 14 dias</option>
-              <option value="last_30d">Ultimos 30 dias</option>
-              <option value="this_month">Este mes</option>
-              <option value="last_month">Mes passado</option>
-              <option value="custom">Personalizado</option>
-            </select>
-          </div>
-          <div class="filter-group" id="custom-dates" style="display:none">
-            <label>De</label>
-            <input type="date" id="dash-date-from">
-          </div>
-          <div class="filter-group" id="custom-dates-to" style="display:none">
-            <label>Ate</label>
-            <input type="date" id="dash-date-to">
-          </div>
-          <div class="filter-group">
-            <label>&nbsp;</label>
-            <button class="btn btn-primary btn-sm" onclick="loadAdsDashboard()" style="height:36px">Atualizar</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Summary -->
-      <div class="dash-summary" id="dash-summary">
-        <div class="stat"><div class="val">--</div><div class="label">Gasto Total</div></div>
-        <div class="stat"><div class="val">--</div><div class="label">Impressoes</div></div>
-        <div class="stat"><div class="val">--</div><div class="label">Alcance</div></div>
-        <div class="stat"><div class="val">--</div><div class="label">Cliques</div></div>
-        <div class="stat"><div class="val">--</div><div class="label">CTR</div></div>
-        <div class="stat"><div class="val">--</div><div class="label">CPC</div></div>
-        <div class="stat"><div class="val">--</div><div class="label">CPM</div></div>
-        <div class="stat"><div class="val">--</div><div class="label">Engajamento</div></div>
-      </div>
-
-      <!-- Platform comparison -->
-      <div class="card" id="dash-comparison">
-        <h3>Comparativo por Plataforma</h3>
-        <div id="dash-comparison-bars"></div>
-      </div>
-
-      <!-- Tabs -->
-      <div class="card" style="padding-bottom:0">
-        <div class="tab-bar">
-          <button class="tab-btn active" onclick="switchDashTab('campaigns',this)">Campanhas</button>
-          <button class="tab-btn" onclick="switchDashTab('adsets',this)">Conjuntos</button>
-          <button class="tab-btn" onclick="switchDashTab('ads',this)">Anuncios</button>
-        </div>
-
-        <!-- Campaigns tab -->
-        <div id="dash-tab-campaigns" class="dash-tab" style="overflow-x:auto;padding-bottom:16px">
-          <table>
-            <thead><tr>
-              <th>Campanha</th><th>Plataforma</th><th>Status</th><th>Objetivo</th>
-              <th>Gasto</th><th>Impressoes</th><th>Alcance</th><th>Cliques</th><th>CTR</th><th>Engajamento</th><th>Acoes</th>
-            </tr></thead>
-            <tbody id="dash-campaigns-tbody"><tr><td colspan="11" class="loading"><div class="spinner"></div></td></tr></tbody>
-          </table>
-        </div>
-
-        <!-- Ad Sets tab -->
-        <div id="dash-tab-adsets" class="dash-tab" style="display:none;overflow-x:auto;padding-bottom:16px">
-          <table>
-            <thead><tr>
-              <th>Conjunto</th><th>Campanha</th><th>Status</th><th>Orcamento</th>
-              <th>Gasto</th><th>Impressoes</th><th>Alcance</th><th>Cliques</th><th>Acoes</th>
-            </tr></thead>
-            <tbody id="dash-adsets-tbody"><tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr></tbody>
-          </table>
-        </div>
-
-        <!-- Ads tab -->
-        <div id="dash-tab-ads" class="dash-tab" style="display:none;overflow-x:auto;padding-bottom:16px">
-          <table>
-            <thead><tr>
-              <th>Anuncio</th><th>Campanha</th><th>Status</th>
-              <th>Gasto</th><th>Impressoes</th><th>Alcance</th><th>Cliques</th><th>CTR</th><th>Acoes</th>
-            </tr></thead>
-            <tbody id="dash-ads-tbody"><tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr></tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Create Ad -->
-      <div class="card">
-        <h3>Criar Nova Campanha</h3>
-        <div class="promo-form">
-          <div class="form-group">
-            <label>Plataforma</label>
-            <select id="new-ad-platform" style="width:100%">
-              <option value="instagram">Instagram</option>
-              <option value="facebook">Facebook</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Nome da Campanha</label><input id="new-ad-name" value="Nova Campanha"></div>
-          <div class="form-group"><label>URL da Imagem</label><input id="new-ad-image" placeholder="https://..."></div>
-          <div class="form-group"><label>Texto</label><input id="new-ad-text" placeholder="Texto do anuncio..."></div>
-          <div class="form-group"><label>Link (Facebook)</label><input id="new-ad-link" placeholder="https://seusite.com"></div>
-          <div class="form-group"><label>Orcamento Diario (centavos)</label><input id="new-ad-budget" type="number" value="2000"></div>
-          <div class="form-group"><label>Duracao (dias)</label><input id="new-ad-days" type="number" value="7"></div>
-          <div class="form-group"><label>Pais</label><input id="new-ad-country" value="BR"></div>
-          <div class="form-group"><label>Idade Min</label><input id="new-ad-age-min" type="number" value="25"></div>
-          <div class="form-group"><label>Idade Max</label><input id="new-ad-age-max" type="number" value="55"></div>
-          <div class="full">
-            <button class="btn btn-primary" onclick="createDashAd()">Criar Campanha</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Bot Config -->
-    <div id="bot-config" class="section">
-      <h2 class="section-title">Bot Config</h2>
-      <div class="card">
-        <h3>Auto-Resposta</h3>
-        <div class="toggle-wrap">
-          <div id="auto-reply-toggle" class="toggle" onclick="toggleAutoReply()"></div>
-          <span id="auto-reply-label">Desativado</span>
-        </div>
-      </div>
-      <div class="card">
-        <h3>Mensagem de Boas-vindas</h3>
-        <div class="form-group"><textarea id="welcome-msg" placeholder="Mensagem de boas-vindas..."></textarea></div>
-      </div>
-      <div class="card">
-        <h3>Keywords / Gatilhos</h3>
-        <div style="display:flex;gap:8px;margin-bottom:10px">
-          <input id="keyword-input" placeholder="Palavra-chave" style="flex:1" onkeydown="if(event.key==='Enter')addKeyword()">
-          <input id="keyword-response" placeholder="Resposta" style="flex:1" onkeydown="if(event.key==='Enter')addKeyword()">
-          <button class="btn btn-primary btn-sm" onclick="addKeyword()">+</button>
-        </div>
-        <div id="keyword-list" class="keyword-list"></div>
-      </div>
-      <div class="card">
-        <h3>Quick Replies</h3>
-        <div id="quick-replies-list"></div>
-        <button class="btn btn-outline btn-sm" onclick="addQuickReplyField()" style="margin-top:8px">+ Adicionar</button>
-      </div>
-      <button class="btn btn-primary" onclick="saveBotConfig()" style="margin-top:10px">Salvar Configuracao</button>
-    </div>
-  </div>
+<!-- Top Bar: Account Selector -->
+<div id="top-bar">
+<div>
+<label>Pagina Facebook</label>
+<select id="page-selector" onchange="onPageChange()">
+<option value="">Carregando...</option>
+</select>
 </div>
-
+<div>
+<label>Instagram</label>
+<select id="ig-selector" onchange="onIGChange()">
+<option value="">Carregando...</option>
+</select>
+</div>
+<div>
+<label>Conta de Anuncio</label>
+<select id="ad-account-selector" onchange="onAdAccountChange()">
+<option value="">Carregando...</option>
+</select>
+</div>
+<span id="connection-status" class="account-status">...</span>
+</div>
+<div id="main">
+<!-- IG Profile -->
+<div id="ig-profile" class="section active">
+<h2 class="section-title">Instagram Perfil</h2>
+<div class="card">
+<div id="ig-profile-card" class="profile-card"><div class="loading"><div class="spinner"></div></div></div>
+</div>
+<div class="card">
+<h3>Estatisticas</h3>
+<div id="ig-profile-stats" class="stat-row"></div>
+</div>
+<div class="card">
+<h3>Ultimos Posts</h3>
+<div id="ig-mini-grid" class="grid-6"></div>
+</div>
+</div>
+<!-- IG Posts -->
+<div id="ig-posts" class="section">
+<h2 class="section-title">Instagram Posts</h2>
+<div class="card">
+<h3>Criar Post</h3>
+<div class="form-group"><label>URL da Imagem</label><input id="ig-post-url" placeholder="https://..."></div>
+<div class="form-group"><label>Legenda</label><textarea id="ig-post-caption" placeholder="Escreva a legenda..."></textarea></div>
+<button class="btn btn-primary" onclick="createIGPost()">Publicar</button>
+</div>
+<div id="ig-posts-list"></div>
+</div>
+<!-- IG DM -->
+<div id="ig-dm" class="section">
+<h2 class="section-title">Instagram DM</h2>
+<div class="dm-wrap">
+<div class="dm-list" id="dm-list"><div class="loading"><div class="spinner"></div></div></div>
+<div class="dm-chat">
+<div class="dm-header" id="dm-header">Selecione uma conversa</div>
+<div class="dm-messages" id="dm-messages"></div>
+<div class="dm-input">
+<input id="dm-input" placeholder="Digite uma mensagem..." onkeydown="if(event.key==='Enter')sendDM()">
+<button class="btn btn-primary" onclick="sendDM()">Enviar</button>
+</div>
+</div>
+</div>
+</div>
+<!-- IG Ads -->
+<div id="ig-ads" class="section">
+<h2 class="section-title">Instagram Ads</h2>
+<!-- Filtro de periodo -->
+<div class="card">
+<div class="dash-filters">
+<div class="filter-group">
+<label>Periodo</label>
+<select id="ig-ads-period" onchange="loadIGAds()">
+<option value="maximum">Todo periodo</option>
+<option value="today">Hoje</option>
+<option value="yesterday">Ontem</option>
+<option value="last_7d">Ultimos 7 dias</option>
+<option value="last_14d">Ultimos 14 dias</option>
+<option value="last_30d">Ultimos 30 dias</option>
+<option value="this_month">Este mes</option>
+<option value="last_month">Mes passado</option>
+</select>
+</div>
+<div class="filter-group">
+<label>&nbsp;</label>
+<button class="btn btn-primary btn-sm" onclick="loadIGAds()" style="height:36px">Atualizar</button>
+</div>
+</div>
+</div>
+<!-- Analise IA -->
+<div class="card" id="ig-ai-analysis-card">
+<h3>Analise da IA</h3>
+<div id="ig-ai-analysis" style="font-size:13px;line-height:1.7;color:var(--text2)">
+<div class="loading"><div class="spinner"></div></div>
+</div>
+</div>
+<!-- Resumo geral -->
+<div class="card">
+<h3>Resumo Geral</h3>
+<div id="ig-ads-summary" class="dash-summary"><div class="loading"><div class="spinner"></div></div></div>
+</div>
+<!-- Seguidores por Anuncio -->
+<div class="card">
+<h3>Seguidores por Anuncio</h3>
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+<button class="btn btn-primary btn-sm" onclick="runIGScrape()">Escanear Agora</button>
+<span id="scrape-status" style="font-size:11px;color:var(--text3)"></span>
+</div>
+<div id="ig-followers-dashboard"></div>
+</div>
+<!-- Metricas detalhadas -->
+<div class="card">
+<h3>Metricas Detalhadas</h3>
+<div id="ig-ads-actions" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
+</div>
+<!-- Video metrics -->
+<div class="card" id="ig-ads-video-card" style="display:none">
+<h3>Performance de Video</h3>
+<div id="ig-ads-video" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px"></div>
+</div>
+<!-- Custos por acao -->
+<div class="card">
+<h3>Custo por Acao</h3>
+<div id="ig-ads-costs" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px"></div>
+</div>
+<!-- Campanhas detalhadas -->
+<div class="card">
+<h3>Campanhas</h3>
+<div style="overflow-x:auto">
+<table>
+<thead><tr>
+<th>Campanha</th><th>Status</th><th>Gasto</th><th>Impressoes</th><th>Alcance</th>
+<th>Cliques</th><th>CTR</th><th>Curtidas</th><th>Comentarios</th><th>Salvos</th>
+<th>Views</th><th>Engajamento</th><th>Acoes</th>
+</tr></thead>
+<tbody id="ig-ads-tbody"><tr><td colspan="13" class="loading"><div class="spinner"></div></td></tr></tbody>
+</table>
+</div>
+</div>
+<div class="card">
+<h3>Promover Post Existente</h3>
+<p style="font-size:13px;color:var(--text2);margin-bottom:14px">Selecione um post para promover como anuncio no Instagram</p>
+<div id="ig-promotable-posts"><div class="loading"><div class="spinner"></div></div></div>
+</div>
+<div class="card">
+<h3>Criar Anuncio do Zero</h3>
+<div class="promo-form">
+<div class="form-group"><label>URL da Imagem</label><input id="ig-ad-image-url" placeholder="https://..."></div>
+<div class="form-group"><label>Texto do Anuncio</label><input id="ig-ad-caption" placeholder="Texto do anuncio..."></div>
+<div class="form-group"><label>Orcamento Diario (centavos)</label><input id="ig-ad-budget" type="number" value="2000" placeholder="2000 = R$20"></div>
+<div class="form-group"><label>Duracao (dias)</label><input id="ig-ad-duration" type="number" value="7"></div>
+<div class="form-group"><label>Idade Min</label><input id="ig-ad-age-min" type="number" value="25"></div>
+<div class="form-group"><label>Idade Max</label><input id="ig-ad-age-max" type="number" value="55"></div>
+<div class="form-group"><label>Pais</label><input id="ig-ad-country" value="BR"></div>
+<div class="form-group"><label>Nome da Campanha</label><input id="ig-ad-name" value="Campanha Instagram"></div>
+<div class="full">
+<button class="btn btn-primary" onclick="createIGAd()">Criar Anuncio Instagram</button>
+</div>
+</div>
+</div>
+</div>
+<!-- FB Page -->
+<div id="fb-page" class="section">
+<h2 class="section-title">Facebook Pagina</h2>
+<div class="card" id="fb-page-info"><div class="loading"><div class="spinner"></div></div></div>
+<div class="card">
+<h3>Criar Post</h3>
+<div class="form-group"><label>Texto</label><textarea id="fb-post-text" placeholder="Escreva o post..."></textarea></div>
+<div class="form-group"><label>URL da Imagem (opcional)</label><input id="fb-post-img" placeholder="https://..."></div>
+<button class="btn btn-primary" onclick="createFBPost()">Publicar</button>
+</div>
+<div class="card">
+<h3>Posts Recentes</h3>
+<div id="fb-posts-list"><div class="loading"><div class="spinner"></div></div></div>
+</div>
+</div>
+<!-- Ads Dashboard -->
+<div id="ads-dashboard" class="section">
+<h2 class="section-title">Ads Dashboard</h2>
+<!-- Filters -->
+<div class="card">
+<div class="dash-filters">
+<div class="filter-group">
+<label>Plataforma</label>
+<select id="dash-platform" onchange="loadAdsDashboard()">
+<option value="all">Todas</option>
+<option value="instagram">Instagram</option>
+<option value="facebook">Facebook</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Conta</label>
+<select id="dash-account" onchange="loadAdsDashboard()">
+<option value="all">Todas as contas</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Status</label>
+<select id="dash-status" onchange="filterDashTable()">
+<option value="all">Todos</option>
+<option value="ACTIVE">Ativos</option>
+<option value="PAUSED">Pausados</option>
+</select>
+</div>
+<div class="filter-group">
+<label>Periodo</label>
+<select id="dash-period" onchange="loadAdsDashboard()">
+<option value="maximum">Todo periodo</option>
+<option value="today">Hoje</option>
+<option value="yesterday">Ontem</option>
+<option value="last_7d">Ultimos 7 dias</option>
+<option value="last_14d">Ultimos 14 dias</option>
+<option value="last_30d">Ultimos 30 dias</option>
+<option value="this_month">Este mes</option>
+<option value="last_month">Mes passado</option>
+<option value="custom">Personalizado</option>
+</select>
+</div>
+<div class="filter-group" id="custom-dates" style="display:none">
+<label>De</label>
+<input type="date" id="dash-date-from">
+</div>
+<div class="filter-group" id="custom-dates-to" style="display:none">
+<label>Ate</label>
+<input type="date" id="dash-date-to">
+</div>
+<div class="filter-group">
+<label>&nbsp;</label>
+<button class="btn btn-primary btn-sm" onclick="loadAdsDashboard()" style="height:36px">Atualizar</button>
+</div>
+</div>
+</div>
+<!-- Summary -->
+<div class="dash-summary" id="dash-summary">
+<div class="stat"><div class="val">--</div><div class="label">Gasto Total</div></div>
+<div class="stat"><div class="val">--</div><div class="label">Impressoes</div></div>
+<div class="stat"><div class="val">--</div><div class="label">Alcance</div></div>
+<div class="stat"><div class="val">--</div><div class="label">Cliques</div></div>
+<div class="stat"><div class="val">--</div><div class="label">CTR</div></div>
+<div class="stat"><div class="val">--</div><div class="label">CPC</div></div>
+<div class="stat"><div class="val">--</div><div class="label">CPM</div></div>
+<div class="stat"><div class="val">--</div><div class="label">Engajamento</div></div>
+</div>
+<!-- Platform comparison -->
+<div class="card" id="dash-comparison">
+<h3>Comparativo por Plataforma</h3>
+<div id="dash-comparison-bars"></div>
+</div>
+<!-- Tabs -->
+<div class="card" style="padding-bottom:0">
+<div class="tab-bar">
+<button class="tab-btn active" onclick="switchDashTab('campaigns',this)">Campanhas</button>
+<button class="tab-btn" onclick="switchDashTab('adsets',this)">Conjuntos</button>
+<button class="tab-btn" onclick="switchDashTab('ads',this)">Anuncios</button>
+</div>
+<!-- Campaigns tab -->
+<div id="dash-tab-campaigns" class="dash-tab" style="overflow-x:auto;padding-bottom:16px">
+<table>
+<thead><tr>
+<th>Campanha</th><th>Plataforma</th><th>Status</th><th>Objetivo</th>
+<th>Gasto</th><th>Impressoes</th><th>Alcance</th><th>Cliques</th><th>CTR</th><th>Engajamento</th><th>Acoes</th>
+</tr></thead>
+<tbody id="dash-campaigns-tbody"><tr><td colspan="11" class="loading"><div class="spinner"></div></td></tr></tbody>
+</table>
+</div>
+<!-- Ad Sets tab -->
+<div id="dash-tab-adsets" class="dash-tab" style="display:none;overflow-x:auto;padding-bottom:16px">
+<table>
+<thead><tr>
+<th>Conjunto</th><th>Campanha</th><th>Status</th><th>Orcamento</th>
+<th>Gasto</th><th>Impressoes</th><th>Alcance</th><th>Cliques</th><th>Acoes</th>
+</tr></thead>
+<tbody id="dash-adsets-tbody"><tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr></tbody>
+</table>
+</div>
+<!-- Ads tab -->
+<div id="dash-tab-ads" class="dash-tab" style="display:none;overflow-x:auto;padding-bottom:16px">
+<table>
+<thead><tr>
+<th>Anuncio</th><th>Campanha</th><th>Status</th>
+<th>Gasto</th><th>Impressoes</th><th>Alcance</th><th>Cliques</th><th>CTR</th><th>Acoes</th>
+</tr></thead>
+<tbody id="dash-ads-tbody"><tr><td colspan="9" class="loading"><div class="spinner"></div></td></tr></tbody>
+</table>
+</div>
+</div>
+<!-- Create Ad -->
+<div class="card">
+<h3>Criar Nova Campanha</h3>
+<div class="promo-form">
+<div class="form-group">
+<label>Plataforma</label>
+<select id="new-ad-platform" style="width:100%">
+<option value="instagram">Instagram</option>
+<option value="facebook">Facebook</option>
+</select>
+</div>
+<div class="form-group"><label>Nome da Campanha</label><input id="new-ad-name" value="Nova Campanha"></div>
+<div class="form-group"><label>URL da Imagem</label><input id="new-ad-image" placeholder="https://..."></div>
+<div class="form-group"><label>Texto</label><input id="new-ad-text" placeholder="Texto do anuncio..."></div>
+<div class="form-group"><label>Link (Facebook)</label><input id="new-ad-link" placeholder="https://seusite.com"></div>
+<div class="form-group"><label>Orcamento Diario (centavos)</label><input id="new-ad-budget" type="number" value="2000"></div>
+<div class="form-group"><label>Duracao (dias)</label><input id="new-ad-days" type="number" value="7"></div>
+<div class="form-group"><label>Pais</label><input id="new-ad-country" value="BR"></div>
+<div class="form-group"><label>Idade Min</label><input id="new-ad-age-min" type="number" value="25"></div>
+<div class="form-group"><label>Idade Max</label><input id="new-ad-age-max" type="number" value="55"></div>
+<div class="full">
+<button class="btn btn-primary" onclick="createDashAd()">Criar Campanha</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bot Config -->
+<div id="bot-config" class="section">
+<h2 class="section-title">Bot Config</h2>
+<div class="card">
+<h3>Auto-Resposta</h3>
+<div class="toggle-wrap">
+<div id="auto-reply-toggle" class="toggle" onclick="toggleAutoReply()"></div>
+<span id="auto-reply-label">Desativado</span>
+</div>
+</div>
+<div class="card">
+<h3>Mensagem de Boas-vindas</h3>
+<div class="form-group"><textarea id="welcome-msg" placeholder="Mensagem de boas-vindas..."></textarea></div>
+</div>
+<div class="card">
+<h3>Keywords / Gatilhos</h3>
+<div style="display:flex;gap:8px;margin-bottom:10px">
+<input id="keyword-input" placeholder="Palavra-chave" style="flex:1" onkeydown="if(event.key==='Enter')addKeyword()">
+<input id="keyword-response" placeholder="Resposta" style="flex:1" onkeydown="if(event.key==='Enter')addKeyword()">
+<button class="btn btn-primary btn-sm" onclick="addKeyword()">+</button>
+</div>
+<div id="keyword-list" class="keyword-list"></div>
+</div>
+<div class="card">
+<h3>Quick Replies</h3>
+<div id="quick-replies-list"></div>
+<button class="btn btn-outline btn-sm" onclick="addQuickReplyField()" style="margin-top:8px">+ Adicionar</button>
+</div>
+<button class="btn btn-primary" onclick="saveBotConfig()" style="margin-top:10px">Salvar Configuracao</button>
+</div>
+</div>
+</div>
 <div id="toast-container"></div>
-
 <script>
 // ===== CONFIG =====
 let ACCESS_TOKEN = '';
 const API_BASE = 'https://graph.facebook.com/v21.0';
-
 // Dynamic — populated from API
 let PAGE_ID = '';
 let IG_ID = '';
 let PAGE_TOKEN = null;
 let AD_ACCOUNT_ID = '';
-
 // All accounts data
 let allPages = [];
 let allIGAccounts = [];
 let allAdAccounts = [];
-
 let currentConversationId = null;
 let currentParticipantName = '';
 let dmRefreshTimer = null;
-
 // ===== INIT =====
 document.addEventListener('DOMContentLoaded', async () => {
-  // Carregar token do servidor PRIMEIRO
-  try {
-    const res = await fetch('/api/public-config');
-    const cfg = await res.json();
-    if (cfg.metaAccessToken) ACCESS_TOKEN = cfg.metaAccessToken;
-  } catch (e) {}
-
-  setupNavigation();
-  await loadAccounts();
-  if (ACCESS_TOKEN) loadBotConfig();
+// Carregar token do servidor PRIMEIRO
+try {
+const res = await fetch('/api/public-config');
+const cfg = await res.json();
+if (cfg.metaAccessToken) ACCESS_TOKEN = cfg.metaAccessToken;
+} catch (e) {}
+setupNavigation();
+await loadAccounts();
+if (ACCESS_TOKEN) loadBotConfig();
 });
-
 // ===== SETUP META (quando nao tem token) =====
 function showMetaSetup() {
-  document.getElementById('main').innerHTML = `
-    <div style="max-width:600px;margin:40px auto;text-align:center">
-      <h2 style="color:var(--accent2);margin-bottom:12px;font-family:'Space Mono',monospace">Configurar Meta</h2>
-      <p style="color:var(--text2);margin-bottom:30px">Para usar o Instagram e Facebook, voce precisa conectar sua conta Meta.</p>
-
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:left;margin-bottom:20px">
-        <h3 style="color:var(--accent2);font-size:13px;margin-bottom:16px;font-family:'Space Mono',monospace">PASSO A PASSO</h3>
-
-        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
-          <span style="background:var(--accent);color:#fff;min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">1</span>
-          <div>
-            <div style="font-weight:600;font-size:14px">Crie um app no Meta for Developers</div>
-            <div style="font-size:12px;color:var(--text2);margin-top:4px">Acesse <a href="https://developers.facebook.com/apps/" target="_blank" style="color:var(--accent2)">developers.facebook.com/apps</a> e crie um novo app do tipo "Business"</div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
-          <span style="background:var(--accent);color:#fff;min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">2</span>
-          <div>
-            <div style="font-weight:600;font-size:14px">Gere um token no Graph API Explorer</div>
-            <div style="font-size:12px;color:var(--text2);margin-top:4px">Acesse <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent2)">Graph API Explorer</a>, selecione seu app e gere um token com as permissoes:<br>
-            <code style="font-size:11px;color:var(--green)">pages_show_list, pages_read_engagement, instagram_basic, instagram_manage_messages, instagram_content_publish, ads_management</code></div>
-          </div>
-        </div>
-
-        <div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
-          <span style="background:var(--accent);color:#fff;min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">3</span>
-          <div>
-            <div style="font-weight:600;font-size:14px">Cole o token abaixo</div>
-            <div style="font-size:12px;color:var(--text2);margin-top:4px">O token conecta sua conta do Facebook e Instagram</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px">
-        <input id="metaTokenInput" type="password" placeholder="Cole seu Facebook Access Token aqui" style="width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;margin-bottom:12px">
-        <button onclick="saveMetaToken()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Conectar Meta</button>
-        <div id="metaSetupMsg" style="margin-top:10px;font-size:12px"></div>
-      </div>
-    </div>
-  `;
+document.getElementById('main').innerHTML = `
+<div style="max-width:600px;margin:40px auto;text-align:center">
+<h2 style="color:var(--accent2);margin-bottom:12px;font-family:'Space Mono',monospace">Configurar Meta</h2>
+<p style="color:var(--text2);margin-bottom:30px">Para usar o Instagram e Facebook, voce precisa conectar sua conta Meta.</p>
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:left;margin-bottom:20px">
+<h3 style="color:var(--accent2);font-size:13px;margin-bottom:16px;font-family:'Space Mono',monospace">PASSO A PASSO</h3>
+<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
+<span style="background:var(--accent);color:#fff;min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">1</span>
+<div>
+<div style="font-weight:600;font-size:14px">Crie um app no Meta for Developers</div>
+<div style="font-size:12px;color:var(--text2);margin-top:4px">Acesse <a href="https://developers.facebook.com/apps/" target="_blank" style="color:var(--accent2)">developers.facebook.com/apps</a> e crie um novo app do tipo "Business"</div>
+</div>
+</div>
+<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
+<span style="background:var(--accent);color:#fff;min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">2</span>
+<div>
+<div style="font-weight:600;font-size:14px">Gere um token no Graph API Explorer</div>
+<div style="font-size:12px;color:var(--text2);margin-top:4px">Acesse <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent2)">Graph API Explorer</a>, selecione seu app e gere um token com as permissoes:<br>
+<code style="font-size:11px;color:var(--green)">pages_show_list, pages_read_engagement, instagram_basic, instagram_manage_messages, instagram_content_publish, ads_management</code></div>
+</div>
+</div>
+<div style="display:flex;gap:12px;align-items:flex-start;margin-bottom:16px">
+<span style="background:var(--accent);color:#fff;min-width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700">3</span>
+<div>
+<div style="font-weight:600;font-size:14px">Cole o token abaixo</div>
+<div style="font-size:12px;color:var(--text2);margin-top:4px">O token conecta sua conta do Facebook e Instagram</div>
+</div>
+</div>
+</div>
+<div style="background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px">
+<input id="metaTokenInput" type="password" placeholder="Cole seu Facebook Access Token aqui" style="width:100%;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;margin-bottom:12px">
+<button onclick="saveMetaToken()" style="width:100%;padding:12px;background:linear-gradient(135deg,var(--accent),#8b5cf6);color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px">Conectar Meta</button>
+<div id="metaSetupMsg" style="margin-top:10px;font-size:12px"></div>
+</div>
+</div>
+`;
 }
-
 async function saveMetaToken() {
-  const token = document.getElementById('metaTokenInput').value.trim();
-  const msg = document.getElementById('metaSetupMsg');
-  if (!token) { msg.innerHTML = '<span style="color:#ff5252">Cole o token primeiro</span>'; return; }
-
-  msg.innerHTML = '<span style="color:var(--accent2)">Testando token...</span>';
-
-  try {
-    // Testar o token
-    const r = await fetch('https://graph.facebook.com/v21.0/me/accounts?fields=id,name&access_token=' + token);
-    const data = await r.json();
-
-    if (data.error) {
-      msg.innerHTML = '<span style="color:#ff5252">Token invalido: ' + data.error.message + '</span>';
-      return;
-    }
-
-    // Salvar no servidor
-    await fetch('/api/setup/save-module', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ module: 'meta', config: { FACEBOOK_ACCESS_TOKEN: token } })
-    });
-
-    ACCESS_TOKEN = token;
-    msg.innerHTML = '<span style="color:var(--green)">Conectado! ' + (data.data?.length || 0) + ' pagina(s) encontradas. Recarregando...</span>';
-
-    setTimeout(() => location.reload(), 1500);
-  } catch (e) {
-    msg.innerHTML = '<span style="color:#ff5252">Erro: ' + e.message + '</span>';
-  }
+const token = document.getElementById('metaTokenInput').value.trim();
+const msg = document.getElementById('metaSetupMsg');
+if (!token) { msg.innerHTML = '<span style="color:#ff5252">Cole o token primeiro</span>'; return; }
+msg.innerHTML = '<span style="color:var(--accent2)">Testando token...</span>';
+try {
+// Testar o token
+const r = await fetch('https://graph.facebook.com/v21.0/me/accounts?fields=id,name&access_token=' + token);
+const data = await r.json();
+if (data.error) {
+msg.innerHTML = '<span style="color:#ff5252">Token invalido: ' + data.error.message + '</span>';
+return;
 }
-
+// Salvar no servidor
+await fetch('/api/setup/save-module', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ module: 'meta', config: { FACEBOOK_ACCESS_TOKEN: token } })
+});
+ACCESS_TOKEN = token;
+msg.innerHTML = '<span style="color:var(--green)">Conectado! ' + (data.data?.length || 0) + ' pagina(s) encontradas. Recarregando...</span>';
+setTimeout(() => location.reload(), 1500);
+} catch (e) {
+msg.innerHTML = '<span style="color:#ff5252">Erro: ' + e.message + '</span>';
+}
+}
 // ===== LOAD ALL ACCOUNTS =====
 async function loadAccounts() {
-  // Se nao tem token, mostrar setup
-  if (!ACCESS_TOKEN) {
-    showMetaSetup();
-    return;
-  }
-
-  const statusEl = document.getElementById('connection-status');
-  statusEl.textContent = 'Conectando...';
-  statusEl.className = 'account-status';
-
-  try {
-    // 1. Fetch all pages with their Instagram accounts
-    const pagesData = await apiGet('/me/accounts?fields=id,name,access_token,picture,instagram_business_account{id,username,profile_picture_url}');
-    allPages = pagesData.data || [];
-
-    // Populate page selector
-    const pageSel = document.getElementById('page-selector');
-    pageSel.innerHTML = '';
-    if (allPages.length === 0) {
-      pageSel.innerHTML = '<option value="">Nenhuma pagina encontrada</option>';
-    } else {
-      allPages.forEach((p, i) => {
-        const opt = document.createElement('option');
-        opt.value = p.id;
-        opt.textContent = p.name || p.id;
-        pageSel.appendChild(opt);
-      });
-      // Restore saved selection or use first
-      const savedPage = localStorage.getItem('meta_selected_page');
-      if (savedPage && allPages.find(p => p.id === savedPage)) {
-        pageSel.value = savedPage;
-      }
-      onPageChange();
-    }
-
-    // Populate IG selector from all pages
-    updateIGSelector();
-
-    // 2. Fetch ad accounts
-    try {
-      const adData = await apiGet('/me/adaccounts?fields=id,name,account_id,account_status,currency');
-      allAdAccounts = adData.data || [];
-      const adSel = document.getElementById('ad-account-selector');
-      adSel.innerHTML = '';
-      if (allAdAccounts.length === 0) {
-        adSel.innerHTML = '<option value="">Nenhuma conta</option>';
-      } else {
-        allAdAccounts.forEach(a => {
-          const opt = document.createElement('option');
-          opt.value = a.id;
-          opt.textContent = `${a.name || a.account_id} (${a.id})`;
-          adSel.appendChild(opt);
-        });
-        const savedAd = localStorage.getItem('meta_selected_ad_account');
-        if (savedAd && allAdAccounts.find(a => a.id === savedAd)) {
-          adSel.value = savedAd;
-        }
-        AD_ACCOUNT_ID = adSel.value;
-      }
-    } catch (e) {
-      document.getElementById('ad-account-selector').innerHTML = '<option value="">Erro ao carregar</option>';
-    }
-
-    statusEl.textContent = `${allPages.length} pagina(s) | ${allIGAccounts.length} Instagram(s)`;
-    statusEl.className = 'account-status connected';
-
-    // Load initial data
-    loadIGProfile();
-    loadIGPosts();
-  } catch (e) {
-    statusEl.textContent = 'Erro: ' + e.message;
-    statusEl.className = 'account-status error';
-    toast('Erro ao carregar contas: ' + e.message, 'error');
-  }
+// Se nao tem token, mostrar setup
+if (!ACCESS_TOKEN) {
+showMetaSetup();
+return;
 }
-
+const statusEl = document.getElementById('connection-status');
+statusEl.textContent = 'Conectando...';
+statusEl.className = 'account-status';
+try {
+// 1. Fetch all pages with their Instagram accounts
+const pagesData = await apiGet('/me/accounts?fields=id,name,access_token,picture,instagram_business_account{id,username,profile_picture_url}');
+allPages = pagesData.data || [];
+// Populate page selector
+const pageSel = document.getElementById('page-selector');
+pageSel.innerHTML = '';
+if (allPages.length === 0) {
+pageSel.innerHTML = '<option value="">Nenhuma pagina encontrada</option>';
+} else {
+allPages.forEach((p, i) => {
+const opt = document.createElement('option');
+opt.value = p.id;
+opt.textContent = p.name || p.id;
+pageSel.appendChild(opt);
+});
+// Restore saved selection or use first
+const savedPage = localStorage.getItem('meta_selected_page');
+if (savedPage && allPages.find(p => p.id === savedPage)) {
+pageSel.value = savedPage;
+}
+onPageChange();
+}
+// Populate IG selector from all pages
+updateIGSelector();
+// 2. Fetch ad accounts
+try {
+const adData = await apiGet('/me/adaccounts?fields=id,name,account_id,account_status,currency');
+allAdAccounts = adData.data || [];
+const adSel = document.getElementById('ad-account-selector');
+adSel.innerHTML = '';
+if (allAdAccounts.length === 0) {
+adSel.innerHTML = '<option value="">Nenhuma conta</option>';
+} else {
+allAdAccounts.forEach(a => {
+const opt = document.createElement('option');
+opt.value = a.id;
+opt.textContent = `${a.name || a.account_id} (${a.id})`;
+adSel.appendChild(opt);
+});
+const savedAd = localStorage.getItem('meta_selected_ad_account');
+if (savedAd && allAdAccounts.find(a => a.id === savedAd)) {
+adSel.value = savedAd;
+}
+AD_ACCOUNT_ID = adSel.value;
+}
+} catch (e) {
+document.getElementById('ad-account-selector').innerHTML = '<option value="">Erro ao carregar</option>';
+}
+statusEl.textContent = `${allPages.length} pagina(s) | ${allIGAccounts.length} Instagram(s)`;
+statusEl.className = 'account-status connected';
+// Load initial data
+loadIGProfile();
+loadIGPosts();
+} catch (e) {
+statusEl.textContent = 'Erro: ' + e.message;
+statusEl.className = 'account-status error';
+toast('Erro ao carregar contas: ' + e.message, 'error');
+}
+}
 function updateIGSelector() {
-  allIGAccounts = [];
-  allPages.forEach(p => {
-    if (p.instagram_business_account) {
-      allIGAccounts.push({
-        id: p.instagram_business_account.id,
-        username: p.instagram_business_account.username || '',
-        picture: p.instagram_business_account.profile_picture_url || '',
-        pageId: p.id,
-        pageName: p.name
-      });
-    }
-  });
-
-  const igSel = document.getElementById('ig-selector');
-  igSel.innerHTML = '';
-  if (allIGAccounts.length === 0) {
-    igSel.innerHTML = '<option value="">Nenhum Instagram conectado</option>';
-    IG_ID = '';
-  } else {
-    allIGAccounts.forEach(ig => {
-      const opt = document.createElement('option');
-      opt.value = ig.id;
-      opt.textContent = `@${ig.username || ig.id} (${ig.pageName})`;
-      igSel.appendChild(opt);
-    });
-    const savedIG = localStorage.getItem('meta_selected_ig');
-    if (savedIG && allIGAccounts.find(ig => ig.id === savedIG)) {
-      igSel.value = savedIG;
-    }
-    IG_ID = igSel.value;
-    localStorage.setItem('meta_selected_ig', IG_ID);
-  }
+allIGAccounts = [];
+allPages.forEach(p => {
+if (p.instagram_business_account) {
+allIGAccounts.push({
+id: p.instagram_business_account.id,
+username: p.instagram_business_account.username || '',
+picture: p.instagram_business_account.profile_picture_url || '',
+pageId: p.id,
+pageName: p.name
+});
 }
-
+});
+const igSel = document.getElementById('ig-selector');
+igSel.innerHTML = '';
+if (allIGAccounts.length === 0) {
+igSel.innerHTML = '<option value="">Nenhum Instagram conectado</option>';
+IG_ID = '';
+} else {
+allIGAccounts.forEach(ig => {
+const opt = document.createElement('option');
+opt.value = ig.id;
+opt.textContent = `@${ig.username || ig.id} (${ig.pageName})`;
+igSel.appendChild(opt);
+});
+const savedIG = localStorage.getItem('meta_selected_ig');
+if (savedIG && allIGAccounts.find(ig => ig.id === savedIG)) {
+igSel.value = savedIG;
+}
+IG_ID = igSel.value;
+localStorage.setItem('meta_selected_ig', IG_ID);
+}
+}
 function onPageChange() {
-  const pageSel = document.getElementById('page-selector');
-  PAGE_ID = pageSel.value;
-  localStorage.setItem('meta_selected_page', PAGE_ID);
-
-  // Update page token
-  const page = allPages.find(p => p.id === PAGE_ID);
-  PAGE_TOKEN = page ? page.access_token : null;
+const pageSel = document.getElementById('page-selector');
+PAGE_ID = pageSel.value;
+localStorage.setItem('meta_selected_page', PAGE_ID);
+// Update page token
+const page = allPages.find(p => p.id === PAGE_ID);
+PAGE_TOKEN = page ? page.access_token : null;
 }
-
 function onIGChange() {
-  const igSel = document.getElementById('ig-selector');
-  IG_ID = igSel.value;
-  localStorage.setItem('meta_selected_ig', IG_ID);
-
-  // Also set the associated page
-  const ig = allIGAccounts.find(x => x.id === IG_ID);
-  if (ig) {
-    const pageSel = document.getElementById('page-selector');
-    pageSel.value = ig.pageId;
-    onPageChange();
-  }
-
-  // Reload current section
-  const activeSection = document.querySelector('.section.active');
-  if (activeSection) {
-    const s = activeSection.id;
-    if (s === 'ig-profile') loadIGProfile();
-    if (s === 'ig-posts') loadIGPosts();
-    if (s === 'ig-dm') loadDMConversations();
-    if (s === 'ig-ads') loadIGAds();
-  }
+const igSel = document.getElementById('ig-selector');
+IG_ID = igSel.value;
+localStorage.setItem('meta_selected_ig', IG_ID);
+// Also set the associated page
+const ig = allIGAccounts.find(x => x.id === IG_ID);
+if (ig) {
+const pageSel = document.getElementById('page-selector');
+pageSel.value = ig.pageId;
+onPageChange();
 }
-
+// Reload current section
+const activeSection = document.querySelector('.section.active');
+if (activeSection) {
+const s = activeSection.id;
+if (s === 'ig-profile') loadIGProfile();
+if (s === 'ig-posts') loadIGPosts();
+if (s === 'ig-dm') loadDMConversations();
+if (s === 'ig-ads') loadIGAds();
+}
+}
 function onAdAccountChange() {
-  AD_ACCOUNT_ID = document.getElementById('ad-account-selector').value;
-  localStorage.setItem('meta_selected_ad_account', AD_ACCOUNT_ID);
+AD_ACCOUNT_ID = document.getElementById('ad-account-selector').value;
+localStorage.setItem('meta_selected_ad_account', AD_ACCOUNT_ID);
 }
-
 // ===== NAVIGATION =====
 function setupNavigation() {
-  document.querySelectorAll('#sidebar nav a').forEach(a => {
-    a.addEventListener('click', () => {
-      document.querySelectorAll('#sidebar nav a').forEach(x => x.classList.remove('active'));
-      document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
-      a.classList.add('active');
-      const sec = document.getElementById(a.dataset.section);
-      if (sec) sec.classList.add('active');
-      document.getElementById('sidebar').classList.remove('open');
-
-      const s = a.dataset.section;
-      if (s === 'ig-profile') loadIGProfile();
-      if (s === 'ig-posts') loadIGPosts();
-      if (s === 'ig-dm') loadDMConversations();
-      if (s === 'ig-ads') loadIGAds();
-      if (s === 'fb-page') { loadFBPageInfo(); loadFBPosts(); }
-      if (s === 'ads-dashboard') loadAdsDashboard();
-    });
-  });
+document.querySelectorAll('#sidebar nav a').forEach(a => {
+a.addEventListener('click', () => {
+document.querySelectorAll('#sidebar nav a').forEach(x => x.classList.remove('active'));
+document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+a.classList.add('active');
+const sec = document.getElementById(a.dataset.section);
+if (sec) sec.classList.add('active');
+document.getElementById('sidebar').classList.remove('open');
+const s = a.dataset.section;
+if (s === 'ig-profile') loadIGProfile();
+if (s === 'ig-posts') loadIGPosts();
+if (s === 'ig-dm') loadDMConversations();
+if (s === 'ig-ads') loadIGAds();
+if (s === 'fb-page') { loadFBPageInfo(); loadFBPosts(); }
+if (s === 'ads-dashboard') loadAdsDashboard();
+});
+});
 }
-
 // ===== TOAST =====
 function toast(msg, type = 'info') {
-  const c = document.getElementById('toast-container');
-  const t = document.createElement('div');
-  t.className = 'toast ' + type;
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(() => t.remove(), 4000);
+const c = document.getElementById('toast-container');
+const t = document.createElement('div');
+t.className = 'toast ' + type;
+t.textContent = msg;
+c.appendChild(t);
+setTimeout(() => t.remove(), 4000);
 }
-
 // ===== API HELPERS =====
 async function apiGet(endpoint, usePageToken = false) {
-  const token = usePageToken && PAGE_TOKEN ? PAGE_TOKEN : ACCESS_TOKEN;
-  const sep = endpoint.includes('?') ? '&' : '?';
-  const url = `${API_BASE}${endpoint}${sep}access_token=${token}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data;
+const token = usePageToken && PAGE_TOKEN ? PAGE_TOKEN : ACCESS_TOKEN;
+const sep = endpoint.includes('?') ? '&' : '?';
+const url = `${API_BASE}${endpoint}${sep}access_token=${token}`;
+const res = await fetch(url);
+const data = await res.json();
+if (data.error) throw new Error(data.error.message);
+return data;
 }
-
 async function apiPost(endpoint, body, usePageToken = false) {
-  const token = usePageToken && PAGE_TOKEN ? PAGE_TOKEN : ACCESS_TOKEN;
-  const sep = endpoint.includes('?') ? '&' : '?';
-  const url = `${API_BASE}${endpoint}${sep}access_token=${token}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body)
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data;
+const token = usePageToken && PAGE_TOKEN ? PAGE_TOKEN : ACCESS_TOKEN;
+const sep = endpoint.includes('?') ? '&' : '?';
+const url = `${API_BASE}${endpoint}${sep}access_token=${token}`;
+const res = await fetch(url, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify(body)
+});
+const data = await res.json();
+if (data.error) throw new Error(data.error.message);
+return data;
 }
-
 async function apiPostForm(endpoint, params, usePageToken = false) {
-  const token = usePageToken && PAGE_TOKEN ? PAGE_TOKEN : ACCESS_TOKEN;
-  params.access_token = token;
-  const url = `${API_BASE}${endpoint}`;
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams(params).toString()
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data;
+const token = usePageToken && PAGE_TOKEN ? PAGE_TOKEN : ACCESS_TOKEN;
+params.access_token = token;
+const url = `${API_BASE}${endpoint}`;
+const res = await fetch(url, {
+method: 'POST',
+headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+body: new URLSearchParams(params).toString()
+});
+const data = await res.json();
+if (data.error) throw new Error(data.error.message);
+return data;
 }
-
 async function apiDelete(endpoint, usePageToken = false) {
-  const token = usePageToken && PAGE_TOKEN ? PAGE_TOKEN : ACCESS_TOKEN;
-  const sep = endpoint.includes('?') ? '&' : '?';
-  const url = `${API_BASE}${endpoint}${sep}access_token=${token}`;
-  const res = await fetch(url, { method: 'DELETE' });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  return data;
+const token = usePageToken && PAGE_TOKEN ? PAGE_TOKEN : ACCESS_TOKEN;
+const sep = endpoint.includes('?') ? '&' : '?';
+const url = `${API_BASE}${endpoint}${sep}access_token=${token}`;
+const res = await fetch(url, { method: 'DELETE' });
+const data = await res.json();
+if (data.error) throw new Error(data.error.message);
+return data;
 }
-
 // ===== IG PROFILE =====
 async function loadIGProfile() {
-  if (!IG_ID) { document.getElementById('ig-profile-card').innerHTML = '<p style="color:var(--text2)">Selecione um Instagram no topo</p>'; return; }
-  try {
-    const data = await apiGet(`/${IG_ID}?fields=username,name,biography,profile_picture_url,followers_count,follows_count,media_count`);
-    document.getElementById('ig-profile-card').innerHTML = `
-      <img src="${data.profile_picture_url || ''}" alt="avatar" onerror="this.style.display='none'">
-      <div class="profile-info">
-        <div class="username">@${data.username || '?'}</div>
-        <div style="font-size:15px;margin-top:2px">${data.name || ''}</div>
-        <div class="bio">${data.biography || ''}</div>
-      </div>
-    `;
-    document.getElementById('ig-profile-stats').innerHTML = `
-      <div class="stat"><div class="val">${fmt(data.followers_count)}</div><div class="label">Seguidores</div></div>
-      <div class="stat"><div class="val">${fmt(data.follows_count)}</div><div class="label">Seguindo</div></div>
-      <div class="stat"><div class="val">${fmt(data.media_count)}</div><div class="label">Posts</div></div>
-    `;
-    const media = await apiGet(`/${IG_ID}/media?fields=id,media_url,thumbnail_url,media_type&limit=6`);
-    const grid = document.getElementById('ig-mini-grid');
-    grid.innerHTML = '';
-    if (media.data) {
-      media.data.forEach(m => {
-        const url = m.media_type === 'VIDEO' ? (m.thumbnail_url || '') : (m.media_url || '');
-        if (url) grid.innerHTML += `<img src="${url}" alt="post" onerror="this.style.display='none'">`;
-      });
-    }
-  } catch (e) {
-    toast('Erro IG Perfil: ' + e.message, 'error');
-    document.getElementById('ig-profile-card').innerHTML = '<p style="color:var(--text2)">Erro ao carregar perfil</p>';
-  }
+if (!IG_ID) { document.getElementById('ig-profile-card').innerHTML = '<p style="color:var(--text2)">Selecione um Instagram no topo</p>'; return; }
+try {
+const data = await apiGet(`/${IG_ID}?fields=username,name,biography,profile_picture_url,followers_count,follows_count,media_count`);
+document.getElementById('ig-profile-card').innerHTML = `
+<img src="${data.profile_picture_url || ''}" alt="avatar" onerror="this.style.display='none'">
+<div class="profile-info">
+<div class="username">@${data.username || '?'}</div>
+<div style="font-size:15px;margin-top:2px">${data.name || ''}</div>
+<div class="bio">${data.biography || ''}</div>
+</div>
+`;
+document.getElementById('ig-profile-stats').innerHTML = `
+<div class="stat"><div class="val">${fmt(data.followers_count)}</div><div class="label">Seguidores</div></div>
+<div class="stat"><div class="val">${fmt(data.follows_count)}</div><div class="label">Seguindo</div></div>
+<div class="stat"><div class="val">${fmt(data.media_count)}</div><div class="label">Posts</div></div>
+`;
+const media = await apiGet(`/${IG_ID}/media?fields=id,media_url,thumbnail_url,media_type&limit=6`);
+const grid = document.getElementById('ig-mini-grid');
+grid.innerHTML = '';
+if (media.data) {
+media.data.forEach(m => {
+const url = m.media_type === 'VIDEO' ? (m.thumbnail_url || '') : (m.media_url || '');
+if (url) grid.innerHTML += `<img src="${url}" alt="post" onerror="this.style.display='none'">`;
+});
 }
-
+} catch (e) {
+toast('Erro IG Perfil: ' + e.message, 'error');
+document.getElementById('ig-profile-card').innerHTML = '<p style="color:var(--text2)">Erro ao carregar perfil</p>';
+}
+}
 // ===== IG POSTS =====
 async function loadIGPosts() {
-  if (!IG_ID) return;
-  try {
-    const data = await apiGet(`/${IG_ID}/media?fields=id,caption,media_url,thumbnail_url,media_type,like_count,comments_count,timestamp,permalink&limit=12`);
-    const container = document.getElementById('ig-posts-list');
-    container.innerHTML = '';
-    if (!data.data || data.data.length === 0) {
-      container.innerHTML = '<p style="color:var(--text2);padding:20px">Nenhum post encontrado</p>';
-      return;
-    }
-    data.data.forEach(p => {
-      const imgUrl = p.media_type === 'VIDEO' ? (p.thumbnail_url || '') : (p.media_url || '');
-      const caption = p.caption || '';
-      const truncated = caption.length > 120;
-      container.innerHTML += `
-        <div class="post-card">
-          ${imgUrl ? `<img src="${imgUrl}" alt="post" onerror="this.style.display='none'">` : ''}
-          <div class="post-body">
-            <div class="post-stats">
-              <div>&#10084; <span>${p.like_count || 0}</span></div>
-              <div>&#128172; <span>${p.comments_count || 0}</span></div>
-              <div style="margin-left:auto;font-size:11px">${new Date(p.timestamp).toLocaleDateString('pt-BR')}</div>
-            </div>
-            <div class="post-caption ${truncated ? 'truncated' : ''}" id="caption-${p.id}">${escapeHtml(caption)}</div>
-            ${truncated ? `<button class="expand-btn" onclick="toggleCaption('${p.id}', this)">ver mais</button>` : ''}
-            <div class="post-actions">
-              <a href="${p.permalink || '#'}" target="_blank" class="btn btn-outline btn-sm">Abrir</a>
-              <button class="btn btn-danger btn-sm" onclick="deleteIGPost('${p.id}')">Excluir</button>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-  } catch (e) {
-    toast('Erro IG Posts: ' + e.message, 'error');
-  }
+if (!IG_ID) return;
+try {
+const data = await apiGet(`/${IG_ID}/media?fields=id,caption,media_url,thumbnail_url,media_type,like_count,comments_count,timestamp,permalink&limit=12`);
+const container = document.getElementById('ig-posts-list');
+container.innerHTML = '';
+if (!data.data || data.data.length === 0) {
+container.innerHTML = '<p style="color:var(--text2);padding:20px">Nenhum post encontrado</p>';
+return;
 }
-
+data.data.forEach(p => {
+const imgUrl = p.media_type === 'VIDEO' ? (p.thumbnail_url || '') : (p.media_url || '');
+const caption = p.caption || '';
+const truncated = caption.length > 120;
+container.innerHTML += `
+<div class="post-card">
+${imgUrl ? `<img src="${imgUrl}" alt="post" onerror="this.style.display='none'">` : ''}
+<div class="post-body">
+<div class="post-stats">
+<div>&#10084; <span>${p.like_count || 0}</span></div>
+<div>&#128172; <span>${p.comments_count || 0}</span></div>
+<div style="margin-left:auto;font-size:11px">${new Date(p.timestamp).toLocaleDateString('pt-BR')}</div>
+</div>
+<div class="post-caption ${truncated ? 'truncated' : ''}" id="caption-${p.id}">${escapeHtml(caption)}</div>
+${truncated ? `<button class="expand-btn" onclick="toggleCaption('${p.id}', this)">ver mais</button>` : ''}
+<div class="post-actions">
+<a href="${p.permalink || '#'}" target="_blank" class="btn btn-outline btn-sm">Abrir</a>
+<button class="btn btn-danger btn-sm" onclick="deleteIGPost('${p.id}')">Excluir</button>
+</div>
+</div>
+</div>
+`;
+});
+} catch (e) {
+toast('Erro IG Posts: ' + e.message, 'error');
+}
+}
 function toggleCaption(id, btn) {
-  const el = document.getElementById('caption-' + id);
-  if (el.classList.contains('truncated')) {
-    el.classList.remove('truncated');
-    btn.textContent = 'ver menos';
-  } else {
-    el.classList.add('truncated');
-    btn.textContent = 'ver mais';
-  }
+const el = document.getElementById('caption-' + id);
+if (el.classList.contains('truncated')) {
+el.classList.remove('truncated');
+btn.textContent = 'ver menos';
+} else {
+el.classList.add('truncated');
+btn.textContent = 'ver mais';
 }
-
+}
 async function createIGPost() {
-  if (!IG_ID) { toast('Selecione um Instagram', 'error'); return; }
-  const url = document.getElementById('ig-post-url').value.trim();
-  const caption = document.getElementById('ig-post-caption').value.trim();
-  if (!url) { toast('URL da imagem obrigatoria', 'error'); return; }
-  try {
-    toast('Criando container...', 'info');
-    const container = await apiGet(`/${IG_ID}/media?image_url=${encodeURIComponent(url)}&caption=${encodeURIComponent(caption)}`);
-    if (!container.id) throw new Error('Falha ao criar container');
-    toast('Publicando...', 'info');
-    await apiPost(`/${IG_ID}/media_publish`, { creation_id: container.id });
-    toast('Post publicado!', 'success');
-    document.getElementById('ig-post-url').value = '';
-    document.getElementById('ig-post-caption').value = '';
-    setTimeout(() => loadIGPosts(), 2000);
-  } catch (e) {
-    toast('Erro ao publicar: ' + e.message, 'error');
-  }
+if (!IG_ID) { toast('Selecione um Instagram', 'error'); return; }
+const url = document.getElementById('ig-post-url').value.trim();
+const caption = document.getElementById('ig-post-caption').value.trim();
+if (!url) { toast('URL da imagem obrigatoria', 'error'); return; }
+try {
+toast('Criando container...', 'info');
+const container = await apiGet(`/${IG_ID}/media?image_url=${encodeURIComponent(url)}&caption=${encodeURIComponent(caption)}`);
+if (!container.id) throw new Error('Falha ao criar container');
+toast('Publicando...', 'info');
+await apiPost(`/${IG_ID}/media_publish`, { creation_id: container.id });
+toast('Post publicado!', 'success');
+document.getElementById('ig-post-url').value = '';
+document.getElementById('ig-post-caption').value = '';
+setTimeout(() => loadIGPosts(), 2000);
+} catch (e) {
+toast('Erro ao publicar: ' + e.message, 'error');
 }
-
+}
 async function deleteIGPost(mediaId) {
-  if (!confirm('Excluir este post?')) return;
-  try {
-    await apiDelete(`/${mediaId}`);
-    toast('Post excluido', 'success');
-    loadIGPosts();
-  } catch (e) {
-    toast('Erro ao excluir: ' + e.message, 'error');
-  }
+if (!confirm('Excluir este post?')) return;
+try {
+await apiDelete(`/${mediaId}`);
+toast('Post excluido', 'success');
+loadIGPosts();
+} catch (e) {
+toast('Erro ao excluir: ' + e.message, 'error');
 }
-
+}
 // ===== IG DM =====
 async function loadDMConversations() {
-  if (!PAGE_ID) { document.getElementById('dm-list').innerHTML = '<p style="color:var(--text2);padding:20px">Selecione uma pagina no topo</p>'; return; }
-  if (dmRefreshTimer) clearInterval(dmRefreshTimer);
-  const list = document.getElementById('dm-list');
-  list.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-
-  let data = null;
-
-  // Tentar endpoint com platform=instagram usando page token
-  try {
-    data = await apiGet(`/${PAGE_ID}/conversations?fields=participants,messages.limit(5){message,from,created_time}&platform=instagram`, true);
-  } catch (e1) {
-    // Se falhar, tentar sem platform (Messenger geral) que inclui IG em alguns casos
-    try {
-      data = await apiGet(`/${PAGE_ID}/conversations?fields=participants,messages.limit(5){message,from,created_time}`, true);
-    } catch (e2) {
-      // Ultimo recurso: tentar com user token
-      try {
-        data = await apiGet(`/${PAGE_ID}/conversations?fields=participants,messages.limit(5){message,from,created_time}&platform=instagram`, false);
-      } catch (e3) {
-        list.innerHTML = `
-          <div style="padding:20px;text-align:center">
-            <p style="color:var(--text2);margin-bottom:12px">Nao foi possivel carregar DMs do Instagram.</p>
-            <p style="font-size:12px;color:var(--text2)">O app Meta precisa de <strong>Instagram Messaging</strong> com acesso avancado aprovado.</p>
-            <p style="font-size:11px;color:var(--border);margin-top:8px">Erro: ${escapeHtml(e1.message)}</p>
-          </div>
-        `;
-        return;
-      }
-    }
-  }
-
-  try {
-    list.innerHTML = '';
-    if (!data?.data || data.data.length === 0) {
-      list.innerHTML = '<p style="color:var(--text2);padding:20px;text-align:center">Nenhuma conversa</p>';
-      return;
-    }
-    data.data.forEach(conv => {
-      const participant = conv.participants?.data?.find(p => p.id !== IG_ID && p.id !== PAGE_ID) || conv.participants?.data?.[0] || {};
-      const lastMsg = conv.messages?.data?.[0];
-      const div = document.createElement('div');
-      div.className = 'dm-item' + (currentConversationId === conv.id ? ' active' : '');
-      div.innerHTML = `
-        <div class="name">${participant.name || participant.username || 'Usuario'}</div>
-        <div class="preview">${lastMsg ? escapeHtml(lastMsg.message || '') : ''}</div>
-      `;
-      div.onclick = () => openConversation(conv.id, participant.name || participant.username || 'Usuario');
-      list.appendChild(div);
-    });
-    dmRefreshTimer = setInterval(() => {
-      if (document.getElementById('ig-dm').classList.contains('active')) {
-        loadDMConversations();
-        if (currentConversationId) loadMessages(currentConversationId);
-      }
-    }, 30000);
-  } catch (e) {
-    toast('Erro DM: ' + e.message, 'error');
-    list.innerHTML = '<p style="color:var(--text2);padding:20px">Erro ao carregar</p>';
-  }
+if (!PAGE_ID) { document.getElementById('dm-list').innerHTML = '<p style="color:var(--text2);padding:20px">Selecione uma pagina no topo</p>'; return; }
+if (dmRefreshTimer) clearInterval(dmRefreshTimer);
+const list = document.getElementById('dm-list');
+list.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+let data = null;
+// Tentar endpoint com platform=instagram usando page token
+try {
+data = await apiGet(`/${PAGE_ID}/conversations?fields=participants,messages.limit(5){message,from,created_time}&platform=instagram`, true);
+} catch (e1) {
+// Se falhar, tentar sem platform (Messenger geral) que inclui IG em alguns casos
+try {
+data = await apiGet(`/${PAGE_ID}/conversations?fields=participants,messages.limit(5){message,from,created_time}`, true);
+} catch (e2) {
+// Ultimo recurso: tentar com user token
+try {
+data = await apiGet(`/${PAGE_ID}/conversations?fields=participants,messages.limit(5){message,from,created_time}&platform=instagram`, false);
+} catch (e3) {
+list.innerHTML = `
+<div style="padding:20px;text-align:center">
+<p style="color:var(--text2);margin-bottom:12px">Nao foi possivel carregar DMs do Instagram.</p>
+<p style="font-size:12px;color:var(--text2)">O app Meta precisa de <strong>Instagram Messaging</strong> com acesso avancado aprovado.</p>
+<p style="font-size:11px;color:var(--border);margin-top:8px">Erro: ${escapeHtml(e1.message)}</p>
+</div>
+`;
+return;
 }
-
+}
+}
+try {
+list.innerHTML = '';
+if (!data?.data || data.data.length === 0) {
+list.innerHTML = '<p style="color:var(--text2);padding:20px;text-align:center">Nenhuma conversa</p>';
+return;
+}
+data.data.forEach(conv => {
+const participant = conv.participants?.data?.find(p => p.id !== IG_ID && p.id !== PAGE_ID) || conv.participants?.data?.[0] || {};
+const lastMsg = conv.messages?.data?.[0];
+const div = document.createElement('div');
+div.className = 'dm-item' + (currentConversationId === conv.id ? ' active' : '');
+div.innerHTML = `
+<div class="name">${participant.name || participant.username || 'Usuario'}</div>
+<div class="preview">${lastMsg ? escapeHtml(lastMsg.message || '') : ''}</div>
+`;
+div.onclick = () => openConversation(conv.id, participant.name || participant.username || 'Usuario');
+list.appendChild(div);
+});
+dmRefreshTimer = setInterval(() => {
+if (document.getElementById('ig-dm').classList.contains('active')) {
+loadDMConversations();
+if (currentConversationId) loadMessages(currentConversationId);
+}
+}, 30000);
+} catch (e) {
+toast('Erro DM: ' + e.message, 'error');
+list.innerHTML = '<p style="color:var(--text2);padding:20px">Erro ao carregar</p>';
+}
+}
 async function openConversation(convId, name) {
-  currentConversationId = convId;
-  currentParticipantName = name;
-  document.getElementById('dm-header').textContent = name;
-  document.querySelectorAll('.dm-item').forEach(el => el.classList.remove('active'));
-  event.currentTarget?.classList.add('active');
-  await loadMessages(convId);
+currentConversationId = convId;
+currentParticipantName = name;
+document.getElementById('dm-header').textContent = name;
+document.querySelectorAll('.dm-item').forEach(el => el.classList.remove('active'));
+event.currentTarget?.classList.add('active');
+await loadMessages(convId);
 }
-
 async function loadMessages(convId) {
-  try {
-    const data = await apiGet(`/${convId}?fields=messages{message,from,created_time}`, true);
-    const container = document.getElementById('dm-messages');
-    container.innerHTML = '';
-    if (data.messages?.data) {
-      const msgs = [...data.messages.data].reverse();
-      msgs.forEach(m => {
-        const isSent = m.from?.id === PAGE_ID || m.from?.id === IG_ID;
-        const div = document.createElement('div');
-        div.className = 'msg ' + (isSent ? 'sent' : 'received');
-        div.innerHTML = `${escapeHtml(m.message || '')}<div class="msg-time">${new Date(m.created_time).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</div>`;
-        container.appendChild(div);
-      });
-    }
-    container.scrollTop = container.scrollHeight;
-  } catch (e) {
-    toast('Erro ao carregar mensagens: ' + e.message, 'error');
-  }
+try {
+const data = await apiGet(`/${convId}?fields=messages{message,from,created_time}`, true);
+const container = document.getElementById('dm-messages');
+container.innerHTML = '';
+if (data.messages?.data) {
+const msgs = [...data.messages.data].reverse();
+msgs.forEach(m => {
+const isSent = m.from?.id === PAGE_ID || m.from?.id === IG_ID;
+const div = document.createElement('div');
+div.className = 'msg ' + (isSent ? 'sent' : 'received');
+div.innerHTML = `${escapeHtml(m.message || '')}<div class="msg-time">${new Date(m.created_time).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'})}</div>`;
+container.appendChild(div);
+});
 }
-
+container.scrollTop = container.scrollHeight;
+} catch (e) {
+toast('Erro ao carregar mensagens: ' + e.message, 'error');
+}
+}
 async function sendDM() {
-  const input = document.getElementById('dm-input');
-  const text = input.value.trim();
-  if (!text || !currentConversationId) return;
-  try {
-    await apiPost(`/${currentConversationId}/messages`, { message: text }, true);
-    input.value = '';
-    await loadMessages(currentConversationId);
-  } catch (e) {
-    toast('Erro ao enviar: ' + e.message, 'error');
-  }
+const input = document.getElementById('dm-input');
+const text = input.value.trim();
+if (!text || !currentConversationId) return;
+try {
+await apiPost(`/${currentConversationId}/messages`, { message: text }, true);
+input.value = '';
+await loadMessages(currentConversationId);
+} catch (e) {
+toast('Erro ao enviar: ' + e.message, 'error');
 }
-
+}
 // ===== IG ADS =====
 function getAction(actions, type) { return parseInt(actions?.find(a => a.action_type === type)?.value || 0); }
-
 // ===== IG SCRAPER =====
 let lastScrapeTriggered = null;
-
 async function autoScrapeIfNeeded() {
-  const today = new Date().toISOString().split('T')[0];
-  const lastAuto = localStorage.getItem('ig_last_auto_scrape');
-  if (lastAuto === today || lastScrapeTriggered === today) return;
-  // Verificar se já tem dados de hoje no histórico
-  const ig = allIGAccounts.find(x => x.id === IG_ID);
-  if (!ig) return;
-  try {
-    const res = await fetch(`/api/ig-followers/history/${ig.username}?days=1`);
-    const data = await res.json();
-    if (data && data.length > 0 && data[0].date === today) return; // Já tem dados de hoje
-  } catch(e) { return; }
-  // Não tem dados de hoje, disparar scrape automaticamente
-  lastScrapeTriggered = today;
-  localStorage.setItem('ig_last_auto_scrape', today);
-  runIGScrape();
+const today = new Date().toISOString().split('T')[0];
+const lastAuto = localStorage.getItem('ig_last_auto_scrape');
+if (lastAuto === today || lastScrapeTriggered === today) return;
+// Verificar se já tem dados de hoje no histórico
+const ig = allIGAccounts.find(x => x.id === IG_ID);
+if (!ig) return;
+try {
+const res = await fetch(`/api/ig-followers/history/${ig.username}?days=1`);
+const data = await res.json();
+if (data && data.length > 0 && data[0].date === today) return; // Já tem dados de hoje
+} catch(e) { return; }
+// Não tem dados de hoje, disparar scrape automaticamente
+lastScrapeTriggered = today;
+localStorage.setItem('ig_last_auto_scrape', today);
+runIGScrape();
 }
-
 async function runIGScrape() {
-  const statusEl = document.getElementById('scrape-status');
-  statusEl.textContent = 'Abrindo Instagram e escaneando notificacoes...';
-  statusEl.style.color = 'var(--accent2)';
-
-  const ig = allIGAccounts.find(x => x.id === IG_ID);
-  if (!ig) { statusEl.textContent = 'Selecione um Instagram'; return; }
-
-  try {
-    const res = await fetch('/api/ig-followers/scrape', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: ig.username, id: ig.id })
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      statusEl.textContent = `Pronto! ${data.followers_from_ads} seguidores via ads, ${data.followers_organic} organicos`;
-      statusEl.style.color = 'var(--green)';
-      toast(`Scrape concluido: ${data.followers_from_ads} seguidores de anuncios encontrados`, 'success');
-        } else {
-      statusEl.textContent = 'Erro: ' + (data.error || 'falhou');
-      statusEl.style.color = 'var(--red)';
-      toast('Erro no scrape: ' + (data.error || 'falhou'), 'error');
-    }
-  } catch (e) {
-    statusEl.textContent = 'Erro: ' + e.message;
-    statusEl.style.color = 'var(--red)';
-  }
+const statusEl = document.getElementById('scrape-status');
+statusEl.textContent = 'Abrindo Instagram e escaneando notificacoes...';
+statusEl.style.color = 'var(--accent2)';
+const ig = allIGAccounts.find(x => x.id === IG_ID);
+if (!ig) { statusEl.textContent = 'Selecione um Instagram'; return; }
+try {
+const res = await fetch('/api/ig-followers/scrape', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ username: ig.username, id: ig.id })
+});
+const data = await res.json();
+if (data.success) {
+statusEl.textContent = `Pronto! ${data.followers_from_ads} seguidores via ads, ${data.followers_organic} organicos`;
+statusEl.style.color = 'var(--green)';
+toast(`Scrape concluido: ${data.followers_from_ads} seguidores de anuncios encontrados`, 'success');
+} else {
+statusEl.textContent = 'Erro: ' + (data.error || 'falhou');
+statusEl.style.color = 'var(--red)';
+toast('Erro no scrape: ' + (data.error || 'falhou'), 'error');
 }
-
+} catch (e) {
+statusEl.textContent = 'Erro: ' + e.message;
+statusEl.style.color = 'var(--red)';
+}
+}
 // ===== FOLLOWER TRACKER =====
 async function loadFollowerTracker() {
-  if (!IG_ID) return;
-  const dashboard = document.getElementById('ig-followers-dashboard');
-
-  try {
-    // Get current follower count
-    const profile = await apiGet(`/${IG_ID}?fields=followers_count,username`);
-    const currentCount = profile.followers_count || 0;
-
-    // Get scrape history from backend
-    const ig = allIGAccounts.find(x => x.id === IG_ID);
-    let scrapeData = [];
-    if (ig) {
-      try {
-        const res = await fetch(`/api/ig-followers/history/${ig.username}?days=30`);
-        scrapeData = await res.json();
-      } catch(e) {}
-    }
-
-    // Calculate totals
-    let totalAds = 0, totalOrganic = 0;
-    scrapeData.forEach(d => { totalAds += d.followers_from_ads || 0; totalOrganic += d.followers_organic || 0; });
-    const totalDays = scrapeData.length;
-    const avgAds = totalDays > 0 ? (totalAds / totalDays).toFixed(1) : '0';
-
-    // Build single clean dashboard
-    let historyRows = '';
-    scrapeData.forEach(d => {
-      const usernames = d.follower_usernames?.from_ads || [];
-      const usernamesStr = usernames.length > 0 ? usernames.slice(0, 4).join(', ') + (usernames.length > 4 ? ` +${usernames.length - 4}` : '') : '';
-      historyRows += `
-        <div class="follower-row">
-          <span class="follower-date">${(d.date || '').slice(5)}</span>
-          <span class="follower-change up">+${d.followers_from_ads || 0}</span>
-          <span style="font-size:10px;color:var(--accent2);min-width:40px">ads</span>
-          <span class="follower-change ${d.followers_organic > 0 ? 'up' : 'neutral'}">+${d.followers_organic || 0}</span>
-          <span style="font-size:10px;color:var(--green);min-width:50px">organico</span>
-          <span style="font-size:11px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(usernamesStr)}</span>
-        </div>
-      `;
-    });
-
-    dashboard.innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px">
-        <div class="ad-detail-item"><div class="val">${fmt(currentCount)}</div><div class="label">Seguidores</div></div>
-        <div class="ad-detail-item"><div class="val" style="color:var(--accent2)">${totalAds}</div><div class="label">Via Ads (30d)</div></div>
-        <div class="ad-detail-item"><div class="val" style="color:var(--green)">${totalOrganic}</div><div class="label">Organico (30d)</div></div>
-        <div class="ad-detail-item"><div class="val">${avgAds}</div><div class="label">Media Ads/Dia</div></div>
-        <div class="ad-detail-item"><div class="val">${totalDays}</div><div class="label">Dias Escaneados</div></div>
-      </div>
-      ${historyRows ? `
-        <div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">
-          ${historyRows}
-        </div>
-      ` : '<p style="color:var(--text3);font-size:12px;text-align:center;padding:16px">Clique "Escanear Agora" para coletar dados</p>'}
-    `;
-  } catch (e) {
-    dashboard.innerHTML = `<p style="color:var(--text3)">Erro: ${escapeHtml(e.message)}</p>`;
-  }
+if (!IG_ID) return;
+const dashboard = document.getElementById('ig-followers-dashboard');
+try {
+// Get current follower count
+const profile = await apiGet(`/${IG_ID}?fields=followers_count,username`);
+const currentCount = profile.followers_count || 0;
+// Get scrape history from backend
+const ig = allIGAccounts.find(x => x.id === IG_ID);
+let scrapeData = [];
+if (ig) {
+try {
+const res = await fetch(`/api/ig-followers/history/${ig.username}?days=30`);
+scrapeData = await res.json();
+} catch(e) {}
+}
+// Calculate totals
+let totalAds = 0, totalOrganic = 0;
+scrapeData.forEach(d => { totalAds += d.followers_from_ads || 0; totalOrganic += d.followers_organic || 0; });
+const totalDays = scrapeData.length;
+const avgAds = totalDays > 0 ? (totalAds / totalDays).toFixed(1) : '0';
+// Build single clean dashboard
+let historyRows = '';
+scrapeData.forEach(d => {
+const usernames = d.follower_usernames?.from_ads || [];
+const usernamesStr = usernames.length > 0 ? usernames.slice(0, 4).join(', ') + (usernames.length > 4 ? ` +${usernames.length - 4}` : '') : '';
+historyRows += `
+<div class="follower-row">
+<span class="follower-date">${(d.date || '').slice(5)}</span>
+<span class="follower-change up">+${d.followers_from_ads || 0}</span>
+<span style="font-size:10px;color:var(--accent2);min-width:40px">ads</span>
+<span class="follower-change ${d.followers_organic > 0 ? 'up' : 'neutral'}">+${d.followers_organic || 0}</span>
+<span style="font-size:10px;color:var(--green);min-width:50px">organico</span>
+<span style="font-size:11px;color:var(--text3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(usernamesStr)}</span>
+</div>
+`;
+});
+dashboard.innerHTML = `
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px">
+<div class="ad-detail-item"><div class="val">${fmt(currentCount)}</div><div class="label">Seguidores</div></div>
+<div class="ad-detail-item"><div class="val" style="color:var(--accent2)">${totalAds}</div><div class="label">Via Ads (30d)</div></div>
+<div class="ad-detail-item"><div class="val" style="color:var(--green)">${totalOrganic}</div><div class="label">Organico (30d)</div></div>
+<div class="ad-detail-item"><div class="val">${avgAds}</div><div class="label">Media Ads/Dia</div></div>
+<div class="ad-detail-item"><div class="val">${totalDays}</div><div class="label">Dias Escaneados</div></div>
+</div>
+${historyRows ? `
+<div style="max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:8px">
+${historyRows}
+</div>
+` : '<p style="color:var(--text3);font-size:12px;text-align:center;padding:16px">Clique "Escanear Agora" para coletar dados</p>'}
+`;
+} catch (e) {
+dashboard.innerHTML = `<p style="color:var(--text3)">Erro: ${escapeHtml(e.message)}</p>`;
+}
 }
 function getCost(costs, type) { return parseFloat(costs?.find(a => a.action_type === type)?.value || 0); }
-
 // ===== AI ANALYSIS =====
 let aiAnalysisCache = {};
-
 async function runAIAnalysis(metricsData) {
-  const el = document.getElementById('ig-ai-analysis');
-  const cacheKey = JSON.stringify(metricsData).slice(0, 100);
-  if (aiAnalysisCache[cacheKey]) { el.innerHTML = aiAnalysisCache[cacheKey]; return; }
-
-  el.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><div class="spinner"></div> Analisando campanhas...</div>';
-
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: `Analise estes dados de campanhas do Instagram Ads e dê um veredito claro.
-
+const el = document.getElementById('ig-ai-analysis');
+const cacheKey = JSON.stringify(metricsData).slice(0, 100);
+if (aiAnalysisCache[cacheKey]) { el.innerHTML = aiAnalysisCache[cacheKey]; return; }
+el.innerHTML = '<div style="display:flex;align-items:center;gap:8px"><div class="spinner"></div> Analisando campanhas...</div>';
+try {
+const res = await fetch('/api/chat', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({
+message: `Analise estes dados de campanhas do Instagram Ads e dê um veredito claro.
 DADOS:
 - Gasto total: R$ ${metricsData.spend}
 - Impressões: ${metricsData.impressions}
@@ -1350,967 +1227,876 @@ DADOS:
 - Seguidores orgânicos (hoje): ${metricsData.followersOrganic}
 - Custo por engajamento: R$ ${metricsData.costEngagement}
 - Custo por view: R$ ${metricsData.costVideo}
-
 Responda em português, de forma direta e curta (máximo 5 linhas).
 Comece com um veredito: BOM, REGULAR ou RUIM.
 Depois explique o porquê em 2-3 frases.
 Termine com 2-3 dicas curtas para melhorar.
 NÃO use markdown. Texto puro.`,
-        skipTools: true
-      })
-    });
-    const data = await res.json();
-    const text = data.response || data.message || '';
-
-    // Detectar veredito
-    const lowerText = text.toLowerCase();
-    let verdict = 'ok', verdictText = 'REGULAR';
-    if (lowerText.includes('bom') || lowerText.includes('excelente') || lowerText.includes('ótimo') || lowerText.includes('otimo')) {
-      verdict = 'good'; verdictText = 'BOM';
-    } else if (lowerText.includes('ruim') || lowerText.includes('fraco') || lowerText.includes('péssimo') || lowerText.includes('pessimo')) {
-      verdict = 'bad'; verdictText = 'RUIM';
-    }
-
-    // Separar texto em linhas
-    const lines = text.split('\n').filter(l => l.trim());
-    const mainText = lines.slice(0, 3).join('<br>');
-    const tips = lines.slice(3).filter(l => l.trim().startsWith('-') || l.trim().startsWith('•') || l.trim().match(/^\d/));
-
-    const html = `
-      <span class="ai-verdict ${verdict}">${verdictText}</span>
-      <div style="margin-top:8px">${escapeHtml(text).replace(/\n/g, '<br>')}</div>
-    `;
-
-    el.innerHTML = html;
-    aiAnalysisCache[cacheKey] = html;
-  } catch (e) {
-    el.innerHTML = `<p style="color:var(--text3)">Erro na analise: ${escapeHtml(e.message)}</p>`;
-  }
+skipTools: true
+})
+});
+const data = await res.json();
+const text = data.response || data.message || '';
+// Detectar veredito
+const lowerText = text.toLowerCase();
+let verdict = 'ok', verdictText = 'REGULAR';
+if (lowerText.includes('bom') || lowerText.includes('excelente') || lowerText.includes('ótimo') || lowerText.includes('otimo')) {
+verdict = 'good'; verdictText = 'BOM';
+} else if (lowerText.includes('ruim') || lowerText.includes('fraco') || lowerText.includes('péssimo') || lowerText.includes('pessimo')) {
+verdict = 'bad'; verdictText = 'RUIM';
 }
-
+// Separar texto em linhas
+const lines = text.split('\n').filter(l => l.trim());
+const mainText = lines.slice(0, 3).join('<br>');
+const tips = lines.slice(3).filter(l => l.trim().startsWith('-') || l.trim().startsWith('•') || l.trim().match(/^\d/));
+const html = `
+<span class="ai-verdict ${verdict}">${verdictText}</span>
+<div style="margin-top:8px">${escapeHtml(text).replace(/\n/g, '<br>')}</div>
+`;
+el.innerHTML = html;
+aiAnalysisCache[cacheKey] = html;
+} catch (e) {
+el.innerHTML = `<p style="color:var(--text3)">Erro na analise: ${escapeHtml(e.message)}</p>`;
+}
+}
 async function loadIGAds() {
-  if (!IG_ID) return;
-  const period = document.getElementById('ig-ads-period')?.value || 'maximum';
-
-  // Load promotable posts
-  try {
-    const media = await apiGet(`/${IG_ID}/media?fields=id,caption,media_url,thumbnail_url,media_type,like_count,comments_count,permalink&limit=10`);
-    const container = document.getElementById('ig-promotable-posts');
-    container.innerHTML = '';
-    if (media.data && media.data.length > 0) {
-      media.data.forEach(p => {
-        const imgUrl = p.media_type === 'VIDEO' ? (p.thumbnail_url || '') : (p.media_url || '');
-        container.innerHTML += `
-          <div class="promo-card">
-            ${imgUrl ? `<img src="${imgUrl}" alt="" onerror="this.style.display='none'">` : ''}
-            <div class="promo-info">
-              <div class="promo-title">${escapeHtml((p.caption || '').slice(0, 60))}</div>
-              <div class="promo-stats">&#10084; ${p.like_count || 0} | &#128172; ${p.comments_count || 0}</div>
-            </div>
-            <button class="btn btn-primary btn-sm" onclick="promotePost('${p.id}', '${escapeHtml((p.caption || '').slice(0, 40))}')">Promover</button>
-          </div>
-        `;
-      });
-    } else {
-      container.innerHTML = '<p style="color:var(--text2)">Nenhum post para promover</p>';
-    }
-  } catch (e) {
-    document.getElementById('ig-promotable-posts').innerHTML = '<p style="color:var(--text2)">Erro: ' + escapeHtml(e.message) + '</p>';
-  }
-
-  // Load follower tracker + scrape history + auto scrape
-  loadFollowerTracker();
-  autoScrapeIfNeeded();
-
-  if (!AD_ACCOUNT_ID) {
-    document.getElementById('ig-ads-summary').innerHTML = '<p style="color:var(--text2)">Selecione uma conta de anuncio</p>';
-    return;
-  }
-
-  // ===== RESUMO GERAL =====
-  try {
-    const ins = await apiGet(`/${AD_ACCOUNT_ID}/insights?fields=spend,impressions,clicks,reach,ctr,cpc,cpm,frequency,actions,cost_per_action_type,unique_actions,video_avg_time_watched_actions,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p100_watched_actions&date_preset=${period}`);
-    const summaryDiv = document.getElementById('ig-ads-summary');
-
-    if (ins.data && ins.data[0]) {
-      const t = ins.data[0];
-      const a = t.actions || [];
-      const cpa = t.cost_per_action_type || [];
-
-      const spend = parseFloat(t.spend || 0);
-      const impressions = parseInt(t.impressions || 0);
-      const reach = parseInt(t.reach || 0);
-      const clicks = parseInt(t.clicks || 0);
-      const ctr = parseFloat(t.ctr || 0);
-      const cpc = parseFloat(t.cpc || 0);
-      const cpm = parseFloat(t.cpm || 0);
-      const freq = parseFloat(t.frequency || 0);
-
-      // Actions
-      const likes = getAction(a, 'onsite_conversion.post_net_like');
-      const comments = getAction(a, 'comment');
-      const saves = getAction(a, 'onsite_conversion.post_net_save');
-      const shares = getAction(a, 'post');
-      const reactions = getAction(a, 'post_reaction');
-      const engagement = getAction(a, 'post_engagement');
-      const linkClicks = getAction(a, 'link_click');
-      const videoViews = getAction(a, 'video_view');
-      const unlikes = getAction(a, 'onsite_conversion.post_unlike');
-      const msgBlocks = getAction(a, 'onsite_conversion.messaging_block');
-      const netInteractions = getAction(a, 'post_interaction_net');
-
-      // Video metrics
-      const vp25 = getAction(t.video_p25_watched_actions, 'video_view');
-      const vp50 = getAction(t.video_p50_watched_actions, 'video_view');
-      const vp75 = getAction(t.video_p75_watched_actions, 'video_view');
-      const vp100 = getAction(t.video_p100_watched_actions, 'video_view');
-      const vAvg = t.video_avg_time_watched_actions?.find(v => v.action_type === 'video_view')?.value || 0;
-
-      // Costs
-      const costEngagement = getCost(cpa, 'post_engagement');
-      const costClick = getCost(cpa, 'link_click');
-      const costVideo = getCost(cpa, 'video_view');
-      const costReaction = getCost(cpa, 'post_reaction');
-
-      // Summary cards
-      summaryDiv.innerHTML = `
-        <div class="stat"><div class="val">R$ ${spend.toFixed(2)}</div><div class="label">Gasto Total</div></div>
-        <div class="stat"><div class="val">${fmt(impressions)}</div><div class="label">Impressoes</div></div>
-        <div class="stat"><div class="val">${fmt(reach)}</div><div class="label">Alcance</div></div>
-        <div class="stat"><div class="val">${fmt(clicks)}</div><div class="label">Cliques</div></div>
-        <div class="stat"><div class="val">${ctr.toFixed(2)}%</div><div class="label">CTR</div></div>
-        <div class="stat"><div class="val">R$ ${cpc.toFixed(2)}</div><div class="label">CPC</div></div>
-        <div class="stat"><div class="val">R$ ${cpm.toFixed(2)}</div><div class="label">CPM</div></div>
-        <div class="stat"><div class="val">${freq.toFixed(2)}</div><div class="label">Frequencia</div></div>
-      `;
-
-      // Detailed actions
-      const actionsDiv = document.getElementById('ig-ads-actions');
-      actionsDiv.innerHTML = `
-        <div class="ad-detail-item"><div class="val">${fmt(engagement)}</div><div class="label">Engajamento Total</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(likes)}</div><div class="label">Curtidas</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(reactions)}</div><div class="label">Reacoes</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(comments)}</div><div class="label">Comentarios</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(saves)}</div><div class="label">Salvos</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(shares)}</div><div class="label">Compartilhamentos</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(linkClicks)}</div><div class="label">Cliques no Link</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(videoViews)}</div><div class="label">Views de Video</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(netInteractions)}</div><div class="label">Interacoes Liquidas</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(unlikes)}</div><div class="label">Descurtidas</div></div>
-        <div class="ad-detail-item"><div class="val">${fmt(msgBlocks)}</div><div class="label">Bloqueios MSG</div></div>
-      `;
-
-      // Video metrics
-      const videoCard = document.getElementById('ig-ads-video-card');
-      if (videoViews > 0) {
-        videoCard.style.display = '';
-        document.getElementById('ig-ads-video').innerHTML = `
-          <div class="ad-detail-item"><div class="val">${fmt(videoViews)}</div><div class="label">Views Total</div></div>
-          <div class="ad-detail-item"><div class="val">${vAvg}s</div><div class="label">Tempo Medio</div></div>
-          <div class="ad-detail-item"><div class="val">${fmt(vp25)}</div><div class="label">Assistiu 25%</div></div>
-          <div class="ad-detail-item"><div class="val">${fmt(vp50)}</div><div class="label">Assistiu 50%</div></div>
-          <div class="ad-detail-item"><div class="val">${fmt(vp75)}</div><div class="label">Assistiu 75%</div></div>
-          <div class="ad-detail-item"><div class="val">${fmt(vp100)}</div><div class="label">Assistiu 100%</div></div>
-          <div class="ad-detail-item"><div class="val">${videoViews > 0 ? ((vp100/videoViews)*100).toFixed(1) : 0}%</div><div class="label">Taxa Conclusao</div></div>
-        `;
-      } else {
-        videoCard.style.display = 'none';
-      }
-
-      // Cost per action
-      document.getElementById('ig-ads-costs').innerHTML = `
-        <div class="ad-detail-item"><div class="val">R$ ${costEngagement.toFixed(3)}</div><div class="label">Custo / Engajamento</div></div>
-        <div class="ad-detail-item"><div class="val">R$ ${costClick.toFixed(3)}</div><div class="label">Custo / Clique Link</div></div>
-        <div class="ad-detail-item"><div class="val">R$ ${costVideo.toFixed(3)}</div><div class="label">Custo / View Video</div></div>
-        <div class="ad-detail-item"><div class="val">R$ ${costReaction.toFixed(3)}</div><div class="label">Custo / Reacao</div></div>
-        <div class="ad-detail-item"><div class="val">R$ ${cpc.toFixed(3)}</div><div class="label">Custo / Clique</div></div>
-        <div class="ad-detail-item"><div class="val">R$ ${cpm.toFixed(2)}</div><div class="label">Custo / 1K Impressoes</div></div>
-      `;
-      // Get follower data for cost calculation
-      let fAds = 0, fOrganic = 0;
-      const igAcct = allIGAccounts.find(x => x.id === IG_ID);
-      if (igAcct) {
-        try {
-          const fRes = await fetch(`/api/ig-followers/history/${igAcct.username}?days=30`);
-          const fData = await fRes.json();
-          fData.forEach(d => { fAds += d.followers_from_ads || 0; fOrganic += d.followers_organic || 0; });
-        } catch(e) {}
-      }
-
-      const costPerFollower = fAds > 0 ? (spend / fAds).toFixed(2) : '-';
-
-      // Add cost per follower to costs section
-      document.getElementById('ig-ads-costs').innerHTML += `
-        <div class="ad-detail-item" style="border-color:var(--accent)"><div class="val" style="color:var(--accent2)">R$ ${costPerFollower}</div><div class="label">Custo / Seguidor (Ads)</div></div>
-        <div class="ad-detail-item"><div class="val" style="color:var(--accent2)">${fAds}</div><div class="label">Seguidores via Ads</div></div>
-      `;
-
-      // Run AI analysis
-      runAIAnalysis({
-        spend: spend.toFixed(2), impressions: fmt(impressions), reach: fmt(reach),
-        clicks: fmt(clicks), ctr: ctr.toFixed(2), cpc: cpc.toFixed(2), cpm: cpm.toFixed(2),
-        likes, comments, saves, videoViews, engagement,
-        followersAds: fAds, followersOrganic: fOrganic,
-        costEngagement: costEngagement.toFixed(3), costVideo: costVideo.toFixed(3),
-        costPerFollower
-      });
-
-    } else {
-      summaryDiv.innerHTML = '<p style="color:var(--text2)">Sem dados de Instagram Ads para este periodo</p>';
-      document.getElementById('ig-ads-actions').innerHTML = '';
-      document.getElementById('ig-ads-video-card').style.display = 'none';
-      document.getElementById('ig-ads-costs').innerHTML = '';
-      document.getElementById('ig-ai-analysis').innerHTML = '<p style="color:var(--text3)">Sem dados para analisar</p>';
-    }
-  } catch(e) {
-    document.getElementById('ig-ads-summary').innerHTML = '<p style="color:var(--text2)">Erro: ' + escapeHtml(e.message) + '</p>';
-  }
-
-  // ===== CAMPANHAS DETALHADAS =====
-  try {
-    const camps = await apiGet(`/${AD_ACCOUNT_ID}/campaigns?fields=id,name,status,insights.date_preset(${period}){spend,impressions,clicks,reach,ctr,actions,cost_per_action_type}&limit=20`);
-    const tbody = document.getElementById('ig-ads-tbody');
-    tbody.innerHTML = '';
-    let hasCamps = false;
-    if (camps.data) {
-      camps.data.forEach(c => {
-        const ins = c.insights?.data?.[0] || {};
-        const a = ins.actions || [];
-        const likes = getAction(a, 'onsite_conversion.post_net_like');
-        const comments = getAction(a, 'comment');
-        const saves = getAction(a, 'onsite_conversion.post_net_save');
-        const videoViews = getAction(a, 'video_view');
-        const engagement = getAction(a, 'post_engagement');
-        const statusClass = c.status === 'ACTIVE' ? 'status-active' : 'status-paused';
-        hasCamps = true;
-        tbody.innerHTML += `
-          <tr>
-            <td>${escapeHtml(c.name)}</td>
-            <td class="${statusClass}">${c.status}</td>
-            <td>R$ ${parseFloat(ins.spend || 0).toFixed(2)}</td>
-            <td>${fmt(ins.impressions)}</td>
-            <td>${fmt(ins.reach)}</td>
-            <td>${fmt(ins.clicks)}</td>
-            <td>${ins.ctr ? parseFloat(ins.ctr).toFixed(2) + '%' : '-'}</td>
-            <td>${fmt(likes)}</td>
-            <td>${fmt(comments)}</td>
-            <td>${fmt(saves)}</td>
-            <td>${fmt(videoViews)}</td>
-            <td>${fmt(engagement)}</td>
-            <td>
-              ${c.status === 'ACTIVE' ? `<button class="btn btn-outline btn-sm" onclick="toggleCampaignStatus('${c.id}','PAUSED')">Pausar</button>` : `<button class="btn btn-primary btn-sm" onclick="toggleCampaignStatus('${c.id}','ACTIVE')">Ativar</button>`}
-              <button class="btn btn-danger btn-sm" onclick="deleteCampaign('${c.id}')">X</button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-    if (!hasCamps) {
-      tbody.innerHTML = '<tr><td colspan="13" style="color:var(--text2)">Nenhuma campanha encontrada</td></tr>';
-    }
-  } catch (e) {
-    document.getElementById('ig-ads-tbody').innerHTML = `<tr><td colspan="13" style="color:var(--text2)">Erro: ${escapeHtml(e.message)}</td></tr>`;
-  }
+if (!IG_ID) return;
+const period = document.getElementById('ig-ads-period')?.value || 'maximum';
+// Load promotable posts
+try {
+const media = await apiGet(`/${IG_ID}/media?fields=id,caption,media_url,thumbnail_url,media_type,like_count,comments_count,permalink&limit=10`);
+const container = document.getElementById('ig-promotable-posts');
+container.innerHTML = '';
+if (media.data && media.data.length > 0) {
+media.data.forEach(p => {
+const imgUrl = p.media_type === 'VIDEO' ? (p.thumbnail_url || '') : (p.media_url || '');
+container.innerHTML += `
+<div class="promo-card">
+${imgUrl ? `<img src="${imgUrl}" alt="" onerror="this.style.display='none'">` : ''}
+<div class="promo-info">
+<div class="promo-title">${escapeHtml((p.caption || '').slice(0, 60))}</div>
+<div class="promo-stats">&#10084; ${p.like_count || 0} | &#128172; ${p.comments_count || 0}</div>
+</div>
+<button class="btn btn-primary btn-sm" onclick="promotePost('${p.id}', '${escapeHtml((p.caption || '').slice(0, 40))}')">Promover</button>
+</div>
+`;
+});
+} else {
+container.innerHTML = '<p style="color:var(--text2)">Nenhum post para promover</p>';
 }
-
+} catch (e) {
+document.getElementById('ig-promotable-posts').innerHTML = '<p style="color:var(--text2)">Erro: ' + escapeHtml(e.message) + '</p>';
+}
+// Load follower tracker + scrape history + auto scrape
+loadFollowerTracker();
+autoScrapeIfNeeded();
+if (!AD_ACCOUNT_ID) {
+document.getElementById('ig-ads-summary').innerHTML = '<p style="color:var(--text2)">Selecione uma conta de anuncio</p>';
+return;
+}
+// ===== RESUMO GERAL =====
+try {
+const ins = await apiGet(`/${AD_ACCOUNT_ID}/insights?fields=spend,impressions,clicks,reach,ctr,cpc,cpm,frequency,actions,cost_per_action_type,unique_actions,video_avg_time_watched_actions,video_p25_watched_actions,video_p50_watched_actions,video_p75_watched_actions,video_p100_watched_actions&date_preset=${period}`);
+const summaryDiv = document.getElementById('ig-ads-summary');
+if (ins.data && ins.data[0]) {
+const t = ins.data[0];
+const a = t.actions || [];
+const cpa = t.cost_per_action_type || [];
+const spend = parseFloat(t.spend || 0);
+const impressions = parseInt(t.impressions || 0);
+const reach = parseInt(t.reach || 0);
+const clicks = parseInt(t.clicks || 0);
+const ctr = parseFloat(t.ctr || 0);
+const cpc = parseFloat(t.cpc || 0);
+const cpm = parseFloat(t.cpm || 0);
+const freq = parseFloat(t.frequency || 0);
+// Actions
+const likes = getAction(a, 'onsite_conversion.post_net_like');
+const comments = getAction(a, 'comment');
+const saves = getAction(a, 'onsite_conversion.post_net_save');
+const shares = getAction(a, 'post');
+const reactions = getAction(a, 'post_reaction');
+const engagement = getAction(a, 'post_engagement');
+const linkClicks = getAction(a, 'link_click');
+const videoViews = getAction(a, 'video_view');
+const unlikes = getAction(a, 'onsite_conversion.post_unlike');
+const msgBlocks = getAction(a, 'onsite_conversion.messaging_block');
+const netInteractions = getAction(a, 'post_interaction_net');
+// Video metrics
+const vp25 = getAction(t.video_p25_watched_actions, 'video_view');
+const vp50 = getAction(t.video_p50_watched_actions, 'video_view');
+const vp75 = getAction(t.video_p75_watched_actions, 'video_view');
+const vp100 = getAction(t.video_p100_watched_actions, 'video_view');
+const vAvg = t.video_avg_time_watched_actions?.find(v => v.action_type === 'video_view')?.value || 0;
+// Costs
+const costEngagement = getCost(cpa, 'post_engagement');
+const costClick = getCost(cpa, 'link_click');
+const costVideo = getCost(cpa, 'video_view');
+const costReaction = getCost(cpa, 'post_reaction');
+// Summary cards
+summaryDiv.innerHTML = `
+<div class="stat"><div class="val">R$ ${spend.toFixed(2)}</div><div class="label">Gasto Total</div></div>
+<div class="stat"><div class="val">${fmt(impressions)}</div><div class="label">Impressoes</div></div>
+<div class="stat"><div class="val">${fmt(reach)}</div><div class="label">Alcance</div></div>
+<div class="stat"><div class="val">${fmt(clicks)}</div><div class="label">Cliques</div></div>
+<div class="stat"><div class="val">${ctr.toFixed(2)}%</div><div class="label">CTR</div></div>
+<div class="stat"><div class="val">R$ ${cpc.toFixed(2)}</div><div class="label">CPC</div></div>
+<div class="stat"><div class="val">R$ ${cpm.toFixed(2)}</div><div class="label">CPM</div></div>
+<div class="stat"><div class="val">${freq.toFixed(2)}</div><div class="label">Frequencia</div></div>
+`;
+// Detailed actions
+const actionsDiv = document.getElementById('ig-ads-actions');
+actionsDiv.innerHTML = `
+<div class="ad-detail-item"><div class="val">${fmt(engagement)}</div><div class="label">Engajamento Total</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(likes)}</div><div class="label">Curtidas</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(reactions)}</div><div class="label">Reacoes</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(comments)}</div><div class="label">Comentarios</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(saves)}</div><div class="label">Salvos</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(shares)}</div><div class="label">Compartilhamentos</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(linkClicks)}</div><div class="label">Cliques no Link</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(videoViews)}</div><div class="label">Views de Video</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(netInteractions)}</div><div class="label">Interacoes Liquidas</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(unlikes)}</div><div class="label">Descurtidas</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(msgBlocks)}</div><div class="label">Bloqueios MSG</div></div>
+`;
+// Video metrics
+const videoCard = document.getElementById('ig-ads-video-card');
+if (videoViews > 0) {
+videoCard.style.display = '';
+document.getElementById('ig-ads-video').innerHTML = `
+<div class="ad-detail-item"><div class="val">${fmt(videoViews)}</div><div class="label">Views Total</div></div>
+<div class="ad-detail-item"><div class="val">${vAvg}s</div><div class="label">Tempo Medio</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(vp25)}</div><div class="label">Assistiu 25%</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(vp50)}</div><div class="label">Assistiu 50%</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(vp75)}</div><div class="label">Assistiu 75%</div></div>
+<div class="ad-detail-item"><div class="val">${fmt(vp100)}</div><div class="label">Assistiu 100%</div></div>
+<div class="ad-detail-item"><div class="val">${videoViews > 0 ? ((vp100/videoViews)*100).toFixed(1) : 0}%</div><div class="label">Taxa Conclusao</div></div>
+`;
+} else {
+videoCard.style.display = 'none';
+}
+// Cost per action
+document.getElementById('ig-ads-costs').innerHTML = `
+<div class="ad-detail-item"><div class="val">R$ ${costEngagement.toFixed(3)}</div><div class="label">Custo / Engajamento</div></div>
+<div class="ad-detail-item"><div class="val">R$ ${costClick.toFixed(3)}</div><div class="label">Custo / Clique Link</div></div>
+<div class="ad-detail-item"><div class="val">R$ ${costVideo.toFixed(3)}</div><div class="label">Custo / View Video</div></div>
+<div class="ad-detail-item"><div class="val">R$ ${costReaction.toFixed(3)}</div><div class="label">Custo / Reacao</div></div>
+<div class="ad-detail-item"><div class="val">R$ ${cpc.toFixed(3)}</div><div class="label">Custo / Clique</div></div>
+<div class="ad-detail-item"><div class="val">R$ ${cpm.toFixed(2)}</div><div class="label">Custo / 1K Impressoes</div></div>
+`;
+// Get follower data for cost calculation
+let fAds = 0, fOrganic = 0;
+const igAcct = allIGAccounts.find(x => x.id === IG_ID);
+if (igAcct) {
+try {
+const fRes = await fetch(`/api/ig-followers/history/${igAcct.username}?days=30`);
+const fData = await fRes.json();
+fData.forEach(d => { fAds += d.followers_from_ads || 0; fOrganic += d.followers_organic || 0; });
+} catch(e) {}
+}
+const costPerFollower = fAds > 0 ? (spend / fAds).toFixed(2) : '-';
+// Add cost per follower to costs section
+document.getElementById('ig-ads-costs').innerHTML += `
+<div class="ad-detail-item" style="border-color:var(--accent)"><div class="val" style="color:var(--accent2)">R$ ${costPerFollower}</div><div class="label">Custo / Seguidor (Ads)</div></div>
+<div class="ad-detail-item"><div class="val" style="color:var(--accent2)">${fAds}</div><div class="label">Seguidores via Ads</div></div>
+`;
+// Run AI analysis
+runAIAnalysis({
+spend: spend.toFixed(2), impressions: fmt(impressions), reach: fmt(reach),
+clicks: fmt(clicks), ctr: ctr.toFixed(2), cpc: cpc.toFixed(2), cpm: cpm.toFixed(2),
+likes, comments, saves, videoViews, engagement,
+followersAds: fAds, followersOrganic: fOrganic,
+costEngagement: costEngagement.toFixed(3), costVideo: costVideo.toFixed(3),
+costPerFollower
+});
+} else {
+summaryDiv.innerHTML = '<p style="color:var(--text2)">Sem dados de Instagram Ads para este periodo</p>';
+document.getElementById('ig-ads-actions').innerHTML = '';
+document.getElementById('ig-ads-video-card').style.display = 'none';
+document.getElementById('ig-ads-costs').innerHTML = '';
+document.getElementById('ig-ai-analysis').innerHTML = '<p style="color:var(--text3)">Sem dados para analisar</p>';
+}
+} catch(e) {
+document.getElementById('ig-ads-summary').innerHTML = '<p style="color:var(--text2)">Erro: ' + escapeHtml(e.message) + '</p>';
+}
+// ===== CAMPANHAS DETALHADAS =====
+try {
+const camps = await apiGet(`/${AD_ACCOUNT_ID}/campaigns?fields=id,name,status,insights.date_preset(${period}){spend,impressions,clicks,reach,ctr,actions,cost_per_action_type}&limit=20`);
+const tbody = document.getElementById('ig-ads-tbody');
+tbody.innerHTML = '';
+let hasCamps = false;
+if (camps.data) {
+camps.data.forEach(c => {
+const ins = c.insights?.data?.[0] || {};
+const a = ins.actions || [];
+const likes = getAction(a, 'onsite_conversion.post_net_like');
+const comments = getAction(a, 'comment');
+const saves = getAction(a, 'onsite_conversion.post_net_save');
+const videoViews = getAction(a, 'video_view');
+const engagement = getAction(a, 'post_engagement');
+const statusClass = c.status === 'ACTIVE' ? 'status-active' : 'status-paused';
+hasCamps = true;
+tbody.innerHTML += `
+<tr>
+<td>${escapeHtml(c.name)}</td>
+<td class="${statusClass}">${c.status}</td>
+<td>R$ ${parseFloat(ins.spend || 0).toFixed(2)}</td>
+<td>${fmt(ins.impressions)}</td>
+<td>${fmt(ins.reach)}</td>
+<td>${fmt(ins.clicks)}</td>
+<td>${ins.ctr ? parseFloat(ins.ctr).toFixed(2) + '%' : '-'}</td>
+<td>${fmt(likes)}</td>
+<td>${fmt(comments)}</td>
+<td>${fmt(saves)}</td>
+<td>${fmt(videoViews)}</td>
+<td>${fmt(engagement)}</td>
+<td>
+${c.status === 'ACTIVE' ? `<button class="btn btn-outline btn-sm" onclick="toggleCampaignStatus('${c.id}','PAUSED')">Pausar</button>` : `<button class="btn btn-primary btn-sm" onclick="toggleCampaignStatus('${c.id}','ACTIVE')">Ativar</button>`}
+<button class="btn btn-danger btn-sm" onclick="deleteCampaign('${c.id}')">X</button>
+</td>
+</tr>
+`;
+});
+}
+if (!hasCamps) {
+tbody.innerHTML = '<tr><td colspan="13" style="color:var(--text2)">Nenhuma campanha encontrada</td></tr>';
+}
+} catch (e) {
+document.getElementById('ig-ads-tbody').innerHTML = `<tr><td colspan="13" style="color:var(--text2)">Erro: ${escapeHtml(e.message)}</td></tr>`;
+}
+}
 async function promotePost(postId, caption) {
-  if (!AD_ACCOUNT_ID) { toast('Selecione uma conta de anuncio no topo', 'error'); return; }
-  if (!PAGE_ID) { toast('Selecione uma pagina no topo', 'error'); return; }
-  const budget = prompt('Orcamento diario em centavos (ex: 2000 = R$20):', '2000');
-  if (!budget) return;
-  const days = prompt('Duracao em dias:', '7');
-  if (!days) return;
-
-  try {
-    toast('Criando campanha de promocao...', 'info');
-
-    // Create campaign
-    const camp = await apiPostForm(`/${AD_ACCOUNT_ID}/campaigns`, {
-      name: `Promo IG - ${caption}`,
-      objective: 'OUTCOME_ENGAGEMENT',
-      status: 'PAUSED',
-      special_ad_categories: '[]'
-    });
-
-    // Create ad set
-    const endTime = Math.floor((Date.now() + parseInt(days) * 86400000) / 1000);
-    const adset = await apiPostForm(`/${AD_ACCOUNT_ID}/adsets`, {
-      name: `AdSet - ${caption}`,
-      campaign_id: camp.id,
-      daily_budget: budget,
-      billing_event: 'IMPRESSIONS',
-      optimization_goal: 'POST_ENGAGEMENT',
-      targeting: JSON.stringify({ geo_locations: { countries: ['BR'] }, age_min: 18, age_max: 65 }),
-      end_time: endTime,
-      status: 'PAUSED',
-      promoted_object: JSON.stringify({ page_id: PAGE_ID })
-    });
-
-    // Create ad creative using the existing post
-    const creative = await apiPostForm(`/${AD_ACCOUNT_ID}/adcreatives`, {
-      name: `Creative - ${caption}`,
-      object_story_id: `${PAGE_ID}_${postId}`
-    });
-
-    // Create ad
-    const ad = await apiPostForm(`/${AD_ACCOUNT_ID}/ads`, {
-      name: `Ad - ${caption}`,
-      adset_id: adset.id,
-      creative: JSON.stringify({ creative_id: creative.id }),
-      status: 'PAUSED'
-    });
-
-    toast(`Anuncio criado! Campanha: ${camp.id} | Ad: ${ad.id} (PAUSADO)`, 'success');
-    loadIGAds();
-  } catch (e) {
-    toast('Erro ao promover: ' + e.message, 'error');
-  }
+if (!AD_ACCOUNT_ID) { toast('Selecione uma conta de anuncio no topo', 'error'); return; }
+if (!PAGE_ID) { toast('Selecione uma pagina no topo', 'error'); return; }
+const budget = prompt('Orcamento diario em centavos (ex: 2000 = R$20):', '2000');
+if (!budget) return;
+const days = prompt('Duracao em dias:', '7');
+if (!days) return;
+try {
+toast('Criando campanha de promocao...', 'info');
+// Create campaign
+const camp = await apiPostForm(`/${AD_ACCOUNT_ID}/campaigns`, {
+name: `Promo IG - ${caption}`,
+objective: 'OUTCOME_ENGAGEMENT',
+status: 'PAUSED',
+special_ad_categories: '[]'
+});
+// Create ad set
+const endTime = Math.floor((Date.now() + parseInt(days) * 86400000) / 1000);
+const adset = await apiPostForm(`/${AD_ACCOUNT_ID}/adsets`, {
+name: `AdSet - ${caption}`,
+campaign_id: camp.id,
+daily_budget: budget,
+billing_event: 'IMPRESSIONS',
+optimization_goal: 'POST_ENGAGEMENT',
+targeting: JSON.stringify({ geo_locations: { countries: ['BR'] }, age_min: 18, age_max: 65 }),
+end_time: endTime,
+status: 'PAUSED',
+promoted_object: JSON.stringify({ page_id: PAGE_ID })
+});
+// Create ad creative using the existing post
+const creative = await apiPostForm(`/${AD_ACCOUNT_ID}/adcreatives`, {
+name: `Creative - ${caption}`,
+object_story_id: `${PAGE_ID}_${postId}`
+});
+// Create ad
+const ad = await apiPostForm(`/${AD_ACCOUNT_ID}/ads`, {
+name: `Ad - ${caption}`,
+adset_id: adset.id,
+creative: JSON.stringify({ creative_id: creative.id }),
+status: 'PAUSED'
+});
+toast(`Anuncio criado! Campanha: ${camp.id} | Ad: ${ad.id} (PAUSADO)`, 'success');
+loadIGAds();
+} catch (e) {
+toast('Erro ao promover: ' + e.message, 'error');
 }
-
+}
 async function createIGAd() {
-  if (!AD_ACCOUNT_ID) { toast('Selecione uma conta de anuncio', 'error'); return; }
-  if (!PAGE_ID) { toast('Selecione uma pagina', 'error'); return; }
-
-  const imageUrl = document.getElementById('ig-ad-image-url').value.trim();
-  const caption = document.getElementById('ig-ad-caption').value.trim();
-  const budget = document.getElementById('ig-ad-budget').value;
-  const duration = document.getElementById('ig-ad-duration').value;
-  const ageMin = document.getElementById('ig-ad-age-min').value;
-  const ageMax = document.getElementById('ig-ad-age-max').value;
-  const country = document.getElementById('ig-ad-country').value;
-  const name = document.getElementById('ig-ad-name').value || 'Campanha Instagram';
-
-  if (!imageUrl) { toast('URL da imagem obrigatoria', 'error'); return; }
-
-  try {
-    toast('Criando campanha...', 'info');
-
-    const camp = await apiPostForm(`/${AD_ACCOUNT_ID}/campaigns`, {
-      name: name,
-      objective: 'OUTCOME_AWARENESS',
-      status: 'PAUSED',
-      special_ad_categories: '[]'
-    });
-
-    const endTime = Math.floor((Date.now() + parseInt(duration) * 86400000) / 1000);
-    const adset = await apiPostForm(`/${AD_ACCOUNT_ID}/adsets`, {
-      name: `AdSet ${name}`,
-      campaign_id: camp.id,
-      daily_budget: budget,
-      billing_event: 'IMPRESSIONS',
-      optimization_goal: 'REACH',
-      bid_amount: '100',
-      targeting: JSON.stringify({ geo_locations: { countries: [country] }, age_min: parseInt(ageMin), age_max: parseInt(ageMax) }),
-      end_time: endTime,
-      status: 'PAUSED'
-    });
-
-    const creative = await apiPostForm(`/${AD_ACCOUNT_ID}/adcreatives`, {
-      name: `Anuncio ${name}`,
-      object_story_spec: JSON.stringify({
-        page_id: PAGE_ID,
-        photo_data: { image_url: imageUrl, caption: caption }
-      })
-    });
-
-    const ad = await apiPostForm(`/${AD_ACCOUNT_ID}/ads`, {
-      name: `Ad ${name}`,
-      adset_id: adset.id,
-      creative: JSON.stringify({ creative_id: creative.id }),
-      status: 'PAUSED'
-    });
-
-    toast(`Anuncio criado com sucesso! ID: ${ad.id}`, 'success');
-    loadIGAds();
-  } catch (e) {
-    toast('Erro ao criar anuncio: ' + e.message, 'error');
-  }
+if (!AD_ACCOUNT_ID) { toast('Selecione uma conta de anuncio', 'error'); return; }
+if (!PAGE_ID) { toast('Selecione uma pagina', 'error'); return; }
+const imageUrl = document.getElementById('ig-ad-image-url').value.trim();
+const caption = document.getElementById('ig-ad-caption').value.trim();
+const budget = document.getElementById('ig-ad-budget').value;
+const duration = document.getElementById('ig-ad-duration').value;
+const ageMin = document.getElementById('ig-ad-age-min').value;
+const ageMax = document.getElementById('ig-ad-age-max').value;
+const country = document.getElementById('ig-ad-country').value;
+const name = document.getElementById('ig-ad-name').value || 'Campanha Instagram';
+if (!imageUrl) { toast('URL da imagem obrigatoria', 'error'); return; }
+try {
+toast('Criando campanha...', 'info');
+const camp = await apiPostForm(`/${AD_ACCOUNT_ID}/campaigns`, {
+name: name,
+objective: 'OUTCOME_AWARENESS',
+status: 'PAUSED',
+special_ad_categories: '[]'
+});
+const endTime = Math.floor((Date.now() + parseInt(duration) * 86400000) / 1000);
+const adset = await apiPostForm(`/${AD_ACCOUNT_ID}/adsets`, {
+name: `AdSet ${name}`,
+campaign_id: camp.id,
+daily_budget: budget,
+billing_event: 'IMPRESSIONS',
+optimization_goal: 'REACH',
+bid_amount: '100',
+targeting: JSON.stringify({ geo_locations: { countries: [country] }, age_min: parseInt(ageMin), age_max: parseInt(ageMax) }),
+end_time: endTime,
+status: 'PAUSED'
+});
+const creative = await apiPostForm(`/${AD_ACCOUNT_ID}/adcreatives`, {
+name: `Anuncio ${name}`,
+object_story_spec: JSON.stringify({
+page_id: PAGE_ID,
+photo_data: { image_url: imageUrl, caption: caption }
+})
+});
+const ad = await apiPostForm(`/${AD_ACCOUNT_ID}/ads`, {
+name: `Ad ${name}`,
+adset_id: adset.id,
+creative: JSON.stringify({ creative_id: creative.id }),
+status: 'PAUSED'
+});
+toast(`Anuncio criado com sucesso! ID: ${ad.id}`, 'success');
+loadIGAds();
+} catch (e) {
+toast('Erro ao criar anuncio: ' + e.message, 'error');
 }
-
+}
 async function toggleAdStatus(adId, newStatus) {
-  try {
-    await apiPostForm(`/${adId}`, { status: newStatus });
-    toast(`Anuncio ${newStatus === 'ACTIVE' ? 'ativado' : 'pausado'}!`, 'success');
-    loadIGAds();
-  } catch (e) {
-    toast('Erro: ' + e.message, 'error');
-  }
+try {
+await apiPostForm(`/${adId}`, { status: newStatus });
+toast(`Anuncio ${newStatus === 'ACTIVE' ? 'ativado' : 'pausado'}!`, 'success');
+loadIGAds();
+} catch (e) {
+toast('Erro: ' + e.message, 'error');
 }
-
+}
 // ===== FB PAGE =====
 async function loadFBPageInfo() {
-  if (!PAGE_ID) { document.getElementById('fb-page-info').innerHTML = '<p style="color:var(--text2)">Selecione uma pagina no topo</p>'; return; }
-  try {
-    const data = await apiGet(`/${PAGE_ID}?fields=name,about,fan_count,followers_count,picture,category`, true);
-    document.getElementById('fb-page-info').innerHTML = `
-      <div class="profile-card">
-        <img src="${data.picture?.data?.url || ''}" alt="page" onerror="this.style.display='none'">
-        <div class="profile-info">
-          <div class="username">${data.name || 'Pagina'}</div>
-          <div class="bio">${data.about || ''}</div>
-          <div style="font-size:12px;color:var(--text2);margin-top:6px">${data.category || ''}</div>
-        </div>
-      </div>
-      <div class="stat-row" style="margin-top:16px">
-        <div class="stat"><div class="val">${fmt(data.fan_count)}</div><div class="label">Curtidas</div></div>
-        <div class="stat"><div class="val">${fmt(data.followers_count)}</div><div class="label">Seguidores</div></div>
-      </div>
-    `;
-  } catch (e) {
-    toast('Erro FB Pagina: ' + e.message, 'error');
-    document.getElementById('fb-page-info').innerHTML = '<p style="color:var(--text2)">Erro ao carregar</p>';
-  }
+if (!PAGE_ID) { document.getElementById('fb-page-info').innerHTML = '<p style="color:var(--text2)">Selecione uma pagina no topo</p>'; return; }
+try {
+const data = await apiGet(`/${PAGE_ID}?fields=name,about,fan_count,followers_count,picture,category`, true);
+document.getElementById('fb-page-info').innerHTML = `
+<div class="profile-card">
+<img src="${data.picture?.data?.url || ''}" alt="page" onerror="this.style.display='none'">
+<div class="profile-info">
+<div class="username">${data.name || 'Pagina'}</div>
+<div class="bio">${data.about || ''}</div>
+<div style="font-size:12px;color:var(--text2);margin-top:6px">${data.category || ''}</div>
+</div>
+</div>
+<div class="stat-row" style="margin-top:16px">
+<div class="stat"><div class="val">${fmt(data.fan_count)}</div><div class="label">Curtidas</div></div>
+<div class="stat"><div class="val">${fmt(data.followers_count)}</div><div class="label">Seguidores</div></div>
+</div>
+`;
+} catch (e) {
+toast('Erro FB Pagina: ' + e.message, 'error');
+document.getElementById('fb-page-info').innerHTML = '<p style="color:var(--text2)">Erro ao carregar</p>';
 }
-
+}
 async function loadFBPosts() {
-  if (!PAGE_ID) return;
-  try {
-    const data = await apiGet(`/${PAGE_ID}/posts?fields=id,message,created_time,full_picture,shares,reactions.summary(true),comments.summary(true)&limit=10`, true);
-    const container = document.getElementById('fb-posts-list');
-    container.innerHTML = '';
-    if (!data.data || data.data.length === 0) {
-      container.innerHTML = '<p style="color:var(--text2)">Nenhum post</p>';
-      return;
-    }
-    data.data.forEach(p => {
-      container.innerHTML += `
-        <div class="post-card">
-          ${p.full_picture ? `<img src="${p.full_picture}" alt="post" onerror="this.style.display='none'">` : ''}
-          <div class="post-body">
-            <div class="post-caption">${escapeHtml(p.message || '(sem texto)')}</div>
-            <div class="post-stats">
-              <div>&#128077; <span>${p.reactions?.summary?.total_count || 0}</span></div>
-              <div>&#128172; <span>${p.comments?.summary?.total_count || 0}</span></div>
-              <div>&#128257; <span>${p.shares?.count || 0}</span></div>
-              <div style="margin-left:auto;font-size:11px">${new Date(p.created_time).toLocaleDateString('pt-BR')}</div>
-            </div>
-            <div class="post-actions">
-              <button class="btn btn-danger btn-sm" onclick="deleteFBPost('${p.id}')">Excluir</button>
-            </div>
-          </div>
-        </div>
-      `;
-    });
-  } catch (e) {
-    toast('Erro FB Posts: ' + e.message, 'error');
-  }
+if (!PAGE_ID) return;
+try {
+const data = await apiGet(`/${PAGE_ID}/posts?fields=id,message,created_time,full_picture,shares,reactions.summary(true),comments.summary(true)&limit=10`, true);
+const container = document.getElementById('fb-posts-list');
+container.innerHTML = '';
+if (!data.data || data.data.length === 0) {
+container.innerHTML = '<p style="color:var(--text2)">Nenhum post</p>';
+return;
 }
-
+data.data.forEach(p => {
+container.innerHTML += `
+<div class="post-card">
+${p.full_picture ? `<img src="${p.full_picture}" alt="post" onerror="this.style.display='none'">` : ''}
+<div class="post-body">
+<div class="post-caption">${escapeHtml(p.message || '(sem texto)')}</div>
+<div class="post-stats">
+<div>&#128077; <span>${p.reactions?.summary?.total_count || 0}</span></div>
+<div>&#128172; <span>${p.comments?.summary?.total_count || 0}</span></div>
+<div>&#128257; <span>${p.shares?.count || 0}</span></div>
+<div style="margin-left:auto;font-size:11px">${new Date(p.created_time).toLocaleDateString('pt-BR')}</div>
+</div>
+<div class="post-actions">
+<button class="btn btn-danger btn-sm" onclick="deleteFBPost('${p.id}')">Excluir</button>
+</div>
+</div>
+</div>
+`;
+});
+} catch (e) {
+toast('Erro FB Posts: ' + e.message, 'error');
+}
+}
 async function createFBPost() {
-  if (!PAGE_ID) { toast('Selecione uma pagina', 'error'); return; }
-  const text = document.getElementById('fb-post-text').value.trim();
-  const img = document.getElementById('fb-post-img').value.trim();
-  if (!text && !img) { toast('Escreva algo ou adicione uma imagem', 'error'); return; }
-  try {
-    if (img) {
-      await apiPost(`/${PAGE_ID}/photos`, { url: img, caption: text }, true);
-    } else {
-      await apiPost(`/${PAGE_ID}/feed`, { message: text }, true);
-    }
-    toast('Post criado!', 'success');
-    document.getElementById('fb-post-text').value = '';
-    document.getElementById('fb-post-img').value = '';
-    loadFBPosts();
-  } catch (e) {
-    toast('Erro ao criar post: ' + e.message, 'error');
-  }
+if (!PAGE_ID) { toast('Selecione uma pagina', 'error'); return; }
+const text = document.getElementById('fb-post-text').value.trim();
+const img = document.getElementById('fb-post-img').value.trim();
+if (!text && !img) { toast('Escreva algo ou adicione uma imagem', 'error'); return; }
+try {
+if (img) {
+await apiPost(`/${PAGE_ID}/photos`, { url: img, caption: text }, true);
+} else {
+await apiPost(`/${PAGE_ID}/feed`, { message: text }, true);
 }
-
+toast('Post criado!', 'success');
+document.getElementById('fb-post-text').value = '';
+document.getElementById('fb-post-img').value = '';
+loadFBPosts();
+} catch (e) {
+toast('Erro ao criar post: ' + e.message, 'error');
+}
+}
 async function deleteFBPost(postId) {
-  if (!confirm('Excluir este post?')) return;
-  try {
-    await apiDelete(`/${postId}`, true);
-    toast('Post excluido', 'success');
-    loadFBPosts();
-  } catch (e) {
-    toast('Erro ao excluir: ' + e.message, 'error');
-  }
+if (!confirm('Excluir este post?')) return;
+try {
+await apiDelete(`/${postId}`, true);
+toast('Post excluido', 'success');
+loadFBPosts();
+} catch (e) {
+toast('Erro ao excluir: ' + e.message, 'error');
 }
-
+}
 // ===== ADS DASHBOARD =====
 let dashData = { campaigns: [], adsets: [], ads: [] };
-
 async function loadAdsDashboard() {
-  const platform = document.getElementById('dash-platform').value;
-  const period = document.getElementById('dash-period').value;
-  const statusFilter = document.getElementById('dash-status').value;
-
-  // Show/hide custom dates
-  const isCustom = period === 'custom';
-  document.getElementById('custom-dates').style.display = isCustom ? '' : 'none';
-  document.getElementById('custom-dates-to').style.display = isCustom ? '' : 'none';
-
-  // Populate account selector
-  const accSel = document.getElementById('dash-account');
-  if (accSel.options.length <= 1 && allAdAccounts.length > 0) {
-    allAdAccounts.forEach(a => {
-      const opt = document.createElement('option');
-      opt.value = a.id;
-      opt.textContent = a.name || a.id;
-      accSel.appendChild(opt);
-    });
-  }
-  const selectedAccount = accSel.value;
-
-  // Build date params
-  let dateParam = '';
-  if (period === 'custom') {
-    const from = document.getElementById('dash-date-from').value;
-    const to = document.getElementById('dash-date-to').value;
-    if (from && to) dateParam = `&time_range={"since":"${from}","until":"${to}"}`;
-    else { toast('Selecione as datas', 'error'); return; }
-  } else {
-    dateParam = `&date_preset=${period}`;
-  }
-
-  // Platform filter
-  let platformFilter = '';
-  if (platform !== 'all') {
-    platformFilter = `&filtering=[{"field":"publisher_platform","operator":"IN","value":["${platform}"]}]`;
-  }
-
-  // Determine which accounts to query
-  const accountIds = selectedAccount === 'all' ? allAdAccounts.map(a => a.id) : [selectedAccount];
-  if (accountIds.length === 0) {
-    document.getElementById('dash-summary').innerHTML = '<p style="color:var(--text2)">Nenhuma conta de anuncio</p>';
-    return;
-  }
-
-  try {
-    // 1. Summary insights
-    let totalSpend = 0, totalImp = 0, totalReach = 0, totalClicks = 0, totalEng = 0;
-    let igSpend = 0, igImp = 0, fbSpend = 0, fbImp = 0;
-
-    for (const accId of accountIds) {
-      try {
-        const ins = await apiGet(`/${accId}/insights?fields=spend,impressions,clicks,reach,ctr,cpc,cpm,actions${dateParam}${platformFilter}`);
-        if (ins.data?.[0]) {
-          const d = ins.data[0];
-          totalSpend += parseFloat(d.spend || 0);
-          totalImp += parseInt(d.impressions || 0);
-          totalReach += parseInt(d.reach || 0);
-          totalClicks += parseInt(d.clicks || 0);
-          totalEng += parseInt(d.actions?.find(a => a.action_type === 'post_engagement')?.value || 0);
-        }
-      } catch(e) {}
-
-      // Platform breakdown (only when showing all)
-      if (platform === 'all') {
-        try {
-          const igIns = await apiGet(`/${accId}/insights?fields=spend,impressions${dateParam}&filtering=[{"field":"publisher_platform","operator":"IN","value":["instagram"]}]`);
-          if (igIns.data?.[0]) { igSpend += parseFloat(igIns.data[0].spend || 0); igImp += parseInt(igIns.data[0].impressions || 0); }
-        } catch(e) {}
-        try {
-          const fbIns = await apiGet(`/${accId}/insights?fields=spend,impressions${dateParam}&filtering=[{"field":"publisher_platform","operator":"IN","value":["facebook"]}]`);
-          if (fbIns.data?.[0]) { fbSpend += parseFloat(fbIns.data[0].spend || 0); fbImp += parseInt(fbIns.data[0].impressions || 0); }
-        } catch(e) {}
-      }
-    }
-
-    const ctr = totalImp > 0 ? ((totalClicks / totalImp) * 100).toFixed(2) : '0.00';
-    const cpc = totalClicks > 0 ? (totalSpend / totalClicks).toFixed(2) : '0.00';
-    const cpm = totalImp > 0 ? ((totalSpend / totalImp) * 1000).toFixed(2) : '0.00';
-
-    document.getElementById('dash-summary').innerHTML = `
-      <div class="stat"><div class="val">R$ ${totalSpend.toFixed(2)}</div><div class="label">Gasto Total</div></div>
-      <div class="stat"><div class="val">${fmt(totalImp)}</div><div class="label">Impressoes</div></div>
-      <div class="stat"><div class="val">${fmt(totalReach)}</div><div class="label">Alcance</div></div>
-      <div class="stat"><div class="val">${fmt(totalClicks)}</div><div class="label">Cliques</div></div>
-      <div class="stat"><div class="val">${ctr}%</div><div class="label">CTR</div></div>
-      <div class="stat"><div class="val">R$ ${cpc}</div><div class="label">CPC</div></div>
-      <div class="stat"><div class="val">R$ ${cpm}</div><div class="label">CPM</div></div>
-      <div class="stat"><div class="val">${fmt(totalEng)}</div><div class="label">Engajamento</div></div>
-    `;
-
-    // Platform comparison bars
-    const compDiv = document.getElementById('dash-comparison-bars');
-    if (platform === 'all' && (igSpend > 0 || fbSpend > 0)) {
-      const maxSpend = Math.max(igSpend, fbSpend, 1);
-      const maxImp = Math.max(igImp, fbImp, 1);
-      compDiv.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-          <div>
-            <div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Gasto</div>
-            <div class="chart-bar-wrap">
-              <span class="chart-bar-label"><span class="platform-badge ig">Instagram</span></span>
-              <div class="chart-bar ig" style="width:${(igSpend/maxSpend)*100}%"></div>
-              <span class="chart-bar-val">R$ ${igSpend.toFixed(2)}</span>
-            </div>
-            <div class="chart-bar-wrap">
-              <span class="chart-bar-label"><span class="platform-badge fb">Facebook</span></span>
-              <div class="chart-bar fb" style="width:${(fbSpend/maxSpend)*100}%"></div>
-              <span class="chart-bar-val">R$ ${fbSpend.toFixed(2)}</span>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Impressoes</div>
-            <div class="chart-bar-wrap">
-              <span class="chart-bar-label"><span class="platform-badge ig">Instagram</span></span>
-              <div class="chart-bar ig" style="width:${(igImp/maxImp)*100}%"></div>
-              <span class="chart-bar-val">${fmt(igImp)}</span>
-            </div>
-            <div class="chart-bar-wrap">
-              <span class="chart-bar-label"><span class="platform-badge fb">Facebook</span></span>
-              <div class="chart-bar fb" style="width:${(fbImp/maxImp)*100}%"></div>
-              <span class="chart-bar-val">${fmt(fbImp)}</span>
-            </div>
-          </div>
-        </div>
-      `;
-      document.getElementById('dash-comparison').style.display = '';
-    } else {
-      document.getElementById('dash-comparison').style.display = 'none';
-    }
-
-    // 2. Load campaigns
-    dashData.campaigns = [];
-    for (const accId of accountIds) {
-      try {
-        const camps = await apiGet(`/${accId}/campaigns?fields=id,name,status,objective,insights${dateParam ? '.date_preset(' + period + ')' : ''}{spend,impressions,clicks,reach,ctr,actions}${platformFilter}&limit=50`);
-        if (camps.data) {
-          camps.data.forEach(c => {
-            c._accId = accId;
-            c._accName = allAdAccounts.find(a => a.id === accId)?.name || accId;
-            dashData.campaigns.push(c);
-          });
-        }
-      } catch(e) {}
-    }
-    renderDashCampaigns();
-
-    // 3. Load ad sets
-    dashData.adsets = [];
-    for (const accId of accountIds) {
-      try {
-        const sets = await apiGet(`/${accId}/adsets?fields=id,name,status,campaign{name},daily_budget,lifetime_budget,insights${dateParam ? '.date_preset(' + period + ')' : ''}{spend,impressions,clicks,reach}${platformFilter}&limit=50`);
-        if (sets.data) {
-          sets.data.forEach(s => dashData.adsets.push(s));
-        }
-      } catch(e) {}
-    }
-    renderDashAdSets();
-
-    // 4. Load ads
-    dashData.ads = [];
-    for (const accId of accountIds) {
-      try {
-        const ads = await apiGet(`/${accId}/ads?fields=id,name,status,campaign{name},insights${dateParam ? '.date_preset(' + period + ')' : ''}{spend,impressions,clicks,reach,ctr}${platformFilter}&limit=50`);
-        if (ads.data) {
-          ads.data.forEach(a => dashData.ads.push(a));
-        }
-      } catch(e) {}
-    }
-    renderDashAds();
-
-  } catch (e) {
-    toast('Erro Dashboard: ' + e.message, 'error');
-  }
+const platform = document.getElementById('dash-platform').value;
+const period = document.getElementById('dash-period').value;
+const statusFilter = document.getElementById('dash-status').value;
+// Show/hide custom dates
+const isCustom = period === 'custom';
+document.getElementById('custom-dates').style.display = isCustom ? '' : 'none';
+document.getElementById('custom-dates-to').style.display = isCustom ? '' : 'none';
+// Populate account selector
+const accSel = document.getElementById('dash-account');
+if (accSel.options.length <= 1 && allAdAccounts.length > 0) {
+allAdAccounts.forEach(a => {
+const opt = document.createElement('option');
+opt.value = a.id;
+opt.textContent = a.name || a.id;
+accSel.appendChild(opt);
+});
 }
-
+const selectedAccount = accSel.value;
+// Build date params
+let dateParam = '';
+if (period === 'custom') {
+const from = document.getElementById('dash-date-from').value;
+const to = document.getElementById('dash-date-to').value;
+if (from && to) dateParam = `&time_range={"since":"${from}","until":"${to}"}`;
+else { toast('Selecione as datas', 'error'); return; }
+} else {
+dateParam = `&date_preset=${period}`;
+}
+// Platform filter
+let platformFilter = '';
+if (platform !== 'all') {
+platformFilter = `&filtering=[{"field":"publisher_platform","operator":"IN","value":["${platform}"]}]`;
+}
+// Determine which accounts to query
+const accountIds = selectedAccount === 'all' ? allAdAccounts.map(a => a.id) : [selectedAccount];
+if (accountIds.length === 0) {
+document.getElementById('dash-summary').innerHTML = '<p style="color:var(--text2)">Nenhuma conta de anuncio</p>';
+return;
+}
+try {
+// 1. Summary insights
+let totalSpend = 0, totalImp = 0, totalReach = 0, totalClicks = 0, totalEng = 0;
+let igSpend = 0, igImp = 0, fbSpend = 0, fbImp = 0;
+for (const accId of accountIds) {
+try {
+const ins = await apiGet(`/${accId}/insights?fields=spend,impressions,clicks,reach,ctr,cpc,cpm,actions${dateParam}${platformFilter}`);
+if (ins.data?.[0]) {
+const d = ins.data[0];
+totalSpend += parseFloat(d.spend || 0);
+totalImp += parseInt(d.impressions || 0);
+totalReach += parseInt(d.reach || 0);
+totalClicks += parseInt(d.clicks || 0);
+totalEng += parseInt(d.actions?.find(a => a.action_type === 'post_engagement')?.value || 0);
+}
+} catch(e) {}
+// Platform breakdown (only when showing all)
+if (platform === 'all') {
+try {
+const igIns = await apiGet(`/${accId}/insights?fields=spend,impressions${dateParam}&filtering=[{"field":"publisher_platform","operator":"IN","value":["instagram"]}]`);
+if (igIns.data?.[0]) { igSpend += parseFloat(igIns.data[0].spend || 0); igImp += parseInt(igIns.data[0].impressions || 0); }
+} catch(e) {}
+try {
+const fbIns = await apiGet(`/${accId}/insights?fields=spend,impressions${dateParam}&filtering=[{"field":"publisher_platform","operator":"IN","value":["facebook"]}]`);
+if (fbIns.data?.[0]) { fbSpend += parseFloat(fbIns.data[0].spend || 0); fbImp += parseInt(fbIns.data[0].impressions || 0); }
+} catch(e) {}
+}
+}
+const ctr = totalImp > 0 ? ((totalClicks / totalImp) * 100).toFixed(2) : '0.00';
+const cpc = totalClicks > 0 ? (totalSpend / totalClicks).toFixed(2) : '0.00';
+const cpm = totalImp > 0 ? ((totalSpend / totalImp) * 1000).toFixed(2) : '0.00';
+document.getElementById('dash-summary').innerHTML = `
+<div class="stat"><div class="val">R$ ${totalSpend.toFixed(2)}</div><div class="label">Gasto Total</div></div>
+<div class="stat"><div class="val">${fmt(totalImp)}</div><div class="label">Impressoes</div></div>
+<div class="stat"><div class="val">${fmt(totalReach)}</div><div class="label">Alcance</div></div>
+<div class="stat"><div class="val">${fmt(totalClicks)}</div><div class="label">Cliques</div></div>
+<div class="stat"><div class="val">${ctr}%</div><div class="label">CTR</div></div>
+<div class="stat"><div class="val">R$ ${cpc}</div><div class="label">CPC</div></div>
+<div class="stat"><div class="val">R$ ${cpm}</div><div class="label">CPM</div></div>
+<div class="stat"><div class="val">${fmt(totalEng)}</div><div class="label">Engajamento</div></div>
+`;
+// Platform comparison bars
+const compDiv = document.getElementById('dash-comparison-bars');
+if (platform === 'all' && (igSpend > 0 || fbSpend > 0)) {
+const maxSpend = Math.max(igSpend, fbSpend, 1);
+const maxImp = Math.max(igImp, fbImp, 1);
+compDiv.innerHTML = `
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+<div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Gasto</div>
+<div class="chart-bar-wrap">
+<span class="chart-bar-label"><span class="platform-badge ig">Instagram</span></span>
+<div class="chart-bar ig" style="width:${(igSpend/maxSpend)*100}%"></div>
+<span class="chart-bar-val">R$ ${igSpend.toFixed(2)}</span>
+</div>
+<div class="chart-bar-wrap">
+<span class="chart-bar-label"><span class="platform-badge fb">Facebook</span></span>
+<div class="chart-bar fb" style="width:${(fbSpend/maxSpend)*100}%"></div>
+<span class="chart-bar-val">R$ ${fbSpend.toFixed(2)}</span>
+</div>
+</div>
+<div>
+<div style="font-size:12px;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Impressoes</div>
+<div class="chart-bar-wrap">
+<span class="chart-bar-label"><span class="platform-badge ig">Instagram</span></span>
+<div class="chart-bar ig" style="width:${(igImp/maxImp)*100}%"></div>
+<span class="chart-bar-val">${fmt(igImp)}</span>
+</div>
+<div class="chart-bar-wrap">
+<span class="chart-bar-label"><span class="platform-badge fb">Facebook</span></span>
+<div class="chart-bar fb" style="width:${(fbImp/maxImp)*100}%"></div>
+<span class="chart-bar-val">${fmt(fbImp)}</span>
+</div>
+</div>
+</div>
+`;
+document.getElementById('dash-comparison').style.display = '';
+} else {
+document.getElementById('dash-comparison').style.display = 'none';
+}
+// 2. Load campaigns
+dashData.campaigns = [];
+for (const accId of accountIds) {
+try {
+const camps = await apiGet(`/${accId}/campaigns?fields=id,name,status,objective,insights${dateParam ? '.date_preset(' + period + ')' : ''}{spend,impressions,clicks,reach,ctr,actions}${platformFilter}&limit=50`);
+if (camps.data) {
+camps.data.forEach(c => {
+c._accId = accId;
+c._accName = allAdAccounts.find(a => a.id === accId)?.name || accId;
+dashData.campaigns.push(c);
+});
+}
+} catch(e) {}
+}
+renderDashCampaigns();
+// 3. Load ad sets
+dashData.adsets = [];
+for (const accId of accountIds) {
+try {
+const sets = await apiGet(`/${accId}/adsets?fields=id,name,status,campaign{name},daily_budget,lifetime_budget,insights${dateParam ? '.date_preset(' + period + ')' : ''}{spend,impressions,clicks,reach}${platformFilter}&limit=50`);
+if (sets.data) {
+sets.data.forEach(s => dashData.adsets.push(s));
+}
+} catch(e) {}
+}
+renderDashAdSets();
+// 4. Load ads
+dashData.ads = [];
+for (const accId of accountIds) {
+try {
+const ads = await apiGet(`/${accId}/ads?fields=id,name,status,campaign{name},insights${dateParam ? '.date_preset(' + period + ')' : ''}{spend,impressions,clicks,reach,ctr}${platformFilter}&limit=50`);
+if (ads.data) {
+ads.data.forEach(a => dashData.ads.push(a));
+}
+} catch(e) {}
+}
+renderDashAds();
+} catch (e) {
+toast('Erro Dashboard: ' + e.message, 'error');
+}
+}
 function renderDashCampaigns() {
-  const statusFilter = document.getElementById('dash-status').value;
-  const tbody = document.getElementById('dash-campaigns-tbody');
-  tbody.innerHTML = '';
-  const filtered = dashData.campaigns.filter(c => statusFilter === 'all' || c.status === statusFilter);
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11" style="color:var(--text2)">Nenhuma campanha encontrada</td></tr>';
-    return;
-  }
-  filtered.sort((a, b) => parseFloat(b.insights?.data?.[0]?.spend || 0) - parseFloat(a.insights?.data?.[0]?.spend || 0));
-  filtered.forEach(c => {
-    const ins = c.insights?.data?.[0] || {};
-    const eng = ins.actions?.find(a => a.action_type === 'post_engagement')?.value || 0;
-    const statusClass = c.status === 'ACTIVE' ? 'status-active' : 'status-paused';
-    const objMap = {OUTCOME_AWARENESS:'Alcance',OUTCOME_ENGAGEMENT:'Engajamento',OUTCOME_TRAFFIC:'Trafego',OUTCOME_LEADS:'Leads',OUTCOME_SALES:'Vendas',LINK_CLICKS:'Cliques Link'};
-    const platBadge = (c.name || '').toLowerCase().includes('instagram') ? '<span class="platform-badge ig">IG</span>' : '<span class="platform-badge fb">FB</span>';
-    tbody.innerHTML += `
-      <tr>
-        <td>${escapeHtml(c.name)}</td>
-        <td>${platBadge}</td>
-        <td class="${statusClass}">${c.status}</td>
-        <td style="font-size:11px">${objMap[c.objective] || c.objective || '-'}</td>
-        <td>R$ ${parseFloat(ins.spend || 0).toFixed(2)}</td>
-        <td>${fmt(ins.impressions)}</td>
-        <td>${fmt(ins.reach)}</td>
-        <td>${fmt(ins.clicks)}</td>
-        <td>${ins.ctr ? parseFloat(ins.ctr).toFixed(2) + '%' : '-'}</td>
-        <td>${fmt(eng)}</td>
-        <td>
-          ${c.status === 'ACTIVE' ? `<button class="btn btn-outline btn-sm" onclick="toggleCampaignStatus('${c.id}','PAUSED')">Pausar</button>` : `<button class="btn btn-primary btn-sm" onclick="toggleCampaignStatus('${c.id}','ACTIVE')">Ativar</button>`}
-          <button class="btn btn-danger btn-sm" onclick="deleteCampaign('${c.id}')">X</button>
-        </td>
-      </tr>
-    `;
-  });
+const statusFilter = document.getElementById('dash-status').value;
+const tbody = document.getElementById('dash-campaigns-tbody');
+tbody.innerHTML = '';
+const filtered = dashData.campaigns.filter(c => statusFilter === 'all' || c.status === statusFilter);
+if (filtered.length === 0) {
+tbody.innerHTML = '<tr><td colspan="11" style="color:var(--text2)">Nenhuma campanha encontrada</td></tr>';
+return;
 }
-
+filtered.sort((a, b) => parseFloat(b.insights?.data?.[0]?.spend || 0) - parseFloat(a.insights?.data?.[0]?.spend || 0));
+filtered.forEach(c => {
+const ins = c.insights?.data?.[0] || {};
+const eng = ins.actions?.find(a => a.action_type === 'post_engagement')?.value || 0;
+const statusClass = c.status === 'ACTIVE' ? 'status-active' : 'status-paused';
+const objMap = {OUTCOME_AWARENESS:'Alcance',OUTCOME_ENGAGEMENT:'Engajamento',OUTCOME_TRAFFIC:'Trafego',OUTCOME_LEADS:'Leads',OUTCOME_SALES:'Vendas',LINK_CLICKS:'Cliques Link'};
+const platBadge = (c.name || '').toLowerCase().includes('instagram') ? '<span class="platform-badge ig">IG</span>' : '<span class="platform-badge fb">FB</span>';
+tbody.innerHTML += `
+<tr>
+<td>${escapeHtml(c.name)}</td>
+<td>${platBadge}</td>
+<td class="${statusClass}">${c.status}</td>
+<td style="font-size:11px">${objMap[c.objective] || c.objective || '-'}</td>
+<td>R$ ${parseFloat(ins.spend || 0).toFixed(2)}</td>
+<td>${fmt(ins.impressions)}</td>
+<td>${fmt(ins.reach)}</td>
+<td>${fmt(ins.clicks)}</td>
+<td>${ins.ctr ? parseFloat(ins.ctr).toFixed(2) + '%' : '-'}</td>
+<td>${fmt(eng)}</td>
+<td>
+${c.status === 'ACTIVE' ? `<button class="btn btn-outline btn-sm" onclick="toggleCampaignStatus('${c.id}','PAUSED')">Pausar</button>` : `<button class="btn btn-primary btn-sm" onclick="toggleCampaignStatus('${c.id}','ACTIVE')">Ativar</button>`}
+<button class="btn btn-danger btn-sm" onclick="deleteCampaign('${c.id}')">X</button>
+</td>
+</tr>
+`;
+});
+}
 function renderDashAdSets() {
-  const statusFilter = document.getElementById('dash-status').value;
-  const tbody = document.getElementById('dash-adsets-tbody');
-  tbody.innerHTML = '';
-  const filtered = dashData.adsets.filter(s => statusFilter === 'all' || s.status === statusFilter);
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" style="color:var(--text2)">Nenhum conjunto encontrado</td></tr>';
-    return;
-  }
-  filtered.forEach(s => {
-    const ins = s.insights?.data?.[0] || {};
-    const statusClass = s.status === 'ACTIVE' ? 'status-active' : 'status-paused';
-    const budget = s.daily_budget ? `R$ ${(parseInt(s.daily_budget)/100).toFixed(2)}/dia` : s.lifetime_budget ? `R$ ${(parseInt(s.lifetime_budget)/100).toFixed(2)} total` : '-';
-    tbody.innerHTML += `
-      <tr>
-        <td>${escapeHtml(s.name)}</td>
-        <td style="font-size:12px">${escapeHtml(s.campaign?.name || '-')}</td>
-        <td class="${statusClass}">${s.status}</td>
-        <td>${budget}</td>
-        <td>R$ ${parseFloat(ins.spend || 0).toFixed(2)}</td>
-        <td>${fmt(ins.impressions)}</td>
-        <td>${fmt(ins.reach)}</td>
-        <td>${fmt(ins.clicks)}</td>
-        <td>
-          ${s.status === 'ACTIVE' ? `<button class="btn btn-outline btn-sm" onclick="toggleAdSetStatus('${s.id}','PAUSED')">Pausar</button>` : `<button class="btn btn-primary btn-sm" onclick="toggleAdSetStatus('${s.id}','ACTIVE')">Ativar</button>`}
-        </td>
-      </tr>
-    `;
-  });
+const statusFilter = document.getElementById('dash-status').value;
+const tbody = document.getElementById('dash-adsets-tbody');
+tbody.innerHTML = '';
+const filtered = dashData.adsets.filter(s => statusFilter === 'all' || s.status === statusFilter);
+if (filtered.length === 0) {
+tbody.innerHTML = '<tr><td colspan="9" style="color:var(--text2)">Nenhum conjunto encontrado</td></tr>';
+return;
 }
-
+filtered.forEach(s => {
+const ins = s.insights?.data?.[0] || {};
+const statusClass = s.status === 'ACTIVE' ? 'status-active' : 'status-paused';
+const budget = s.daily_budget ? `R$ ${(parseInt(s.daily_budget)/100).toFixed(2)}/dia` : s.lifetime_budget ? `R$ ${(parseInt(s.lifetime_budget)/100).toFixed(2)} total` : '-';
+tbody.innerHTML += `
+<tr>
+<td>${escapeHtml(s.name)}</td>
+<td style="font-size:12px">${escapeHtml(s.campaign?.name || '-')}</td>
+<td class="${statusClass}">${s.status}</td>
+<td>${budget}</td>
+<td>R$ ${parseFloat(ins.spend || 0).toFixed(2)}</td>
+<td>${fmt(ins.impressions)}</td>
+<td>${fmt(ins.reach)}</td>
+<td>${fmt(ins.clicks)}</td>
+<td>
+${s.status === 'ACTIVE' ? `<button class="btn btn-outline btn-sm" onclick="toggleAdSetStatus('${s.id}','PAUSED')">Pausar</button>` : `<button class="btn btn-primary btn-sm" onclick="toggleAdSetStatus('${s.id}','ACTIVE')">Ativar</button>`}
+</td>
+</tr>
+`;
+});
+}
 function renderDashAds() {
-  const statusFilter = document.getElementById('dash-status').value;
-  const tbody = document.getElementById('dash-ads-tbody');
-  tbody.innerHTML = '';
-  const filtered = dashData.ads.filter(a => statusFilter === 'all' || a.status === statusFilter);
-  if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="9" style="color:var(--text2)">Nenhum anuncio encontrado</td></tr>';
-    return;
-  }
-  filtered.forEach(a => {
-    const ins = a.insights?.data?.[0] || {};
-    const statusClass = a.status === 'ACTIVE' ? 'status-active' : 'status-paused';
-    tbody.innerHTML += `
-      <tr>
-        <td>${escapeHtml(a.name)}</td>
-        <td style="font-size:12px">${escapeHtml(a.campaign?.name || '-')}</td>
-        <td class="${statusClass}">${a.status}</td>
-        <td>R$ ${parseFloat(ins.spend || 0).toFixed(2)}</td>
-        <td>${fmt(ins.impressions)}</td>
-        <td>${fmt(ins.reach)}</td>
-        <td>${fmt(ins.clicks)}</td>
-        <td>${ins.ctr ? parseFloat(ins.ctr).toFixed(2) + '%' : '-'}</td>
-        <td>
-          ${a.status === 'ACTIVE' ? `<button class="btn btn-outline btn-sm" onclick="toggleAdStatus('${a.id}','PAUSED')">Pausar</button>` : `<button class="btn btn-primary btn-sm" onclick="toggleAdStatus('${a.id}','ACTIVE')">Ativar</button>`}
-        </td>
-      </tr>
-    `;
-  });
+const statusFilter = document.getElementById('dash-status').value;
+const tbody = document.getElementById('dash-ads-tbody');
+tbody.innerHTML = '';
+const filtered = dashData.ads.filter(a => statusFilter === 'all' || a.status === statusFilter);
+if (filtered.length === 0) {
+tbody.innerHTML = '<tr><td colspan="9" style="color:var(--text2)">Nenhum anuncio encontrado</td></tr>';
+return;
 }
-
+filtered.forEach(a => {
+const ins = a.insights?.data?.[0] || {};
+const statusClass = a.status === 'ACTIVE' ? 'status-active' : 'status-paused';
+tbody.innerHTML += `
+<tr>
+<td>${escapeHtml(a.name)}</td>
+<td style="font-size:12px">${escapeHtml(a.campaign?.name || '-')}</td>
+<td class="${statusClass}">${a.status}</td>
+<td>R$ ${parseFloat(ins.spend || 0).toFixed(2)}</td>
+<td>${fmt(ins.impressions)}</td>
+<td>${fmt(ins.reach)}</td>
+<td>${fmt(ins.clicks)}</td>
+<td>${ins.ctr ? parseFloat(ins.ctr).toFixed(2) + '%' : '-'}</td>
+<td>
+${a.status === 'ACTIVE' ? `<button class="btn btn-outline btn-sm" onclick="toggleAdStatus('${a.id}','PAUSED')">Pausar</button>` : `<button class="btn btn-primary btn-sm" onclick="toggleAdStatus('${a.id}','ACTIVE')">Ativar</button>`}
+</td>
+</tr>
+`;
+});
+}
 function filterDashTable() {
-  renderDashCampaigns();
-  renderDashAdSets();
-  renderDashAds();
+renderDashCampaigns();
+renderDashAdSets();
+renderDashAds();
 }
-
 function switchDashTab(tab, btn) {
-  document.querySelectorAll('.dash-tab').forEach(t => t.style.display = 'none');
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('dash-tab-' + tab).style.display = '';
-  btn.classList.add('active');
+document.querySelectorAll('.dash-tab').forEach(t => t.style.display = 'none');
+document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+document.getElementById('dash-tab-' + tab).style.display = '';
+btn.classList.add('active');
 }
-
 async function toggleAdSetStatus(id, newStatus) {
-  try {
-    await apiPostForm(`/${id}`, { status: newStatus });
-    toast(`Conjunto ${newStatus === 'ACTIVE' ? 'ativado' : 'pausado'}!`, 'success');
-    loadAdsDashboard();
-  } catch (e) { toast('Erro: ' + e.message, 'error'); }
+try {
+await apiPostForm(`/${id}`, { status: newStatus });
+toast(`Conjunto ${newStatus === 'ACTIVE' ? 'ativado' : 'pausado'}!`, 'success');
+loadAdsDashboard();
+} catch (e) { toast('Erro: ' + e.message, 'error'); }
 }
-
 async function createDashAd() {
-  const plat = document.getElementById('new-ad-platform').value;
-  const accId = AD_ACCOUNT_ID || (allAdAccounts[0]?.id);
-  if (!accId) { toast('Nenhuma conta de anuncio', 'error'); return; }
-  if (!PAGE_ID) { toast('Selecione uma pagina', 'error'); return; }
-
-  const name = document.getElementById('new-ad-name').value || 'Nova Campanha';
-  const imageUrl = document.getElementById('new-ad-image').value.trim();
-  const text = document.getElementById('new-ad-text').value.trim();
-  const link = document.getElementById('new-ad-link').value.trim();
-  const budget = document.getElementById('new-ad-budget').value;
-  const days = document.getElementById('new-ad-days').value;
-  const country = document.getElementById('new-ad-country').value;
-  const ageMin = document.getElementById('new-ad-age-min').value;
-  const ageMax = document.getElementById('new-ad-age-max').value;
-
-  if (!imageUrl && plat === 'instagram') { toast('URL da imagem obrigatoria para Instagram', 'error'); return; }
-
-  try {
-    toast('Criando campanha...', 'info');
-    const objective = plat === 'instagram' ? 'OUTCOME_ENGAGEMENT' : 'OUTCOME_TRAFFIC';
-
-    const camp = await apiPostForm(`/${accId}/campaigns`, {
-      name: `[${plat.toUpperCase()}] ${name}`,
-      objective: objective,
-      status: 'PAUSED',
-      special_ad_categories: '[]'
-    });
-
-    const endTime = Math.floor((Date.now() + parseInt(days) * 86400000) / 1000);
-    const targeting = { geo_locations: { countries: [country] }, age_min: parseInt(ageMin), age_max: parseInt(ageMax), publisher_platforms: [plat] };
-
-    const adset = await apiPostForm(`/${accId}/adsets`, {
-      name: `AdSet - ${name}`,
-      campaign_id: camp.id,
-      daily_budget: budget,
-      billing_event: 'IMPRESSIONS',
-      optimization_goal: plat === 'instagram' ? 'POST_ENGAGEMENT' : 'LINK_CLICKS',
-      targeting: JSON.stringify(targeting),
-      end_time: endTime,
-      status: 'PAUSED',
-      promoted_object: JSON.stringify({ page_id: PAGE_ID })
-    });
-
-    let creativeSpec;
-    if (plat === 'instagram') {
-      creativeSpec = { page_id: PAGE_ID, photo_data: { image_url: imageUrl, caption: text } };
-    } else {
-      creativeSpec = { page_id: PAGE_ID, link_data: { link: link || imageUrl, message: text, image_url: imageUrl } };
-    }
-
-    const creative = await apiPostForm(`/${accId}/adcreatives`, {
-      name: `Creative - ${name}`,
-      object_story_spec: JSON.stringify(creativeSpec)
-    });
-
-    await apiPostForm(`/${accId}/ads`, {
-      name: `Ad - ${name}`,
-      adset_id: adset.id,
-      creative: JSON.stringify({ creative_id: creative.id }),
-      status: 'PAUSED'
-    });
-
-    toast(`Campanha ${plat} criada com sucesso! (PAUSADA)`, 'success');
-    loadAdsDashboard();
-  } catch (e) {
-    toast('Erro: ' + e.message, 'error');
-  }
+const plat = document.getElementById('new-ad-platform').value;
+const accId = AD_ACCOUNT_ID || (allAdAccounts[0]?.id);
+if (!accId) { toast('Nenhuma conta de anuncio', 'error'); return; }
+if (!PAGE_ID) { toast('Selecione uma pagina', 'error'); return; }
+const name = document.getElementById('new-ad-name').value || 'Nova Campanha';
+const imageUrl = document.getElementById('new-ad-image').value.trim();
+const text = document.getElementById('new-ad-text').value.trim();
+const link = document.getElementById('new-ad-link').value.trim();
+const budget = document.getElementById('new-ad-budget').value;
+const days = document.getElementById('new-ad-days').value;
+const country = document.getElementById('new-ad-country').value;
+const ageMin = document.getElementById('new-ad-age-min').value;
+const ageMax = document.getElementById('new-ad-age-max').value;
+if (!imageUrl && plat === 'instagram') { toast('URL da imagem obrigatoria para Instagram', 'error'); return; }
+try {
+toast('Criando campanha...', 'info');
+const objective = plat === 'instagram' ? 'OUTCOME_ENGAGEMENT' : 'OUTCOME_TRAFFIC';
+const camp = await apiPostForm(`/${accId}/campaigns`, {
+name: `[${plat.toUpperCase()}] ${name}`,
+objective: objective,
+status: 'PAUSED',
+special_ad_categories: '[]'
+});
+const endTime = Math.floor((Date.now() + parseInt(days) * 86400000) / 1000);
+const targeting = { geo_locations: { countries: [country] }, age_min: parseInt(ageMin), age_max: parseInt(ageMax), publisher_platforms: [plat] };
+const adset = await apiPostForm(`/${accId}/adsets`, {
+name: `AdSet - ${name}`,
+campaign_id: camp.id,
+daily_budget: budget,
+billing_event: 'IMPRESSIONS',
+optimization_goal: plat === 'instagram' ? 'POST_ENGAGEMENT' : 'LINK_CLICKS',
+targeting: JSON.stringify(targeting),
+end_time: endTime,
+status: 'PAUSED',
+promoted_object: JSON.stringify({ page_id: PAGE_ID })
+});
+let creativeSpec;
+if (plat === 'instagram') {
+creativeSpec = { page_id: PAGE_ID, photo_data: { image_url: imageUrl, caption: text } };
+} else {
+creativeSpec = { page_id: PAGE_ID, link_data: { link: link || imageUrl, message: text, image_url: imageUrl } };
 }
-
+const creative = await apiPostForm(`/${accId}/adcreatives`, {
+name: `Creative - ${name}`,
+object_story_spec: JSON.stringify(creativeSpec)
+});
+await apiPostForm(`/${accId}/ads`, {
+name: `Ad - ${name}`,
+adset_id: adset.id,
+creative: JSON.stringify({ creative_id: creative.id }),
+status: 'PAUSED'
+});
+toast(`Campanha ${plat} criada com sucesso! (PAUSADA)`, 'success');
+loadAdsDashboard();
+} catch (e) {
+toast('Erro: ' + e.message, 'error');
+}
+}
 async function toggleCampaignStatus(campId, newStatus) {
-  try {
-    await apiPostForm(`/${campId}`, { status: newStatus });
-    toast(`Campanha ${newStatus === 'ACTIVE' ? 'ativada' : 'pausada'}!`, 'success');
-    loadAds();
-  } catch (e) {
-    toast('Erro: ' + e.message, 'error');
-  }
+try {
+await apiPostForm(`/${campId}`, { status: newStatus });
+toast(`Campanha ${newStatus === 'ACTIVE' ? 'ativada' : 'pausada'}!`, 'success');
+loadAds();
+} catch (e) {
+toast('Erro: ' + e.message, 'error');
 }
-
+}
 async function deleteCampaign(campId) {
-  if (!confirm('Excluir esta campanha?')) return;
-  try {
-    await apiDelete(`/${campId}`);
-    toast('Campanha excluida!', 'success');
-    loadAds();
-  } catch (e) {
-    toast('Erro: ' + e.message, 'error');
-  }
+if (!confirm('Excluir esta campanha?')) return;
+try {
+await apiDelete(`/${campId}`);
+toast('Campanha excluida!', 'success');
+loadAds();
+} catch (e) {
+toast('Erro: ' + e.message, 'error');
 }
-
+}
 // ===== BOT CONFIG =====
 function loadBotConfig() {
-  const cfg = JSON.parse(localStorage.getItem('metaBotConfig') || '{}');
-  const toggle = document.getElementById('auto-reply-toggle');
-  const label = document.getElementById('auto-reply-label');
-  if (cfg.autoReply) { toggle.classList.add('on'); label.textContent = 'Ativado'; }
-  document.getElementById('welcome-msg').value = cfg.welcomeMsg || '';
-  renderKeywords(cfg.keywords || []);
-  renderQuickReplies(cfg.quickReplies || ['']);
+const cfg = JSON.parse(localStorage.getItem('metaBotConfig') || '{}');
+const toggle = document.getElementById('auto-reply-toggle');
+const label = document.getElementById('auto-reply-label');
+if (cfg.autoReply) { toggle.classList.add('on'); label.textContent = 'Ativado'; }
+document.getElementById('welcome-msg').value = cfg.welcomeMsg || '';
+renderKeywords(cfg.keywords || []);
+renderQuickReplies(cfg.quickReplies || ['']);
 }
-
 function toggleAutoReply() {
-  const toggle = document.getElementById('auto-reply-toggle');
-  const label = document.getElementById('auto-reply-label');
-  toggle.classList.toggle('on');
-  label.textContent = toggle.classList.contains('on') ? 'Ativado' : 'Desativado';
+const toggle = document.getElementById('auto-reply-toggle');
+const label = document.getElementById('auto-reply-label');
+toggle.classList.toggle('on');
+label.textContent = toggle.classList.contains('on') ? 'Ativado' : 'Desativado';
 }
-
 function getKeywords() {
-  const tags = document.querySelectorAll('#keyword-list .keyword-tag');
-  return Array.from(tags).map(t => ({ keyword: t.dataset.keyword, response: t.dataset.response }));
+const tags = document.querySelectorAll('#keyword-list .keyword-tag');
+return Array.from(tags).map(t => ({ keyword: t.dataset.keyword, response: t.dataset.response }));
 }
-
 function renderKeywords(keywords) {
-  const container = document.getElementById('keyword-list');
-  container.innerHTML = '';
-  keywords.forEach(k => {
-    const tag = document.createElement('div');
-    tag.className = 'keyword-tag';
-    tag.dataset.keyword = k.keyword;
-    tag.dataset.response = k.response;
-    tag.innerHTML = `<strong>${escapeHtml(k.keyword)}</strong> &rarr; ${escapeHtml(k.response)} <span class="remove" onclick="this.parentElement.remove()">&times;</span>`;
-    container.appendChild(tag);
-  });
+const container = document.getElementById('keyword-list');
+container.innerHTML = '';
+keywords.forEach(k => {
+const tag = document.createElement('div');
+tag.className = 'keyword-tag';
+tag.dataset.keyword = k.keyword;
+tag.dataset.response = k.response;
+tag.innerHTML = `<strong>${escapeHtml(k.keyword)}</strong> &rarr; ${escapeHtml(k.response)} <span class="remove" onclick="this.parentElement.remove()">&times;</span>`;
+container.appendChild(tag);
+});
 }
-
 function addKeyword() {
-  const kw = document.getElementById('keyword-input').value.trim();
-  const resp = document.getElementById('keyword-response').value.trim();
-  if (!kw || !resp) { toast('Preencha keyword e resposta', 'error'); return; }
-  const keywords = getKeywords();
-  keywords.push({ keyword: kw, response: resp });
-  renderKeywords(keywords);
-  document.getElementById('keyword-input').value = '';
-  document.getElementById('keyword-response').value = '';
+const kw = document.getElementById('keyword-input').value.trim();
+const resp = document.getElementById('keyword-response').value.trim();
+if (!kw || !resp) { toast('Preencha keyword e resposta', 'error'); return; }
+const keywords = getKeywords();
+keywords.push({ keyword: kw, response: resp });
+renderKeywords(keywords);
+document.getElementById('keyword-input').value = '';
+document.getElementById('keyword-response').value = '';
 }
-
 function renderQuickReplies(replies) {
-  const container = document.getElementById('quick-replies-list');
-  container.innerHTML = '';
-  replies.forEach(r => {
-    container.innerHTML += `
-      <div class="quick-reply-item">
-        <input value="${escapeHtml(r)}" placeholder="Resposta rapida..." class="qr-input">
-        <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">&#10005;</button>
-      </div>
-    `;
-  });
+const container = document.getElementById('quick-replies-list');
+container.innerHTML = '';
+replies.forEach(r => {
+container.innerHTML += `
+<div class="quick-reply-item">
+<input value="${escapeHtml(r)}" placeholder="Resposta rapida..." class="qr-input">
+<button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">&#10005;</button>
+</div>
+`;
+});
 }
-
 function addQuickReplyField() {
-  const container = document.getElementById('quick-replies-list');
-  container.innerHTML += `
-    <div class="quick-reply-item">
-      <input value="" placeholder="Resposta rapida..." class="qr-input">
-      <button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">&#10005;</button>
-    </div>
-  `;
+const container = document.getElementById('quick-replies-list');
+container.innerHTML += `
+<div class="quick-reply-item">
+<input value="" placeholder="Resposta rapida..." class="qr-input">
+<button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">&#10005;</button>
+</div>
+`;
 }
-
 function saveBotConfig() {
-  const cfg = {
-    autoReply: document.getElementById('auto-reply-toggle').classList.contains('on'),
-    welcomeMsg: document.getElementById('welcome-msg').value,
-    keywords: getKeywords(),
-    quickReplies: Array.from(document.querySelectorAll('.qr-input')).map(i => i.value).filter(v => v.trim())
-  };
-  localStorage.setItem('metaBotConfig', JSON.stringify(cfg));
-  toast('Configuracao salva!', 'success');
+const cfg = {
+autoReply: document.getElementById('auto-reply-toggle').classList.contains('on'),
+welcomeMsg: document.getElementById('welcome-msg').value,
+keywords: getKeywords(),
+quickReplies: Array.from(document.querySelectorAll('.qr-input')).map(i => i.value).filter(v => v.trim())
+};
+localStorage.setItem('metaBotConfig', JSON.stringify(cfg));
+toast('Configuracao salva!', 'success');
 }
-
 // ===== UTILS =====
 function fmt(n) {
-  if (n === undefined || n === null) return '0';
-  n = parseInt(n);
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-  if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-  return n.toString();
+if (n === undefined || n === null) return '0';
+n = parseInt(n);
+if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+return n.toString();
 }
-
 function escapeHtml(s) {
-  const d = document.createElement('div');
-  d.textContent = s;
-  return d.innerHTML;
+const d = document.createElement('div');
+d.textContent = s;
+return d.innerHTML;
 }
 </script>
 </body>

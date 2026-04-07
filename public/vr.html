@@ -6,1055 +6,937 @@
 <title>ZAYA VR</title>
 <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0a0a0f;
-    color: #eee;
-    font-family: 'Segoe UI', system-ui, sans-serif;
-    overflow: hidden;
-    width: 100vw;
-    height: 100vh;
-  }
-
-  /* --- Overlay UI (before entering VR) --- */
-  #overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(ellipse at center, rgba(15,15,30,0.92) 0%, rgba(5,5,12,0.98) 100%);
-    transition: opacity 0.6s;
-  }
-  #overlay.hidden { opacity: 0; pointer-events: none; }
-
-  #overlay h1 {
-    font-size: 3rem;
-    font-weight: 200;
-    letter-spacing: 0.6em;
-    margin-bottom: 0.3em;
-    background: linear-gradient(135deg, #0066ff, #0088ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-  #overlay .subtitle {
-    font-size: 0.95rem;
-    color: #667;
-    letter-spacing: 0.15em;
-    margin-bottom: 2.5em;
-  }
-
-  #enter-vr-btn {
-    padding: 18px 48px;
-    font-size: 1.15rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    border: 2px solid #0066ff;
-    background: rgba(0, 102, 255, 0.12);
-    color: #0066ff;
-    border-radius: 60px;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-transform: uppercase;
-  }
-  #enter-vr-btn:hover {
-    background: rgba(0, 102, 255, 0.25);
-    box-shadow: 0 0 40px rgba(0, 102, 255, 0.3);
-  }
-  #enter-vr-btn:disabled {
-    opacity: 0.35;
-    cursor: not-allowed;
-  }
-
-  #preview-btn {
-    margin-top: 1em;
-    padding: 12px 36px;
-    font-size: 0.9rem;
-    letter-spacing: 0.1em;
-    border: 1px solid #334;
-    background: transparent;
-    color: #889;
-    border-radius: 40px;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  #preview-btn:hover { border-color: #667; color: #aab; }
-
-  #vr-message {
-    margin-top: 1.5em;
-    font-size: 0.82rem;
-    color: #556;
-    max-width: 360px;
-    text-align: center;
-    line-height: 1.5;
-  }
-
-  /* --- Non-VR listen button --- */
-  #listen-btn {
-    position: fixed;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 500;
-    width: 70px; height: 70px;
-    border-radius: 50%;
-    border: 2px solid #0066ff;
-    background: rgba(0, 102, 255, 0.15);
-    color: #0066ff;
-    font-size: 1.6rem;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s;
-  }
-  #listen-btn.active {
-    background: rgba(255, 68, 68, 0.3);
-    border-color: #ff4444;
-    color: #ff4444;
-    box-shadow: 0 0 30px rgba(255, 68, 68, 0.4);
-  }
-  #listen-btn:hover { box-shadow: 0 0 25px rgba(0, 102, 255, 0.3); }
-
-  /* --- Desktop status bar --- */
-  #desktop-status {
-    position: fixed;
-    top: 16px; left: 50%;
-    transform: translateX(-50%);
-    z-index: 500;
-    background: rgba(10, 10, 20, 0.85);
-    border: 1px solid #223;
-    border-radius: 12px;
-    padding: 10px 24px;
-    font-size: 0.82rem;
-    color: #889;
-    letter-spacing: 0.08em;
-    display: none;
-    backdrop-filter: blur(10px);
-  }
-  #desktop-status span { color: #0066ff; font-weight: 600; }
-
-  /* Loading spinner */
-  .loader {
-    display: inline-block;
-    width: 16px; height: 16px;
-    border: 2px solid #334;
-    border-top-color: #0066ff;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    vertical-align: middle;
-    margin-right: 8px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+background: #0a0a0f;
+color: #eee;
+font-family: 'Segoe UI', system-ui, sans-serif;
+overflow: hidden;
+width: 100vw;
+height: 100vh;
+}
+/* --- Overlay UI (before entering VR) --- */
+#overlay {
+position: fixed;
+top: 0; left: 0; right: 0; bottom: 0;
+z-index: 1000;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+background: radial-gradient(ellipse at center, rgba(15,15,30,0.92) 0%, rgba(5,5,12,0.98) 100%);
+transition: opacity 0.6s;
+}
+#overlay.hidden { opacity: 0; pointer-events: none; }
+#overlay h1 {
+font-size: 3rem;
+font-weight: 200;
+letter-spacing: 0.6em;
+margin-bottom: 0.3em;
+background: linear-gradient(135deg, #0066ff, #0088ff);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+}
+#overlay .subtitle {
+font-size: 0.95rem;
+color: #667;
+letter-spacing: 0.15em;
+margin-bottom: 2.5em;
+}
+#enter-vr-btn {
+padding: 18px 48px;
+font-size: 1.15rem;
+font-weight: 600;
+letter-spacing: 0.12em;
+border: 2px solid #0066ff;
+background: rgba(0, 102, 255, 0.12);
+color: #0066ff;
+border-radius: 60px;
+cursor: pointer;
+transition: all 0.3s;
+text-transform: uppercase;
+}
+#enter-vr-btn:hover {
+background: rgba(0, 102, 255, 0.25);
+box-shadow: 0 0 40px rgba(0, 102, 255, 0.3);
+}
+#enter-vr-btn:disabled {
+opacity: 0.35;
+cursor: not-allowed;
+}
+#preview-btn {
+margin-top: 1em;
+padding: 12px 36px;
+font-size: 0.9rem;
+letter-spacing: 0.1em;
+border: 1px solid #334;
+background: transparent;
+color: #889;
+border-radius: 40px;
+cursor: pointer;
+transition: all 0.3s;
+}
+#preview-btn:hover { border-color: #667; color: #aab; }
+#vr-message {
+margin-top: 1.5em;
+font-size: 0.82rem;
+color: #556;
+max-width: 360px;
+text-align: center;
+line-height: 1.5;
+}
+/* --- Non-VR listen button --- */
+#listen-btn {
+position: fixed;
+bottom: 30px;
+left: 50%;
+transform: translateX(-50%);
+z-index: 500;
+width: 70px; height: 70px;
+border-radius: 50%;
+border: 2px solid #0066ff;
+background: rgba(0, 102, 255, 0.15);
+color: #0066ff;
+font-size: 1.6rem;
+cursor: pointer;
+display: none;
+align-items: center;
+justify-content: center;
+transition: all 0.3s;
+}
+#listen-btn.active {
+background: rgba(255, 68, 68, 0.3);
+border-color: #ff4444;
+color: #ff4444;
+box-shadow: 0 0 30px rgba(255, 68, 68, 0.4);
+}
+#listen-btn:hover { box-shadow: 0 0 25px rgba(0, 102, 255, 0.3); }
+/* --- Desktop status bar --- */
+#desktop-status {
+position: fixed;
+top: 16px; left: 50%;
+transform: translateX(-50%);
+z-index: 500;
+background: rgba(10, 10, 20, 0.85);
+border: 1px solid #223;
+border-radius: 12px;
+padding: 10px 24px;
+font-size: 0.82rem;
+color: #889;
+letter-spacing: 0.08em;
+display: none;
+backdrop-filter: blur(10px);
+}
+#desktop-status span { color: #0066ff; font-weight: 600; }
+/* Loading spinner */
+.loader {
+display: inline-block;
+width: 16px; height: 16px;
+border: 2px solid #334;
+border-top-color: #0066ff;
+border-radius: 50%;
+animation: spin 0.8s linear infinite;
+vertical-align: middle;
+margin-right: 8px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
-
 <!-- Overlay -->
 <div id="overlay">
-  <h1>ZAYA</h1>
-  <div class="subtitle">ASSISTENTE VIRTUAL IMERSIVA</div>
-  <button id="enter-vr-btn" disabled>ENTRAR NO VR</button>
-  <button id="preview-btn">MODO PREVIEW 3D</button>
-  <div id="vr-message"></div>
+<h1>ZAYA</h1>
+<div class="subtitle">ASSISTENTE VIRTUAL IMERSIVA</div>
+<button id="enter-vr-btn" disabled>ENTRAR NO VR</button>
+<button id="preview-btn">MODO PREVIEW 3D</button>
+<div id="vr-message"></div>
 </div>
-
 <!-- Desktop controls -->
 <div id="desktop-status">ZAYA &mdash; <span id="status-text">PRONTA</span></div>
 <button id="listen-btn">&#127908;</button>
-
 <!-- A-Frame Scene -->
 <a-scene
-  id="scene"
-  vr-mode-ui="enabled: false"
-  renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true; alpha: true"
-  loading-screen="enabled: false"
-  fog="type: exponential; color: #020208; density: 0.08"
-  embedded
-  style="width:100vw; height:100vh;"
+id="scene"
+vr-mode-ui="enabled: false"
+renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true; alpha: true"
+loading-screen="enabled: false"
+fog="type: exponential; color: #020208; density: 0.08"
+embedded
+style="width:100vw; height:100vh;"
 >
-  <!-- Assets -->
-  <a-assets>
-    <img id="grid-tex" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%230a0a14'/%3E%3Cpath d='M64 0v64M0 64h64' stroke='%23152035' stroke-width='0.5'/%3E%3C/svg%3E" crossorigin="anonymous">
-  </a-assets>
-
-  <!-- Sky -->
-  <a-entity id="sky-gradient" geometry="primitive: sphere; radius: 500; segmentsWidth: 64; segmentsHeight: 32"
-    material="shader: flat; side: back; color: #020208" scale="-1 1 1"></a-entity>
-
-  <!-- Fog -->
-  <a-entity id="scene-fog" fog-setter></a-entity>
-
-  <!-- Stars (2000 points) -->
-  <a-entity id="stars" star-field></a-entity>
-
-  <!-- ============================================================ -->
-  <!-- FLOOR                                                        -->
-  <!-- ============================================================ -->
-  <a-circle position="0 0.001 0" rotation="-90 0 0" radius="8"
-    material="color: #0a0a14; side: double"></a-circle>
-
-  <!-- Floor grid overlay -->
-  <a-plane position="0 0.005 0" rotation="-90 0 0" width="16" height="16"
-    material="src: #grid-tex; repeat: 32 32; transparent: true; opacity: 0.35; side: double"></a-plane>
-
-  <!-- Floor ring around orb -->
-  <a-ring position="0 0.01 -2" rotation="-90 0 0" radius-inner="1.45" radius-outer="1.55"
-    material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 0.6; transparent: true; opacity: 0.15; shader: flat"></a-ring>
-  <a-ring position="0 0.01 -2" rotation="-90 0 0" radius-inner="1.48" radius-outer="1.52"
-    material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.3; shader: flat"></a-ring>
-
-  <!-- ============================================================ -->
-  <!-- CENTRAL ORB GROUP                                            -->
-  <!-- ============================================================ -->
-  <a-entity id="orb-group" position="0 1.5 -2">
-
-    <!-- Main sphere: mirror-like reflective -->
-    <a-sphere id="orb-core" radius="0.35"
-      material="color: #0066ff; metalness: 0.95; roughness: 0.05; transparent: true; opacity: 0.95"
-      animation__pulse="property: scale; from: 1 1 1; to: 1.06 1.06 1.06; dur: 2000; easing: easeInOutSine; loop: true; dir: alternate">
-    </a-sphere>
-
-    <!-- Inner energy sphere -->
-    <a-sphere id="orb-inner" radius="0.28"
-      material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 3; transparent: true; opacity: 0.6; metalness: 0; roughness: 1"
-      animation__innerpulse="property: scale; from: 0.95 0.95 0.95; to: 1.05 1.05 1.05; dur: 2000; easing: easeInOutSine; loop: true; dir: alternate"
-      animation__innerrot="property: rotation; from: 0 0 0; to: 0 360 0; dur: 10000; easing: linear; loop: true">
-    </a-sphere>
-
-    <!-- Glass shell -->
-    <a-sphere id="orb-glow" radius="0.38"
-      material="color: #ffffff; transparent: true; opacity: 0.08; metalness: 1; roughness: 0; side: double"
-      animation__shell="property: scale; from: 1 1 1; to: 1.03 1.03 1.03; dur: 3000; easing: easeInOutSine; loop: true; dir: alternate">
-    </a-sphere>
-
-    <!-- Outer aura -->
-    <a-sphere id="orb-aura" radius="0.5"
-      material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.3; transparent: true; opacity: 0.03; side: back"
-      animation__aura="property: scale; from: 1 1 1; to: 1.08 1.08 1.08; dur: 4000; easing: easeInOutSine; loop: true; dir: alternate">
-    </a-sphere>
-
-    <!-- ======= ORBITAL RINGS ======= -->
-
-    <!-- Ring 1: radius 0.55, tube 0.008, rotation 90 0 0, rotating Y 20s -->
-    <a-torus id="ring1" radius="0.55" radius-tubular="0.008"
-      material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 0.9; transparent: true; opacity: 0.6; metalness: 0.8; roughness: 0.1"
-      rotation="90 0 0"
-      animation__rot="property: rotation; from: 90 0 0; to: 90 360 0; dur: 20000; easing: linear; loop: true">
-    </a-torus>
-
-    <!-- Ring 2: radius 0.65, tube 0.005, rotation 60 45 0, rotating Z 15s reverse -->
-    <a-torus id="ring2" radius="0.65" radius-tubular="0.005"
-      material="color: #3399ff; emissive: #3399ff; emissiveIntensity: 0.7; transparent: true; opacity: 0.4; metalness: 0.8; roughness: 0.1"
-      rotation="60 45 0"
-      animation__rot="property: rotation; from: 60 45 0; to: 60 45 -360; dur: 15000; easing: linear; loop: true">
-    </a-torus>
-
-    <!-- Ring 3: radius 0.75, tube 0.003, rotation 30 -30 60, rotating X 25s -->
-    <a-torus id="ring3" radius="0.75" radius-tubular="0.003"
-      material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 0.6; transparent: true; opacity: 0.3; metalness: 0.8; roughness: 0.1"
-      rotation="30 -30 60"
-      animation__rot="property: rotation; from: 30 -30 60; to: 390 -30 60; dur: 25000; easing: linear; loop: true">
-    </a-torus>
-
-    <!-- Ring 4: radius 0.45, tube 0.01, rotation 0 0 45, rotating Y 8s (fast inner) -->
-    <a-torus id="ring4" radius="0.45" radius-tubular="0.01"
-      material="color: #0088ff; emissive: #0088ff; emissiveIntensity: 0.8; transparent: true; opacity: 0.5; metalness: 0.8; roughness: 0.1"
-      rotation="0 0 45"
-      animation__rot="property: rotation; from: 0 0 45; to: 0 360 45; dur: 8000; easing: linear; loop: true">
-    </a-torus>
-
-    <!-- Ring 5: radius 0.85, tube 0.002, rotation 70 20 -40, rotating Z 30s -->
-    <a-torus id="ring5" radius="0.85" radius-tubular="0.002"
-      material="color: #4488ff; emissive: #4488ff; emissiveIntensity: 0.5; transparent: true; opacity: 0.25; metalness: 0.8; roughness: 0.1"
-      rotation="70 20 -40"
-      animation__rot="property: rotation; from: 70 20 -40; to: 70 20 320; dur: 30000; easing: linear; loop: true">
-    </a-torus>
-
-    <!-- ======= LIGHTS AT ORB CENTER ======= -->
-    <a-light id="orb-light" type="point" color="#0066ff" intensity="2.5" distance="15" decay="2"></a-light>
-
-    <!-- ======= PARTICLES ======= -->
-    <a-entity id="orb-particles" orb-particles></a-entity>
-
-  </a-entity>
-
-  <!-- ============================================================ -->
-  <!-- FLOATING HOLOGRAPHIC INFO PANELS                             -->
-  <!-- ============================================================ -->
-
-  <!-- Panel 1: STATUS (front-left) -->
-  <a-entity position="-1.2 1.8 -2.5" look-at="#orb-group"
-    animation__float="property: position; from: -1.2 1.78 -2.5; to: -1.2 1.82 -2.5; dur: 3000; easing: easeInOutSine; loop: true; dir: alternate">
-    <a-plane width="0.8" height="0.5" color="#0066ff" opacity="0.3" side="double"
-      material="shader: flat" position="0 0 -0.002"></a-plane>
-    <a-plane width="0.76" height="0.46" color="#0a0a14" opacity="0.85" side="double"
-      material="shader: flat"></a-plane>
-    <a-text value="STATUS" align="center" color="#0066ff"
-      font="monoid" width="1.5" position="0 0.14 0.01" opacity="0.9"></a-text>
-    <a-plane width="0.5" height="0.003" position="0 0.06 0.01"
-      material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.5; shader: flat"></a-plane>
-    <a-text id="hud-status" value="PRONTA" align="center" color="#00cc66"
-      font="monoid" width="1.8" position="0 -0.06 0.01" opacity="0.85"></a-text>
-  </a-entity>
-
-  <!-- Panel 2: SISTEMA (front-right) -->
-  <a-entity position="1.2 1.8 -2.5" look-at="#orb-group"
-    animation__float="property: position; from: 1.2 1.78 -2.5; to: 1.2 1.82 -2.5; dur: 3500; easing: easeInOutSine; loop: true; dir: alternate">
-    <a-plane width="0.8" height="0.5" color="#0066ff" opacity="0.3" side="double"
-      material="shader: flat" position="0 0 -0.002"></a-plane>
-    <a-plane width="0.76" height="0.46" color="#0a0a14" opacity="0.85" side="double"
-      material="shader: flat"></a-plane>
-    <a-text value="SISTEMA" align="center" color="#0066ff"
-      font="monoid" width="1.5" position="0 0.14 0.01" opacity="0.9"></a-text>
-    <a-plane width="0.5" height="0.003" position="0 0.06 0.01"
-      material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.5; shader: flat"></a-plane>
-    <a-text value="MODELO: GPT-4O" align="center" color="#aabbcc"
-      font="monoid" width="1.2" position="0 -0.02 0.01" opacity="0.7"></a-text>
-    <a-text value="VOZ: ELEVENLABS" align="center" color="#aabbcc"
-      font="monoid" width="1.2" position="0 -0.1 0.01" opacity="0.7"></a-text>
-    <a-text value="VERSAO: 6.8" align="center" color="#aabbcc"
-      font="monoid" width="1.2" position="0 -0.18 0.01" opacity="0.7"></a-text>
-  </a-entity>
-
-  <!-- Panel 3: CONVERSA (left) -->
-  <a-entity position="-1.8 1.5 -1.5" look-at="#orb-group"
-    animation__float="property: position; from: -1.8 1.48 -1.5; to: -1.8 1.52 -1.5; dur: 4000; easing: easeInOutSine; loop: true; dir: alternate">
-    <a-plane width="0.8" height="0.5" color="#0066ff" opacity="0.3" side="double"
-      material="shader: flat" position="0 0 -0.002"></a-plane>
-    <a-plane width="0.76" height="0.46" color="#0a0a14" opacity="0.85" side="double"
-      material="shader: flat"></a-plane>
-    <a-text value="CONVERSA" align="center" color="#0066ff"
-      font="monoid" width="1.5" position="0 0.14 0.01" opacity="0.9"></a-text>
-    <a-plane width="0.5" height="0.003" position="0 0.06 0.01"
-      material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.5; shader: flat"></a-plane>
-    <a-text id="hud-user" value="" align="center" color="#aabbcc"
-      font="monoid" width="1.3" position="0 -0.02 0.01" opacity="0.7"
-      wrap-count="30"></a-text>
-    <a-text id="hud-reply" value="" align="center" color="#0088ff"
-      font="monoid" width="1.3" position="0 -0.14 0.01" opacity="0.85"
-      wrap-count="30"></a-text>
-  </a-entity>
-
-  <!-- Panel 4: HORA (right) -->
-  <a-entity position="1.8 1.5 -1.5" look-at="#orb-group"
-    animation__float="property: position; from: 1.8 1.48 -1.5; to: 1.8 1.52 -1.5; dur: 3800; easing: easeInOutSine; loop: true; dir: alternate">
-    <a-plane width="0.8" height="0.5" color="#0066ff" opacity="0.3" side="double"
-      material="shader: flat" position="0 0 -0.002"></a-plane>
-    <a-plane width="0.76" height="0.46" color="#0a0a14" opacity="0.85" side="double"
-      material="shader: flat"></a-plane>
-    <a-text value="HORA" align="center" color="#0066ff"
-      font="monoid" width="1.5" position="0 0.14 0.01" opacity="0.9"></a-text>
-    <a-plane width="0.5" height="0.003" position="0 0.06 0.01"
-      material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.5; shader: flat"></a-plane>
-    <a-text id="hud-clock" value="00:00" align="center" color="#aabbcc"
-      font="monoid" width="2.0" position="0 -0.02 0.01" opacity="0.85"></a-text>
-    <a-text id="hud-date" value="" align="center" color="#667788"
-      font="monoid" width="1.2" position="0 -0.12 0.01" opacity="0.6"></a-text>
-    <a-text id="hud-uptime" value="UPTIME: 00:00:00" align="center" color="#556677"
-      font="monoid" width="1.0" position="0 -0.2 0.01" opacity="0.5"></a-text>
-  </a-entity>
-
-  <!-- Panel 5: ZAYA TITLE (above) -->
-  <a-entity position="0 2.8 -2" look-at="#orb-group"
-    animation__float="property: position; from: 0 2.78 -2; to: 0 2.82 -2; dur: 4500; easing: easeInOutSine; loop: true; dir: alternate">
-    <a-plane width="1.2" height="0.45" color="#0066ff" opacity="0.25" side="double"
-      material="shader: flat" position="0 0 -0.002"></a-plane>
-    <a-plane width="1.16" height="0.41" color="#0a0a14" opacity="0.85" side="double"
-      material="shader: flat"></a-plane>
-    <a-text value="Z . A . Y . A" align="center" color="#0066ff"
-      font="monoid" width="3.0" position="0 0.06 0.01" opacity="0.95"
-      animation__titleop="property: opacity; from: 0.75; to: 1; dur: 3000; easing: easeInOutSine; loop: true; dir: alternate"></a-text>
-    <a-text value="ASSISTENTE PESSOAL" align="center" color="#667788"
-      font="monoid" width="1.2" position="0 -0.1 0.01" opacity="0.6"></a-text>
-  </a-entity>
-
-  <!-- ============================================================ -->
-  <!-- AMBIENT PARTICLES                                            -->
-  <!-- ============================================================ -->
-  <a-entity id="ambient-particles" ambient-particles></a-entity>
-
-  <!-- ============================================================ -->
-  <!-- LIGHTING                                                     -->
-  <!-- ============================================================ -->
-  <a-light type="ambient" color="#111122" intensity="0.3"></a-light>
-  <a-light type="directional" color="#334466" intensity="0.5" position="0 4 2"></a-light>
-
-  <!-- ============================================================ -->
-  <!-- CAMERA RIG                                                   -->
-  <!-- ============================================================ -->
-  <a-entity id="rig" position="0 1.6 0">
-    <a-camera id="camera" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 10">
-      <a-ring id="reticle" position="0 0 -1" radius-inner="0.008" radius-outer="0.014"
-        material="color: #0066ff; opacity: 0.5; shader: flat" visible="false"></a-ring>
-    </a-camera>
-  </a-entity>
-
-  <!-- ============================================================ -->
-  <!-- HAND TRACKING                                                -->
-  <!-- ============================================================ -->
-  <a-entity id="left-hand" hand-tracking-controls="hand: left; modelColor: #1a2a4a" zaya-hand="hand: left" visible="false"></a-entity>
-  <a-entity id="right-hand" hand-tracking-controls="hand: right; modelColor: #1a2a4a" zaya-hand="hand: right" visible="false"></a-entity>
-
-  <!-- ============================================================ -->
-  <!-- VR MENU                                                      -->
-  <!-- ============================================================ -->
-  <a-entity id="vr-menu" visible="false" position="0 0 0">
-    <a-plane width="1.2" height="0.35" color="#0d0b09" opacity="0.92" side="double"
-      material="shader:flat"></a-plane>
-    <a-plane width="1.2" height="0.35" color="#f36600" opacity="0.08" side="double" position="0 0 0.001"
-      material="shader:flat"></a-plane>
-    <a-plane width="1.22" height="0.37" color="#f36600" opacity="0.3" side="double" position="0 0 -0.001"
-      material="shader:flat"></a-plane>
-    <a-entity id="menu-row1" position="-0.48 0.08 0.01">
-      <a-entity class="vr-btn" vr-button="label:MICROFONE;action:mic;color:#f36600" position="0 0 0"></a-entity>
-      <a-entity class="vr-btn" vr-button="label:MENSAGENS;action:messages;color:#f0ece4" position="0.2 0 0"></a-entity>
-      <a-entity class="vr-btn" vr-button="label:WHATSAPP;action:whatsapp;color:#f0ece4" position="0.4 0 0"></a-entity>
-      <a-entity class="vr-btn" vr-button="label:CALENDARIO;action:calendar;color:#f0ece4" position="0.6 0 0"></a-entity>
-      <a-entity class="vr-btn" vr-button="label:AGENTES;action:agents;color:#f0ece4" position="0.8 0 0"></a-entity>
-    </a-entity>
-    <a-entity id="menu-row2" position="-0.48 -0.08 0.01">
-      <a-entity class="vr-btn" vr-button="label:VOZES;action:voices;color:#f0ece4" position="0 0 0"></a-entity>
-      <a-entity class="vr-btn" vr-button="label:PEDIDOS;action:pedidos;color:#f0ece4" position="0.2 0 0"></a-entity>
-      <a-entity class="vr-btn" vr-button="label:META;action:meta;color:#f0ece4" position="0.4 0 0"></a-entity>
-      <a-entity class="vr-btn" vr-button="label:VR;action:vr;color:#f0ece4" position="0.6 0 0"></a-entity>
-      <a-entity class="vr-btn" vr-button="label:RESET;action:reset;color:#f0ece4" position="0.8 0 0"></a-entity>
-    </a-entity>
-    <a-text value="Z A Y A" position="0 0.22 0.01" align="center" color="#f36600" width="1.2"
-      font="monoid" opacity="0.8"></a-text>
-  </a-entity>
-
+<!-- Assets -->
+<a-assets>
+<img id="grid-tex" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%230a0a14'/%3E%3Cpath d='M64 0v64M0 64h64' stroke='%23152035' stroke-width='0.5'/%3E%3C/svg%3E" crossorigin="anonymous">
+</a-assets>
+<!-- Sky -->
+<a-entity id="sky-gradient" geometry="primitive: sphere; radius: 500; segmentsWidth: 64; segmentsHeight: 32"
+material="shader: flat; side: back; color: #020208" scale="-1 1 1"></a-entity>
+<!-- Fog -->
+<a-entity id="scene-fog" fog-setter></a-entity>
+<!-- Stars (2000 points) -->
+<a-entity id="stars" star-field></a-entity>
+<!-- ============================================================ -->
+<!-- FLOOR                                                        -->
+<!-- ============================================================ -->
+<a-circle position="0 0.001 0" rotation="-90 0 0" radius="8"
+material="color: #0a0a14; side: double"></a-circle>
+<!-- Floor grid overlay -->
+<a-plane position="0 0.005 0" rotation="-90 0 0" width="16" height="16"
+material="src: #grid-tex; repeat: 32 32; transparent: true; opacity: 0.35; side: double"></a-plane>
+<!-- Floor ring around orb -->
+<a-ring position="0 0.01 -2" rotation="-90 0 0" radius-inner="1.45" radius-outer="1.55"
+material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 0.6; transparent: true; opacity: 0.15; shader: flat"></a-ring>
+<a-ring position="0 0.01 -2" rotation="-90 0 0" radius-inner="1.48" radius-outer="1.52"
+material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.3; shader: flat"></a-ring>
+<!-- ============================================================ -->
+<!-- CENTRAL ORB GROUP                                            -->
+<!-- ============================================================ -->
+<a-entity id="orb-group" position="0 1.5 -2">
+<!-- Main sphere: mirror-like reflective -->
+<a-sphere id="orb-core" radius="0.35"
+material="color: #0066ff; metalness: 0.95; roughness: 0.05; transparent: true; opacity: 0.95"
+animation__pulse="property: scale; from: 1 1 1; to: 1.06 1.06 1.06; dur: 2000; easing: easeInOutSine; loop: true; dir: alternate">
+</a-sphere>
+<!-- Inner energy sphere -->
+<a-sphere id="orb-inner" radius="0.28"
+material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 3; transparent: true; opacity: 0.6; metalness: 0; roughness: 1"
+animation__innerpulse="property: scale; from: 0.95 0.95 0.95; to: 1.05 1.05 1.05; dur: 2000; easing: easeInOutSine; loop: true; dir: alternate"
+animation__innerrot="property: rotation; from: 0 0 0; to: 0 360 0; dur: 10000; easing: linear; loop: true">
+</a-sphere>
+<!-- Glass shell -->
+<a-sphere id="orb-glow" radius="0.38"
+material="color: #ffffff; transparent: true; opacity: 0.08; metalness: 1; roughness: 0; side: double"
+animation__shell="property: scale; from: 1 1 1; to: 1.03 1.03 1.03; dur: 3000; easing: easeInOutSine; loop: true; dir: alternate">
+</a-sphere>
+<!-- Outer aura -->
+<a-sphere id="orb-aura" radius="0.5"
+material="color: #ffffff; emissive: #ffffff; emissiveIntensity: 0.3; transparent: true; opacity: 0.03; side: back"
+animation__aura="property: scale; from: 1 1 1; to: 1.08 1.08 1.08; dur: 4000; easing: easeInOutSine; loop: true; dir: alternate">
+</a-sphere>
+<!-- ======= ORBITAL RINGS ======= -->
+<!-- Ring 1: radius 0.55, tube 0.008, rotation 90 0 0, rotating Y 20s -->
+<a-torus id="ring1" radius="0.55" radius-tubular="0.008"
+material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 0.9; transparent: true; opacity: 0.6; metalness: 0.8; roughness: 0.1"
+rotation="90 0 0"
+animation__rot="property: rotation; from: 90 0 0; to: 90 360 0; dur: 20000; easing: linear; loop: true">
+</a-torus>
+<!-- Ring 2: radius 0.65, tube 0.005, rotation 60 45 0, rotating Z 15s reverse -->
+<a-torus id="ring2" radius="0.65" radius-tubular="0.005"
+material="color: #3399ff; emissive: #3399ff; emissiveIntensity: 0.7; transparent: true; opacity: 0.4; metalness: 0.8; roughness: 0.1"
+rotation="60 45 0"
+animation__rot="property: rotation; from: 60 45 0; to: 60 45 -360; dur: 15000; easing: linear; loop: true">
+</a-torus>
+<!-- Ring 3: radius 0.75, tube 0.003, rotation 30 -30 60, rotating X 25s -->
+<a-torus id="ring3" radius="0.75" radius-tubular="0.003"
+material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 0.6; transparent: true; opacity: 0.3; metalness: 0.8; roughness: 0.1"
+rotation="30 -30 60"
+animation__rot="property: rotation; from: 30 -30 60; to: 390 -30 60; dur: 25000; easing: linear; loop: true">
+</a-torus>
+<!-- Ring 4: radius 0.45, tube 0.01, rotation 0 0 45, rotating Y 8s (fast inner) -->
+<a-torus id="ring4" radius="0.45" radius-tubular="0.01"
+material="color: #0088ff; emissive: #0088ff; emissiveIntensity: 0.8; transparent: true; opacity: 0.5; metalness: 0.8; roughness: 0.1"
+rotation="0 0 45"
+animation__rot="property: rotation; from: 0 0 45; to: 0 360 45; dur: 8000; easing: linear; loop: true">
+</a-torus>
+<!-- Ring 5: radius 0.85, tube 0.002, rotation 70 20 -40, rotating Z 30s -->
+<a-torus id="ring5" radius="0.85" radius-tubular="0.002"
+material="color: #4488ff; emissive: #4488ff; emissiveIntensity: 0.5; transparent: true; opacity: 0.25; metalness: 0.8; roughness: 0.1"
+rotation="70 20 -40"
+animation__rot="property: rotation; from: 70 20 -40; to: 70 20 320; dur: 30000; easing: linear; loop: true">
+</a-torus>
+<!-- ======= LIGHTS AT ORB CENTER ======= -->
+<a-light id="orb-light" type="point" color="#0066ff" intensity="2.5" distance="15" decay="2"></a-light>
+<!-- ======= PARTICLES ======= -->
+<a-entity id="orb-particles" orb-particles></a-entity>
+</a-entity>
+<!-- ============================================================ -->
+<!-- FLOATING HOLOGRAPHIC INFO PANELS                             -->
+<!-- ============================================================ -->
+<!-- Panel 1: STATUS (front-left) -->
+<a-entity position="-1.2 1.8 -2.5" look-at="#orb-group"
+animation__float="property: position; from: -1.2 1.78 -2.5; to: -1.2 1.82 -2.5; dur: 3000; easing: easeInOutSine; loop: true; dir: alternate">
+<a-plane width="0.8" height="0.5" color="#0066ff" opacity="0.3" side="double"
+material="shader: flat" position="0 0 -0.002"></a-plane>
+<a-plane width="0.76" height="0.46" color="#0a0a14" opacity="0.85" side="double"
+material="shader: flat"></a-plane>
+<a-text value="STATUS" align="center" color="#0066ff"
+font="monoid" width="1.5" position="0 0.14 0.01" opacity="0.9"></a-text>
+<a-plane width="0.5" height="0.003" position="0 0.06 0.01"
+material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.5; shader: flat"></a-plane>
+<a-text id="hud-status" value="PRONTA" align="center" color="#00cc66"
+font="monoid" width="1.8" position="0 -0.06 0.01" opacity="0.85"></a-text>
+</a-entity>
+<!-- Panel 2: SISTEMA (front-right) -->
+<a-entity position="1.2 1.8 -2.5" look-at="#orb-group"
+animation__float="property: position; from: 1.2 1.78 -2.5; to: 1.2 1.82 -2.5; dur: 3500; easing: easeInOutSine; loop: true; dir: alternate">
+<a-plane width="0.8" height="0.5" color="#0066ff" opacity="0.3" side="double"
+material="shader: flat" position="0 0 -0.002"></a-plane>
+<a-plane width="0.76" height="0.46" color="#0a0a14" opacity="0.85" side="double"
+material="shader: flat"></a-plane>
+<a-text value="SISTEMA" align="center" color="#0066ff"
+font="monoid" width="1.5" position="0 0.14 0.01" opacity="0.9"></a-text>
+<a-plane width="0.5" height="0.003" position="0 0.06 0.01"
+material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.5; shader: flat"></a-plane>
+<a-text value="MODELO: GPT-4O" align="center" color="#aabbcc"
+font="monoid" width="1.2" position="0 -0.02 0.01" opacity="0.7"></a-text>
+<a-text value="VOZ: ELEVENLABS" align="center" color="#aabbcc"
+font="monoid" width="1.2" position="0 -0.1 0.01" opacity="0.7"></a-text>
+<a-text value="VERSAO: 6.8" align="center" color="#aabbcc"
+font="monoid" width="1.2" position="0 -0.18 0.01" opacity="0.7"></a-text>
+</a-entity>
+<!-- Panel 3: CONVERSA (left) -->
+<a-entity position="-1.8 1.5 -1.5" look-at="#orb-group"
+animation__float="property: position; from: -1.8 1.48 -1.5; to: -1.8 1.52 -1.5; dur: 4000; easing: easeInOutSine; loop: true; dir: alternate">
+<a-plane width="0.8" height="0.5" color="#0066ff" opacity="0.3" side="double"
+material="shader: flat" position="0 0 -0.002"></a-plane>
+<a-plane width="0.76" height="0.46" color="#0a0a14" opacity="0.85" side="double"
+material="shader: flat"></a-plane>
+<a-text value="CONVERSA" align="center" color="#0066ff"
+font="monoid" width="1.5" position="0 0.14 0.01" opacity="0.9"></a-text>
+<a-plane width="0.5" height="0.003" position="0 0.06 0.01"
+material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.5; shader: flat"></a-plane>
+<a-text id="hud-user" value="" align="center" color="#aabbcc"
+font="monoid" width="1.3" position="0 -0.02 0.01" opacity="0.7"
+wrap-count="30"></a-text>
+<a-text id="hud-reply" value="" align="center" color="#0088ff"
+font="monoid" width="1.3" position="0 -0.14 0.01" opacity="0.85"
+wrap-count="30"></a-text>
+</a-entity>
+<!-- Panel 4: HORA (right) -->
+<a-entity position="1.8 1.5 -1.5" look-at="#orb-group"
+animation__float="property: position; from: 1.8 1.48 -1.5; to: 1.8 1.52 -1.5; dur: 3800; easing: easeInOutSine; loop: true; dir: alternate">
+<a-plane width="0.8" height="0.5" color="#0066ff" opacity="0.3" side="double"
+material="shader: flat" position="0 0 -0.002"></a-plane>
+<a-plane width="0.76" height="0.46" color="#0a0a14" opacity="0.85" side="double"
+material="shader: flat"></a-plane>
+<a-text value="HORA" align="center" color="#0066ff"
+font="monoid" width="1.5" position="0 0.14 0.01" opacity="0.9"></a-text>
+<a-plane width="0.5" height="0.003" position="0 0.06 0.01"
+material="color: #0066ff; emissive: #0066ff; emissiveIntensity: 1; transparent: true; opacity: 0.5; shader: flat"></a-plane>
+<a-text id="hud-clock" value="00:00" align="center" color="#aabbcc"
+font="monoid" width="2.0" position="0 -0.02 0.01" opacity="0.85"></a-text>
+<a-text id="hud-date" value="" align="center" color="#667788"
+font="monoid" width="1.2" position="0 -0.12 0.01" opacity="0.6"></a-text>
+<a-text id="hud-uptime" value="UPTIME: 00:00:00" align="center" color="#556677"
+font="monoid" width="1.0" position="0 -0.2 0.01" opacity="0.5"></a-text>
+</a-entity>
+<!-- Panel 5: ZAYA TITLE (above) -->
+<a-entity position="0 2.8 -2" look-at="#orb-group"
+animation__float="property: position; from: 0 2.78 -2; to: 0 2.82 -2; dur: 4500; easing: easeInOutSine; loop: true; dir: alternate">
+<a-plane width="1.2" height="0.45" color="#0066ff" opacity="0.25" side="double"
+material="shader: flat" position="0 0 -0.002"></a-plane>
+<a-plane width="1.16" height="0.41" color="#0a0a14" opacity="0.85" side="double"
+material="shader: flat"></a-plane>
+<a-text value="Z . A . Y . A" align="center" color="#0066ff"
+font="monoid" width="3.0" position="0 0.06 0.01" opacity="0.95"
+animation__titleop="property: opacity; from: 0.75; to: 1; dur: 3000; easing: easeInOutSine; loop: true; dir: alternate"></a-text>
+<a-text value="ASSISTENTE PESSOAL" align="center" color="#667788"
+font="monoid" width="1.2" position="0 -0.1 0.01" opacity="0.6"></a-text>
+</a-entity>
+<!-- ============================================================ -->
+<!-- AMBIENT PARTICLES                                            -->
+<!-- ============================================================ -->
+<a-entity id="ambient-particles" ambient-particles></a-entity>
+<!-- ============================================================ -->
+<!-- LIGHTING                                                     -->
+<!-- ============================================================ -->
+<a-light type="ambient" color="#111122" intensity="0.3"></a-light>
+<a-light type="directional" color="#334466" intensity="0.5" position="0 4 2"></a-light>
+<!-- ============================================================ -->
+<!-- CAMERA RIG                                                   -->
+<!-- ============================================================ -->
+<a-entity id="rig" position="0 1.6 0">
+<a-camera id="camera" look-controls="pointerLockEnabled: false" wasd-controls="acceleration: 10">
+<a-ring id="reticle" position="0 0 -1" radius-inner="0.008" radius-outer="0.014"
+material="color: #0066ff; opacity: 0.5; shader: flat" visible="false"></a-ring>
+</a-camera>
+</a-entity>
+<!-- ============================================================ -->
+<!-- HAND TRACKING                                                -->
+<!-- ============================================================ -->
+<a-entity id="left-hand" hand-tracking-controls="hand: left; modelColor: #1a2a4a" zaya-hand="hand: left" visible="false"></a-entity>
+<a-entity id="right-hand" hand-tracking-controls="hand: right; modelColor: #1a2a4a" zaya-hand="hand: right" visible="false"></a-entity>
+<!-- ============================================================ -->
+<!-- VR MENU                                                      -->
+<!-- ============================================================ -->
+<a-entity id="vr-menu" visible="false" position="0 0 0">
+<a-plane width="1.2" height="0.35" color="#0d0b09" opacity="0.92" side="double"
+material="shader:flat"></a-plane>
+<a-plane width="1.2" height="0.35" color="#f36600" opacity="0.08" side="double" position="0 0 0.001"
+material="shader:flat"></a-plane>
+<a-plane width="1.22" height="0.37" color="#f36600" opacity="0.3" side="double" position="0 0 -0.001"
+material="shader:flat"></a-plane>
+<a-entity id="menu-row1" position="-0.48 0.08 0.01">
+<a-entity class="vr-btn" vr-button="label:MICROFONE;action:mic;color:#f36600" position="0 0 0"></a-entity>
+<a-entity class="vr-btn" vr-button="label:MENSAGENS;action:messages;color:#f0ece4" position="0.2 0 0"></a-entity>
+<a-entity class="vr-btn" vr-button="label:WHATSAPP;action:whatsapp;color:#f0ece4" position="0.4 0 0"></a-entity>
+<a-entity class="vr-btn" vr-button="label:CALENDARIO;action:calendar;color:#f0ece4" position="0.6 0 0"></a-entity>
+<a-entity class="vr-btn" vr-button="label:AGENTES;action:agents;color:#f0ece4" position="0.8 0 0"></a-entity>
+</a-entity>
+<a-entity id="menu-row2" position="-0.48 -0.08 0.01">
+<a-entity class="vr-btn" vr-button="label:VOZES;action:voices;color:#f0ece4" position="0 0 0"></a-entity>
+<a-entity class="vr-btn" vr-button="label:PEDIDOS;action:pedidos;color:#f0ece4" position="0.2 0 0"></a-entity>
+<a-entity class="vr-btn" vr-button="label:META;action:meta;color:#f0ece4" position="0.4 0 0"></a-entity>
+<a-entity class="vr-btn" vr-button="label:VR;action:vr;color:#f0ece4" position="0.6 0 0"></a-entity>
+<a-entity class="vr-btn" vr-button="label:RESET;action:reset;color:#f0ece4" position="0.8 0 0"></a-entity>
+</a-entity>
+<a-text value="Z A Y A" position="0 0.22 0.01" align="center" color="#f36600" width="1.2"
+font="monoid" opacity="0.8"></a-text>
+</a-entity>
 </a-scene>
-
 <script>
 // ============================================================
 //  ZAYA VR - Complete WebXR Experience
 // ============================================================
-
 const ZAYA = {
-  state: 'idle',          // idle | listening | processing | speaking
-  isVR: false,
-  isMuted: false,
-  mediaRecorder: null,
-  audioChunks: [],
-  stream: null,
-  audioCtx: null,
-  currentAudio: null,
-
-  stateColors: {
-    idle:       { core: '#0066ff', emissive: '#0044aa', glow: '#0066ff', light: '#0066ff', ring1opacity: 0.6 },
-    listening:  { core: '#ff2244', emissive: '#aa1122', glow: '#ff4444', light: '#ff4444', ring1opacity: 0.8 },
-    processing: { core: '#ffaa00', emissive: '#aa7700', glow: '#ffaa00', light: '#ffaa00', ring1opacity: 0.7 },
-    speaking:   { core: '#00cc66', emissive: '#009944', glow: '#00cc66', light: '#00cc66', ring1opacity: 0.6 },
-  },
-
-  statusLabels: {
-    idle: 'PRONTA',
-    listening: 'OUVINDO...',
-    processing: 'PROCESSANDO...',
-    speaking: 'FALANDO...',
-  },
-
-  startTime: Date.now()
+state: 'idle',          // idle | listening | processing | speaking
+isVR: false,
+isMuted: false,
+mediaRecorder: null,
+audioChunks: [],
+stream: null,
+audioCtx: null,
+currentAudio: null,
+stateColors: {
+idle:       { core: '#0066ff', emissive: '#0044aa', glow: '#0066ff', light: '#0066ff', ring1opacity: 0.6 },
+listening:  { core: '#ff2244', emissive: '#aa1122', glow: '#ff4444', light: '#ff4444', ring1opacity: 0.8 },
+processing: { core: '#ffaa00', emissive: '#aa7700', glow: '#ffaa00', light: '#ffaa00', ring1opacity: 0.7 },
+speaking:   { core: '#00cc66', emissive: '#009944', glow: '#00cc66', light: '#00cc66', ring1opacity: 0.6 },
+},
+statusLabels: {
+idle: 'PRONTA',
+listening: 'OUVINDO...',
+processing: 'PROCESSANDO...',
+speaking: 'FALANDO...',
+},
+startTime: Date.now()
 };
-
 // ============================================================
 //  A-FRAME COMPONENTS
 // ============================================================
-
 // --- Fog setter ---
 AFRAME.registerComponent('fog-setter', {
-  init() {
-    this.el.sceneEl.object3D.fog = new THREE.FogExp2(0x020208, 0.08);
-  }
+init() {
+this.el.sceneEl.object3D.fog = new THREE.FogExp2(0x020208, 0.08);
+}
 });
-
 // --- Star field (2000 stars, varied brightness) ---
 AFRAME.registerComponent('star-field', {
-  init() {
-    const geo = new THREE.BufferGeometry();
-    const count = 2000;
-    const pos = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const r = 100 + Math.random() * 400;
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(2 * Math.random() - 1);
-      pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
-      pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
-      pos[i*3+2] = r * Math.cos(phi);
-      // Varied star colors (white, blue-white, warm)
-      const temp = Math.random();
-      if (temp < 0.6) { colors[i*3] = 0.7; colors[i*3+1] = 0.75; colors[i*3+2] = 0.9; }
-      else if (temp < 0.85) { colors[i*3] = 0.9; colors[i*3+1] = 0.85; colors[i*3+2] = 0.7; }
-      else { colors[i*3] = 0.5; colors[i*3+1] = 0.6; colors[i*3+2] = 1.0; }
-    }
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-
-    const mat = new THREE.PointsMaterial({
-      size: 1.0,
-      sizeAttenuation: true,
-      transparent: true,
-      opacity: 0.8,
-      vertexColors: true,
-    });
-    this.el.setObject3D('stars', new THREE.Points(geo, mat));
-  }
+init() {
+const geo = new THREE.BufferGeometry();
+const count = 2000;
+const pos = new Float32Array(count * 3);
+const colors = new Float32Array(count * 3);
+for (let i = 0; i < count; i++) {
+const r = 100 + Math.random() * 400;
+const theta = Math.random() * Math.PI * 2;
+const phi = Math.acos(2 * Math.random() - 1);
+pos[i*3]   = r * Math.sin(phi) * Math.cos(theta);
+pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+pos[i*3+2] = r * Math.cos(phi);
+// Varied star colors (white, blue-white, warm)
+const temp = Math.random();
+if (temp < 0.6) { colors[i*3] = 0.7; colors[i*3+1] = 0.75; colors[i*3+2] = 0.9; }
+else if (temp < 0.85) { colors[i*3] = 0.9; colors[i*3+1] = 0.85; colors[i*3+2] = 0.7; }
+else { colors[i*3] = 0.5; colors[i*3+1] = 0.6; colors[i*3+2] = 1.0; }
+}
+geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+const mat = new THREE.PointsMaterial({
+size: 1.0,
+sizeAttenuation: true,
+transparent: true,
+opacity: 0.8,
+vertexColors: true,
 });
-
+this.el.setObject3D('stars', new THREE.Points(geo, mat));
+}
+});
 // --- Orb particles (150 firefly spheres) ---
 AFRAME.registerComponent('orb-particles', {
-  init() {
-    const count = 150;
-    this._count = count;
-    this._group = new THREE.Group();
-
-    this._angles = new Float32Array(count);
-    this._radii = new Float32Array(count);
-    this._speeds = new Float32Array(count);
-    this._yOffsets = new Float32Array(count);
-    this._bobSpeeds = new Float32Array(count);
-    this._tiltX = new Float32Array(count);
-    this._tiltZ = new Float32Array(count);
-    this._meshes = [];
-
-    const geo = new THREE.SphereGeometry(1, 6, 6);
-
-    for (let i = 0; i < count; i++) {
-      this._angles[i] = Math.random() * Math.PI * 2;
-      this._radii[i] = 0.6 + Math.random() * 1.4;
-      this._speeds[i] = 0.15 + Math.random() * 0.6;
-      this._yOffsets[i] = (Math.random() - 0.5) * 1.2;
-      this._bobSpeeds[i] = 0.3 + Math.random() * 1.2;
-      this._tiltX[i] = (Math.random() - 0.5) * 1.5;
-      this._tiltZ[i] = (Math.random() - 0.5) * 1.5;
-
-      const size = 0.005 + Math.random() * 0.01;
-      const brightness = 0.4 + Math.random() * 0.6;
-      const isWhite = Math.random() < 0.15;
-      const mat = new THREE.MeshBasicMaterial({
-        color: isWhite ? new THREE.Color(0xffffff) : new THREE.Color(0x0066ff),
-        transparent: true,
-        opacity: brightness,
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.scale.set(size, size, size);
-      mesh._isWhite = isWhite;
-      this._meshes.push(mesh);
-      this._group.add(mesh);
-    }
-
-    this.el.setObject3D('particles', this._group);
-  },
-  tick(t, dt) {
-    const sec = dt / 1000;
-    const speedMult = ZAYA.state === 'listening' ? 3 : ZAYA.state === 'processing' ? 5 : ZAYA.state === 'speaking' ? 2 : 1;
-    const sc = ZAYA.stateColors[ZAYA.state];
-    const stateColor = new THREE.Color(sc.glow);
-
-    for (let i = 0; i < this._count; i++) {
-      this._angles[i] += this._speeds[i] * sec * speedMult;
-      const a = this._angles[i];
-      const r = this._radii[i];
-      const bob = Math.sin(t / 1000 * this._bobSpeeds[i] + i) * 0.08;
-
-      const x = Math.cos(a) * r + Math.sin(a * 0.3) * this._tiltX[i] * 0.1;
-      const y = this._yOffsets[i] + bob;
-      const z = Math.sin(a) * r + Math.cos(a * 0.3) * this._tiltZ[i] * 0.1;
-
-      this._meshes[i].position.set(x, y, z);
-      if (!this._meshes[i]._isWhite) {
-        this._meshes[i].material.color.copy(stateColor);
-      }
-    }
-  }
+init() {
+const count = 150;
+this._count = count;
+this._group = new THREE.Group();
+this._angles = new Float32Array(count);
+this._radii = new Float32Array(count);
+this._speeds = new Float32Array(count);
+this._yOffsets = new Float32Array(count);
+this._bobSpeeds = new Float32Array(count);
+this._tiltX = new Float32Array(count);
+this._tiltZ = new Float32Array(count);
+this._meshes = [];
+const geo = new THREE.SphereGeometry(1, 6, 6);
+for (let i = 0; i < count; i++) {
+this._angles[i] = Math.random() * Math.PI * 2;
+this._radii[i] = 0.6 + Math.random() * 1.4;
+this._speeds[i] = 0.15 + Math.random() * 0.6;
+this._yOffsets[i] = (Math.random() - 0.5) * 1.2;
+this._bobSpeeds[i] = 0.3 + Math.random() * 1.2;
+this._tiltX[i] = (Math.random() - 0.5) * 1.5;
+this._tiltZ[i] = (Math.random() - 0.5) * 1.5;
+const size = 0.005 + Math.random() * 0.01;
+const brightness = 0.4 + Math.random() * 0.6;
+const isWhite = Math.random() < 0.15;
+const mat = new THREE.MeshBasicMaterial({
+color: isWhite ? new THREE.Color(0xffffff) : new THREE.Color(0x0066ff),
+transparent: true,
+opacity: brightness,
 });
-
+const mesh = new THREE.Mesh(geo, mat);
+mesh.scale.set(size, size, size);
+mesh._isWhite = isWhite;
+this._meshes.push(mesh);
+this._group.add(mesh);
+}
+this.el.setObject3D('particles', this._group);
+},
+tick(t, dt) {
+const sec = dt / 1000;
+const speedMult = ZAYA.state === 'listening' ? 3 : ZAYA.state === 'processing' ? 5 : ZAYA.state === 'speaking' ? 2 : 1;
+const sc = ZAYA.stateColors[ZAYA.state];
+const stateColor = new THREE.Color(sc.glow);
+for (let i = 0; i < this._count; i++) {
+this._angles[i] += this._speeds[i] * sec * speedMult;
+const a = this._angles[i];
+const r = this._radii[i];
+const bob = Math.sin(t / 1000 * this._bobSpeeds[i] + i) * 0.08;
+const x = Math.cos(a) * r + Math.sin(a * 0.3) * this._tiltX[i] * 0.1;
+const y = this._yOffsets[i] + bob;
+const z = Math.sin(a) * r + Math.cos(a * 0.3) * this._tiltZ[i] * 0.1;
+this._meshes[i].position.set(x, y, z);
+if (!this._meshes[i]._isWhite) {
+this._meshes[i].material.color.copy(stateColor);
+}
+}
+}
+});
 // --- Ambient floating particles ---
 AFRAME.registerComponent('ambient-particles', {
-  init() {
-    const count = 300;
-    const geo = new THREE.BufferGeometry();
-    const pos = new Float32Array(count * 3);
-    this._vel = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      pos[i*3]   = (Math.random() - 0.5) * 30;
-      pos[i*3+1] = Math.random() * 8;
-      pos[i*3+2] = (Math.random() - 0.5) * 30;
-      this._vel[i*3]   = (Math.random() - 0.5) * 0.1;
-      this._vel[i*3+1] = 0.02 + Math.random() * 0.05;
-      this._vel[i*3+2] = (Math.random() - 0.5) * 0.1;
-    }
-    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    const mat = new THREE.PointsMaterial({
-      color: 0x334466,
-      size: 0.04,
-      sizeAttenuation: true,
-      transparent: true,
-      opacity: 0.35,
-    });
-    this._points = new THREE.Points(geo, mat);
-    this.el.setObject3D('ambient', this._points);
-    this._count = count;
-  },
-  tick(t, dt) {
-    const sec = dt / 1000;
-    const posArr = this._points.geometry.attributes.position.array;
-    for (let i = 0; i < this._count; i++) {
-      posArr[i*3]   += this._vel[i*3] * sec;
-      posArr[i*3+1] += this._vel[i*3+1] * sec;
-      posArr[i*3+2] += this._vel[i*3+2] * sec;
-      if (posArr[i*3+1] > 10) {
-        posArr[i*3+1] = 0;
-        posArr[i*3] = (Math.random() - 0.5) * 30;
-        posArr[i*3+2] = (Math.random() - 0.5) * 30;
-      }
-    }
-    this._points.geometry.attributes.position.needsUpdate = true;
-  }
+init() {
+const count = 300;
+const geo = new THREE.BufferGeometry();
+const pos = new Float32Array(count * 3);
+this._vel = new Float32Array(count * 3);
+for (let i = 0; i < count; i++) {
+pos[i*3]   = (Math.random() - 0.5) * 30;
+pos[i*3+1] = Math.random() * 8;
+pos[i*3+2] = (Math.random() - 0.5) * 30;
+this._vel[i*3]   = (Math.random() - 0.5) * 0.1;
+this._vel[i*3+1] = 0.02 + Math.random() * 0.05;
+this._vel[i*3+2] = (Math.random() - 0.5) * 0.1;
+}
+geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+const mat = new THREE.PointsMaterial({
+color: 0x334466,
+size: 0.04,
+sizeAttenuation: true,
+transparent: true,
+opacity: 0.35,
 });
-
+this._points = new THREE.Points(geo, mat);
+this.el.setObject3D('ambient', this._points);
+this._count = count;
+},
+tick(t, dt) {
+const sec = dt / 1000;
+const posArr = this._points.geometry.attributes.position.array;
+for (let i = 0; i < this._count; i++) {
+posArr[i*3]   += this._vel[i*3] * sec;
+posArr[i*3+1] += this._vel[i*3+1] * sec;
+posArr[i*3+2] += this._vel[i*3+2] * sec;
+if (posArr[i*3+1] > 10) {
+posArr[i*3+1] = 0;
+posArr[i*3] = (Math.random() - 0.5) * 30;
+posArr[i*3+2] = (Math.random() - 0.5) * 30;
+}
+}
+this._points.geometry.attributes.position.needsUpdate = true;
+}
+});
 // --- Orb state visual manager ---
 AFRAME.registerComponent('orb-state-manager', {
-  init() {
-    this._orbCore = document.getElementById('orb-core');
-    this._orbInner = document.getElementById('orb-inner');
-    this._orbGlow = document.getElementById('orb-glow');
-    this._orbAura = document.getElementById('orb-aura');
-    this._ring1 = document.getElementById('ring1');
-    this._ring2 = document.getElementById('ring2');
-    this._ring3 = document.getElementById('ring3');
-    this._ring4 = document.getElementById('ring4');
-    this._ring5 = document.getElementById('ring5');
-    this._orbLight = document.getElementById('orb-light');
-    this._lastState = 'idle';
-  },
-  tick() {
-    if (ZAYA.state === this._lastState) return;
-    this._lastState = ZAYA.state;
-    const c = ZAYA.stateColors[ZAYA.state];
-
-    // Core sphere
-    this._orbCore.setAttribute('material', { color: c.core, metalness: 0.95, roughness: 0.05 });
-
-    // Inner energy
-    this._orbInner.setAttribute('material', { color: c.glow, emissive: c.glow, emissiveIntensity: 3 });
-
-    // Glass shell
-    this._orbGlow.setAttribute('material', { opacity: 0.08 });
-
-    // Aura
-    this._orbAura.setAttribute('material', { emissive: c.glow });
-
-    // All rings follow state color
-    this._ring1.setAttribute('material', { color: c.glow, emissive: c.glow, opacity: c.ring1opacity });
-    this._ring2.setAttribute('material', { color: c.glow, emissive: c.glow });
-    this._ring3.setAttribute('material', { color: c.glow, emissive: c.glow });
-    this._ring4.setAttribute('material', { color: c.glow, emissive: c.glow });
-    this._ring5.setAttribute('material', { color: c.glow, emissive: c.glow });
-
-    // Light
-    this._orbLight.setAttribute('light', { color: c.light, intensity: 2.5 });
-
-    // Adjust ring speeds based on state
-    if (ZAYA.state === 'processing') {
-      this._ring1.setAttribute('animation__rot', 'dur', 5000);
-      this._ring2.setAttribute('animation__rot', 'dur', 4000);
-      this._ring3.setAttribute('animation__rot', 'dur', 6000);
-      this._ring4.setAttribute('animation__rot', 'dur', 2000);
-      this._ring5.setAttribute('animation__rot', 'dur', 8000);
-      this._orbLight.setAttribute('light', 'intensity', 3.5);
-      this._orbInner.setAttribute('material', 'emissiveIntensity', 5.0);
-    } else if (ZAYA.state === 'listening') {
-      this._ring1.setAttribute('animation__rot', 'dur', 10000);
-      this._ring2.setAttribute('animation__rot', 'dur', 8000);
-      this._ring3.setAttribute('animation__rot', 'dur', 12000);
-      this._ring4.setAttribute('animation__rot', 'dur', 4000);
-      this._ring5.setAttribute('animation__rot', 'dur', 15000);
-      this._orbLight.setAttribute('light', 'intensity', 3.0);
-      this._orbInner.setAttribute('material', 'emissiveIntensity', 4.0);
-    } else if (ZAYA.state === 'speaking') {
-      this._ring1.setAttribute('animation__rot', 'dur', 12000);
-      this._ring2.setAttribute('animation__rot', 'dur', 10000);
-      this._ring3.setAttribute('animation__rot', 'dur', 15000);
-      this._ring4.setAttribute('animation__rot', 'dur', 5000);
-      this._ring5.setAttribute('animation__rot', 'dur', 18000);
-      this._orbLight.setAttribute('light', 'intensity', 2.8);
-      this._orbInner.setAttribute('material', 'emissiveIntensity', 4.5);
-    } else {
-      this._ring1.setAttribute('animation__rot', 'dur', 20000);
-      this._ring2.setAttribute('animation__rot', 'dur', 15000);
-      this._ring3.setAttribute('animation__rot', 'dur', 25000);
-      this._ring4.setAttribute('animation__rot', 'dur', 8000);
-      this._ring5.setAttribute('animation__rot', 'dur', 30000);
-      this._orbLight.setAttribute('light', 'intensity', 2.5);
-      this._orbInner.setAttribute('material', 'emissiveIntensity', 3.0);
-    }
-
-    // Orb pulse speed
-    const pulseDur = ZAYA.state === 'listening' ? 600 : ZAYA.state === 'processing' ? 400 : ZAYA.state === 'speaking' ? 1000 : 2000;
-    const pulseScale = ZAYA.state === 'listening' ? '1.1 1.1 1.1' : '1.06 1.06 1.06';
-    this._orbCore.setAttribute('animation__pulse', { dur: pulseDur, to: pulseScale });
-
-    // Inner core pulse
-    const innerPulse = ZAYA.state === 'listening' ? '1.1 1.1 1.1' : ZAYA.state === 'processing' ? '1.12 1.12 1.12' : '1.05 1.05 1.05';
-    const innerDur = ZAYA.state === 'processing' ? 400 : ZAYA.state === 'listening' ? 600 : 2000;
-    this._orbInner.setAttribute('animation__innerpulse', { dur: innerDur, to: innerPulse });
-
-    // Update panel border colors to match state
-    document.querySelectorAll('[look-at="#orb-group"] > a-plane:first-child').forEach(p => {
-      p.setAttribute('material', 'color', c.glow);
-    });
-  }
+init() {
+this._orbCore = document.getElementById('orb-core');
+this._orbInner = document.getElementById('orb-inner');
+this._orbGlow = document.getElementById('orb-glow');
+this._orbAura = document.getElementById('orb-aura');
+this._ring1 = document.getElementById('ring1');
+this._ring2 = document.getElementById('ring2');
+this._ring3 = document.getElementById('ring3');
+this._ring4 = document.getElementById('ring4');
+this._ring5 = document.getElementById('ring5');
+this._orbLight = document.getElementById('orb-light');
+this._lastState = 'idle';
+},
+tick() {
+if (ZAYA.state === this._lastState) return;
+this._lastState = ZAYA.state;
+const c = ZAYA.stateColors[ZAYA.state];
+// Core sphere
+this._orbCore.setAttribute('material', { color: c.core, metalness: 0.95, roughness: 0.05 });
+// Inner energy
+this._orbInner.setAttribute('material', { color: c.glow, emissive: c.glow, emissiveIntensity: 3 });
+// Glass shell
+this._orbGlow.setAttribute('material', { opacity: 0.08 });
+// Aura
+this._orbAura.setAttribute('material', { emissive: c.glow });
+// All rings follow state color
+this._ring1.setAttribute('material', { color: c.glow, emissive: c.glow, opacity: c.ring1opacity });
+this._ring2.setAttribute('material', { color: c.glow, emissive: c.glow });
+this._ring3.setAttribute('material', { color: c.glow, emissive: c.glow });
+this._ring4.setAttribute('material', { color: c.glow, emissive: c.glow });
+this._ring5.setAttribute('material', { color: c.glow, emissive: c.glow });
+// Light
+this._orbLight.setAttribute('light', { color: c.light, intensity: 2.5 });
+// Adjust ring speeds based on state
+if (ZAYA.state === 'processing') {
+this._ring1.setAttribute('animation__rot', 'dur', 5000);
+this._ring2.setAttribute('animation__rot', 'dur', 4000);
+this._ring3.setAttribute('animation__rot', 'dur', 6000);
+this._ring4.setAttribute('animation__rot', 'dur', 2000);
+this._ring5.setAttribute('animation__rot', 'dur', 8000);
+this._orbLight.setAttribute('light', 'intensity', 3.5);
+this._orbInner.setAttribute('material', 'emissiveIntensity', 5.0);
+} else if (ZAYA.state === 'listening') {
+this._ring1.setAttribute('animation__rot', 'dur', 10000);
+this._ring2.setAttribute('animation__rot', 'dur', 8000);
+this._ring3.setAttribute('animation__rot', 'dur', 12000);
+this._ring4.setAttribute('animation__rot', 'dur', 4000);
+this._ring5.setAttribute('animation__rot', 'dur', 15000);
+this._orbLight.setAttribute('light', 'intensity', 3.0);
+this._orbInner.setAttribute('material', 'emissiveIntensity', 4.0);
+} else if (ZAYA.state === 'speaking') {
+this._ring1.setAttribute('animation__rot', 'dur', 12000);
+this._ring2.setAttribute('animation__rot', 'dur', 10000);
+this._ring3.setAttribute('animation__rot', 'dur', 15000);
+this._ring4.setAttribute('animation__rot', 'dur', 5000);
+this._ring5.setAttribute('animation__rot', 'dur', 18000);
+this._orbLight.setAttribute('light', 'intensity', 2.8);
+this._orbInner.setAttribute('material', 'emissiveIntensity', 4.5);
+} else {
+this._ring1.setAttribute('animation__rot', 'dur', 20000);
+this._ring2.setAttribute('animation__rot', 'dur', 15000);
+this._ring3.setAttribute('animation__rot', 'dur', 25000);
+this._ring4.setAttribute('animation__rot', 'dur', 8000);
+this._ring5.setAttribute('animation__rot', 'dur', 30000);
+this._orbLight.setAttribute('light', 'intensity', 2.5);
+this._orbInner.setAttribute('material', 'emissiveIntensity', 3.0);
+}
+// Orb pulse speed
+const pulseDur = ZAYA.state === 'listening' ? 600 : ZAYA.state === 'processing' ? 400 : ZAYA.state === 'speaking' ? 1000 : 2000;
+const pulseScale = ZAYA.state === 'listening' ? '1.1 1.1 1.1' : '1.06 1.06 1.06';
+this._orbCore.setAttribute('animation__pulse', { dur: pulseDur, to: pulseScale });
+// Inner core pulse
+const innerPulse = ZAYA.state === 'listening' ? '1.1 1.1 1.1' : ZAYA.state === 'processing' ? '1.12 1.12 1.12' : '1.05 1.05 1.05';
+const innerDur = ZAYA.state === 'processing' ? 400 : ZAYA.state === 'listening' ? 600 : 2000;
+this._orbInner.setAttribute('animation__innerpulse', { dur: innerDur, to: innerPulse });
+// Update panel border colors to match state
+document.querySelectorAll('[look-at="#orb-group"] > a-plane:first-child').forEach(p => {
+p.setAttribute('material', 'color', c.glow);
 });
-
+}
+});
 // --- Hand tracking + pinch detection ---
 AFRAME.registerComponent('zaya-hand', {
-  schema: {
-    hand: { type: 'string', default: 'right' }
-  },
-  init() {
-    this._pinching = false;
-    this._glowEl = null;
-
-    // Create hand glow indicator
-    this._glowEl = document.createElement('a-sphere');
-    this._glowEl.setAttribute('radius', 0.02);
-    this._glowEl.setAttribute('material', {
-      color: this.data.hand === 'right' ? '#0066ff' : '#00cc66',
-      emissive: this.data.hand === 'right' ? '#0066ff' : '#00cc66',
-      emissiveIntensity: 1,
-      transparent: true,
-      opacity: 0
-    });
-    this.el.appendChild(this._glowEl);
-
-    // Listen for pinch events
-    this.el.addEventListener('pinchstarted', () => this.onPinchStart());
-    this.el.addEventListener('pinchended', () => this.onPinchEnd());
-  },
-
-  onPinchStart() {
-    this._pinching = true;
-    this._glowEl.setAttribute('material', 'opacity', 0.8);
-
-    if (this.data.hand === 'right') {
-      startListening();
-    } else {
-      toggleMute();
-    }
-  },
-
-  onPinchEnd() {
-    this._pinching = false;
-    this._glowEl.setAttribute('material', 'opacity', 0);
-
-    if (this.data.hand === 'right') {
-      stopListening();
-    }
-  },
-
-  tick() {
-    // Orb proximity brightness
-    if (!this._pinching) return;
-    const orbPos = document.getElementById('orb-group').object3D.position;
-    const handPos = new THREE.Vector3();
-    this.el.object3D.getWorldPosition(handPos);
-    const dist = handPos.distanceTo(new THREE.Vector3(orbPos.x, orbPos.y, orbPos.z));
-    if (dist < 1.5) {
-      const intensity = 0.8 + (1.5 - dist) * 1.2;
-      document.getElementById('orb-light').setAttribute('light', 'intensity', intensity);
-    }
-  }
+schema: {
+hand: { type: 'string', default: 'right' }
+},
+init() {
+this._pinching = false;
+this._glowEl = null;
+// Create hand glow indicator
+this._glowEl = document.createElement('a-sphere');
+this._glowEl.setAttribute('radius', 0.02);
+this._glowEl.setAttribute('material', {
+color: this.data.hand === 'right' ? '#0066ff' : '#00cc66',
+emissive: this.data.hand === 'right' ? '#0066ff' : '#00cc66',
+emissiveIntensity: 1,
+transparent: true,
+opacity: 0
 });
-
+this.el.appendChild(this._glowEl);
+// Listen for pinch events
+this.el.addEventListener('pinchstarted', () => this.onPinchStart());
+this.el.addEventListener('pinchended', () => this.onPinchEnd());
+},
+onPinchStart() {
+this._pinching = true;
+this._glowEl.setAttribute('material', 'opacity', 0.8);
+if (this.data.hand === 'right') {
+startListening();
+} else {
+toggleMute();
+}
+},
+onPinchEnd() {
+this._pinching = false;
+this._glowEl.setAttribute('material', 'opacity', 0);
+if (this.data.hand === 'right') {
+stopListening();
+}
+},
+tick() {
+// Orb proximity brightness
+if (!this._pinching) return;
+const orbPos = document.getElementById('orb-group').object3D.position;
+const handPos = new THREE.Vector3();
+this.el.object3D.getWorldPosition(handPos);
+const dist = handPos.distanceTo(new THREE.Vector3(orbPos.x, orbPos.y, orbPos.z));
+if (dist < 1.5) {
+const intensity = 0.8 + (1.5 - dist) * 1.2;
+document.getElementById('orb-light').setAttribute('light', 'intensity', intensity);
+}
+}
+});
 // ============================================================
 // VR BUTTON component
 // ============================================================
 AFRAME.registerComponent('vr-button', {
-  schema: { label: {type:'string'}, action: {type:'string'}, color: {type:'string', default:'#f0ece4'} },
-  init() {
-    // Button background
-    const bg = document.createElement('a-plane');
-    bg.setAttribute('width', '0.18');
-    bg.setAttribute('height', '0.12');
-    bg.setAttribute('color', '#0d0b09');
-    bg.setAttribute('material', 'shader:flat;opacity:0.9');
-    bg.setAttribute('side', 'double');
-    this.el.appendChild(bg);
-
-    // Border
-    const border = document.createElement('a-plane');
-    border.setAttribute('width', '0.19');
-    border.setAttribute('height', '0.13');
-    border.setAttribute('color', this.data.color === '#f36600' ? '#f36600' : 'rgba(240,236,228,0.15)');
-    border.setAttribute('material', 'shader:flat;opacity:0.5');
-    border.setAttribute('side', 'double');
-    border.setAttribute('position', '0 0 -0.001');
-    this.el.appendChild(border);
-    this._border = border;
-
-    // Label text
-    const txt = document.createElement('a-text');
-    txt.setAttribute('value', this.data.label);
-    txt.setAttribute('align', 'center');
-    txt.setAttribute('color', this.data.color);
-    txt.setAttribute('width', '0.4');
-    txt.setAttribute('position', '0 0 0.002');
-    this.el.appendChild(txt);
-
-    // Raycaster interaction
-    this.el.setAttribute('class', 'clickable');
-    this.el.addEventListener('click', () => this.handleAction());
-    this.el.addEventListener('raycaster-intersected', () => {
-      this._border.setAttribute('material', 'opacity:1');
-      this._border.setAttribute('color', '#f36600');
-    });
-    this.el.addEventListener('raycaster-intersected-cleared', () => {
-      this._border.setAttribute('material', 'opacity:0.5');
-      this._border.setAttribute('color', this.data.color === '#f36600' ? '#f36600' : 'rgba(240,236,228,0.15)');
-    });
-  },
-  handleAction() {
-    const a = this.data.action;
-    if (a === 'mic') startListening();
-    else if (a === 'reset') { setOrbState('idle'); updateHUD('status', 'RESETADO'); }
-    else if (a === 'pedidos') updateHUD('response', 'Abra o dashboard para ver pedidos');
-    else if (a === 'meta') updateHUD('response', 'Abra o dashboard Meta no navegador');
-    else updateHUD('response', `${this.data.label}: use no dashboard principal`);
-  }
+schema: { label: {type:'string'}, action: {type:'string'}, color: {type:'string', default:'#f0ece4'} },
+init() {
+// Button background
+const bg = document.createElement('a-plane');
+bg.setAttribute('width', '0.18');
+bg.setAttribute('height', '0.12');
+bg.setAttribute('color', '#0d0b09');
+bg.setAttribute('material', 'shader:flat;opacity:0.9');
+bg.setAttribute('side', 'double');
+this.el.appendChild(bg);
+// Border
+const border = document.createElement('a-plane');
+border.setAttribute('width', '0.19');
+border.setAttribute('height', '0.13');
+border.setAttribute('color', this.data.color === '#f36600' ? '#f36600' : 'rgba(240,236,228,0.15)');
+border.setAttribute('material', 'shader:flat;opacity:0.5');
+border.setAttribute('side', 'double');
+border.setAttribute('position', '0 0 -0.001');
+this.el.appendChild(border);
+this._border = border;
+// Label text
+const txt = document.createElement('a-text');
+txt.setAttribute('value', this.data.label);
+txt.setAttribute('align', 'center');
+txt.setAttribute('color', this.data.color);
+txt.setAttribute('width', '0.4');
+txt.setAttribute('position', '0 0 0.002');
+this.el.appendChild(txt);
+// Raycaster interaction
+this.el.setAttribute('class', 'clickable');
+this.el.addEventListener('click', () => this.handleAction());
+this.el.addEventListener('raycaster-intersected', () => {
+this._border.setAttribute('material', 'opacity:1');
+this._border.setAttribute('color', '#f36600');
 });
-
+this.el.addEventListener('raycaster-intersected-cleared', () => {
+this._border.setAttribute('material', 'opacity:0.5');
+this._border.setAttribute('color', this.data.color === '#f36600' ? '#f36600' : 'rgba(240,236,228,0.15)');
+});
+},
+handleAction() {
+const a = this.data.action;
+if (a === 'mic') startListening();
+else if (a === 'reset') { setOrbState('idle'); updateHUD('status', 'RESETADO'); }
+else if (a === 'pedidos') updateHUD('response', 'Abra o dashboard para ver pedidos');
+else if (a === 'meta') updateHUD('response', 'Abra o dashboard Meta no navegador');
+else updateHUD('response', `${this.data.label}: use no dashboard principal`);
+}
+});
 // ============================================================
 // PALM MENU — mostra menu quando mão esquerda abre
 // ============================================================
 let _menuVisible = false;
 let _palmCheckInterval = null;
-
 function startPalmMenuDetection() {
-  const leftHand = document.getElementById('left-hand');
-  const menu = document.getElementById('vr-menu');
-  if (!leftHand || !menu) return;
-
-  _palmCheckInterval = setInterval(() => {
-    const hand = leftHand.components['hand-tracking-controls'];
-    if (!hand || !hand.wristObject3D) return;
-
-    // Posiciona menu na frente da palma esquerda
-    const wrist = hand.wristObject3D;
-    const pos = new THREE.Vector3();
-    wrist.getWorldPosition(pos);
-    const quat = new THREE.Quaternion();
-    wrist.getWorldQuaternion(quat);
-
-    // Checa se a palma está virada pra cima (mão aberta)
-    const palmUp = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
-    const isPalmUp = palmUp.y > 0.5; // Palma virada pra cima
-
-    if (isPalmUp && !_menuVisible) {
-      _menuVisible = true;
-      menu.setAttribute('visible', 'true');
-      menu.setAttribute('position', `${pos.x} ${pos.y + 0.15} ${pos.z}`);
-      // Menu olha pra câmera
-      const cam = document.getElementById('camera').object3D.position;
-      menu.object3D.lookAt(cam.x, pos.y + 0.15, cam.z);
-    } else if (!isPalmUp && _menuVisible) {
-      _menuVisible = false;
-      menu.setAttribute('visible', 'false');
-    }
-
-    // Atualiza posição se visível
-    if (_menuVisible) {
-      menu.setAttribute('position', `${pos.x} ${pos.y + 0.15} ${pos.z}`);
-    }
-  }, 100); // 10fps check
+const leftHand = document.getElementById('left-hand');
+const menu = document.getElementById('vr-menu');
+if (!leftHand || !menu) return;
+_palmCheckInterval = setInterval(() => {
+const hand = leftHand.components['hand-tracking-controls'];
+if (!hand || !hand.wristObject3D) return;
+// Posiciona menu na frente da palma esquerda
+const wrist = hand.wristObject3D;
+const pos = new THREE.Vector3();
+wrist.getWorldPosition(pos);
+const quat = new THREE.Quaternion();
+wrist.getWorldQuaternion(quat);
+// Checa se a palma está virada pra cima (mão aberta)
+const palmUp = new THREE.Vector3(0, 1, 0).applyQuaternion(quat);
+const isPalmUp = palmUp.y > 0.5; // Palma virada pra cima
+if (isPalmUp && !_menuVisible) {
+_menuVisible = true;
+menu.setAttribute('visible', 'true');
+menu.setAttribute('position', `${pos.x} ${pos.y + 0.15} ${pos.z}`);
+// Menu olha pra câmera
+const cam = document.getElementById('camera').object3D.position;
+menu.object3D.lookAt(cam.x, pos.y + 0.15, cam.z);
+} else if (!isPalmUp && _menuVisible) {
+_menuVisible = false;
+menu.setAttribute('visible', 'false');
 }
-
+// Atualiza posição se visível
+if (_menuVisible) {
+menu.setAttribute('position', `${pos.x} ${pos.y + 0.15} ${pos.z}`);
+}
+}, 100); // 10fps check
+}
 // Start palm detection when entering VR
 document.getElementById('scene').addEventListener('enter-vr', () => {
-  startPalmMenuDetection();
-  document.getElementById('left-hand').setAttribute('visible', 'true');
-  document.getElementById('right-hand').setAttribute('visible', 'true');
+startPalmMenuDetection();
+document.getElementById('left-hand').setAttribute('visible', 'true');
+document.getElementById('right-hand').setAttribute('visible', 'true');
 });
 document.getElementById('scene').addEventListener('exit-vr', () => {
-  if (_palmCheckInterval) clearInterval(_palmCheckInterval);
-  _menuVisible = false;
-  document.getElementById('vr-menu').setAttribute('visible', 'false');
+if (_palmCheckInterval) clearInterval(_palmCheckInterval);
+_menuVisible = false;
+document.getElementById('vr-menu').setAttribute('visible', 'false');
 });
-
 // Add orb state manager to scene
 document.getElementById('scene').addEventListener('loaded', () => {
-  document.getElementById('orb-group').setAttribute('orb-state-manager', '');
+document.getElementById('orb-group').setAttribute('orb-state-manager', '');
 });
-
 // ============================================================
 //  CLOCK / DATE / UPTIME UPDATE
 // ============================================================
 function updateClock() {
-  const now = new Date();
-  const hh = String(now.getHours()).padStart(2, '0');
-  const mm = String(now.getMinutes()).padStart(2, '0');
-  const ss = String(now.getSeconds()).padStart(2, '0');
-  const clockStr = `${hh}:${mm}:${ss}`;
-  const hudClock = document.getElementById('hud-clock');
-  if (hudClock) hudClock.setAttribute('value', clockStr);
-
-  // Date
-  const days = ['DOM','SEG','TER','QUA','QUI','SEX','SAB'];
-  const months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
-  const dateStr = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
-  const hudDate = document.getElementById('hud-date');
-  if (hudDate) hudDate.setAttribute('value', dateStr);
-
-  // Uptime
-  const elapsed = Math.floor((Date.now() - ZAYA.startTime) / 1000);
-  const uh = String(Math.floor(elapsed / 3600)).padStart(2, '0');
-  const um = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
-  const us = String(elapsed % 60).padStart(2, '0');
-  const hudUptime = document.getElementById('hud-uptime');
-  if (hudUptime) hudUptime.setAttribute('value', `UPTIME: ${uh}:${um}:${us}`);
+const now = new Date();
+const hh = String(now.getHours()).padStart(2, '0');
+const mm = String(now.getMinutes()).padStart(2, '0');
+const ss = String(now.getSeconds()).padStart(2, '0');
+const clockStr = `${hh}:${mm}:${ss}`;
+const hudClock = document.getElementById('hud-clock');
+if (hudClock) hudClock.setAttribute('value', clockStr);
+// Date
+const days = ['DOM','SEG','TER','QUA','QUI','SEX','SAB'];
+const months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+const dateStr = `${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+const hudDate = document.getElementById('hud-date');
+if (hudDate) hudDate.setAttribute('value', dateStr);
+// Uptime
+const elapsed = Math.floor((Date.now() - ZAYA.startTime) / 1000);
+const uh = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+const um = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+const us = String(elapsed % 60).padStart(2, '0');
+const hudUptime = document.getElementById('hud-uptime');
+if (hudUptime) hudUptime.setAttribute('value', `UPTIME: ${uh}:${um}:${us}`);
 }
 setInterval(updateClock, 1000);
 updateClock();
-
 // ============================================================
 //  HUD UPDATES
 // ============================================================
 function updateHUD(field, value) {
-  if (field === 'status') {
-    const el = document.getElementById('hud-status');
-    if (el) {
-      el.setAttribute('value', value);
-      const c = ZAYA.stateColors[ZAYA.state];
-      el.setAttribute('color', c ? c.glow : '#00cc66');
-    }
-    const dt = document.getElementById('status-text');
-    if (dt) dt.textContent = value;
-  } else if (field === 'user') {
-    const el = document.getElementById('hud-user');
-    if (el) el.setAttribute('value', value ? `> ${value}` : '');
-  } else if (field === 'reply') {
-    const el = document.getElementById('hud-reply');
-    if (el) el.setAttribute('value', value || '');
-  }
+if (field === 'status') {
+const el = document.getElementById('hud-status');
+if (el) {
+el.setAttribute('value', value);
+const c = ZAYA.stateColors[ZAYA.state];
+el.setAttribute('color', c ? c.glow : '#00cc66');
 }
-
+const dt = document.getElementById('status-text');
+if (dt) dt.textContent = value;
+} else if (field === 'user') {
+const el = document.getElementById('hud-user');
+if (el) el.setAttribute('value', value ? `> ${value}` : '');
+} else if (field === 'reply') {
+const el = document.getElementById('hud-reply');
+if (el) el.setAttribute('value', value || '');
+}
+}
 function setState(newState) {
-  ZAYA.state = newState;
-  updateHUD('status', ZAYA.statusLabels[newState]);
+ZAYA.state = newState;
+updateHUD('status', ZAYA.statusLabels[newState]);
 }
-
 // ============================================================
 //  AUDIO RECORDING
 // ============================================================
 async function ensureMic() {
-  if (ZAYA.stream) return true;
-  try {
-    ZAYA.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    return true;
-  } catch (e) {
-    console.error('Mic access denied:', e);
-    updateHUD('reply', 'Erro: microfone nao permitido');
-    return false;
-  }
+if (ZAYA.stream) return true;
+try {
+ZAYA.stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+return true;
+} catch (e) {
+console.error('Mic access denied:', e);
+updateHUD('reply', 'Erro: microfone nao permitido');
+return false;
 }
-
+}
 async function startListening() {
-  if (ZAYA.state === 'listening' || ZAYA.state === 'processing') return;
-  if (ZAYA.isMuted) return;
-
-  const ok = await ensureMic();
-  if (!ok) return;
-
-  setState('listening');
-  updateHUD('user', '');
-  updateHUD('reply', '');
-
-  ZAYA.audioChunks = [];
-  try {
-    ZAYA.mediaRecorder = new MediaRecorder(ZAYA.stream, { mimeType: 'audio/webm;codecs=opus' });
-  } catch(e) {
-    ZAYA.mediaRecorder = new MediaRecorder(ZAYA.stream);
-  }
-
-  ZAYA.mediaRecorder.ondataavailable = (e) => {
-    if (e.data.size > 0) ZAYA.audioChunks.push(e.data);
-  };
-
-  ZAYA.mediaRecorder.onstop = () => {
-    if (ZAYA.audioChunks.length === 0) {
-      setState('idle');
-      return;
-    }
-    const blob = new Blob(ZAYA.audioChunks, { type: 'audio/webm' });
-    sendAudio(blob);
-  };
-
-  ZAYA.mediaRecorder.start();
+if (ZAYA.state === 'listening' || ZAYA.state === 'processing') return;
+if (ZAYA.isMuted) return;
+const ok = await ensureMic();
+if (!ok) return;
+setState('listening');
+updateHUD('user', '');
+updateHUD('reply', '');
+ZAYA.audioChunks = [];
+try {
+ZAYA.mediaRecorder = new MediaRecorder(ZAYA.stream, { mimeType: 'audio/webm;codecs=opus' });
+} catch(e) {
+ZAYA.mediaRecorder = new MediaRecorder(ZAYA.stream);
 }
-
+ZAYA.mediaRecorder.ondataavailable = (e) => {
+if (e.data.size > 0) ZAYA.audioChunks.push(e.data);
+};
+ZAYA.mediaRecorder.onstop = () => {
+if (ZAYA.audioChunks.length === 0) {
+setState('idle');
+return;
+}
+const blob = new Blob(ZAYA.audioChunks, { type: 'audio/webm' });
+sendAudio(blob);
+};
+ZAYA.mediaRecorder.start();
+}
 function stopListening() {
-  if (ZAYA.state !== 'listening') return;
-  if (ZAYA.mediaRecorder && ZAYA.mediaRecorder.state === 'recording') {
-    ZAYA.mediaRecorder.stop();
-  }
-  setState('processing');
+if (ZAYA.state !== 'listening') return;
+if (ZAYA.mediaRecorder && ZAYA.mediaRecorder.state === 'recording') {
+ZAYA.mediaRecorder.stop();
 }
-
+setState('processing');
+}
 async function sendAudio(blob) {
-  try {
-    const formData = new FormData();
-    formData.append('audio', blob, 'voice.webm');
-
-    const resp = await fetch('/api/vr/ask', { method: 'POST', body: formData });
-
-    if (!resp.ok) {
-      throw new Error(`Server error ${resp.status}`);
-    }
-
-    const data = await resp.json();
-
-    updateHUD('user', data.text || '');
-    updateHUD('reply', data.reply || 'Sem resposta');
-
-    // Play audio response
-    if (data.audioUrl) {
-      setState('speaking');
-      await playAudio(data.audioUrl);
-    }
-
-    setState('idle');
-  } catch(e) {
-    console.error('Send error:', e);
-    updateHUD('reply', 'Erro de conexao com servidor');
-    setState('idle');
-  }
+try {
+const formData = new FormData();
+formData.append('audio', blob, 'voice.webm');
+const resp = await fetch('/api/vr/ask', { method: 'POST', body: formData });
+if (!resp.ok) {
+throw new Error(`Server error ${resp.status}`);
 }
-
+const data = await resp.json();
+updateHUD('user', data.text || '');
+updateHUD('reply', data.reply || 'Sem resposta');
+// Play audio response
+if (data.audioUrl) {
+setState('speaking');
+await playAudio(data.audioUrl);
+}
+setState('idle');
+} catch(e) {
+console.error('Send error:', e);
+updateHUD('reply', 'Erro de conexao com servidor');
+setState('idle');
+}
+}
 function playAudio(url) {
-  return new Promise((resolve) => {
-    if (ZAYA.currentAudio) {
-      ZAYA.currentAudio.pause();
-    }
-    const audio = new Audio(url);
-    ZAYA.currentAudio = audio;
-    audio.onended = () => { ZAYA.currentAudio = null; resolve(); };
-    audio.onerror = () => { ZAYA.currentAudio = null; resolve(); };
-    audio.play().catch(() => resolve());
-  });
+return new Promise((resolve) => {
+if (ZAYA.currentAudio) {
+ZAYA.currentAudio.pause();
 }
-
+const audio = new Audio(url);
+ZAYA.currentAudio = audio;
+audio.onended = () => { ZAYA.currentAudio = null; resolve(); };
+audio.onerror = () => { ZAYA.currentAudio = null; resolve(); };
+audio.play().catch(() => resolve());
+});
+}
 function toggleMute() {
-  ZAYA.isMuted = !ZAYA.isMuted;
-  updateHUD('reply', ZAYA.isMuted ? 'MICROFONE DESLIGADO' : 'MICROFONE LIGADO');
-  setTimeout(() => {
-    if (ZAYA.state === 'idle') updateHUD('reply', '');
-  }, 2000);
+ZAYA.isMuted = !ZAYA.isMuted;
+updateHUD('reply', ZAYA.isMuted ? 'MICROFONE DESLIGADO' : 'MICROFONE LIGADO');
+setTimeout(() => {
+if (ZAYA.state === 'idle') updateHUD('reply', '');
+}, 2000);
 }
-
 // ============================================================
 //  WEBXR DETECTION & ENTRY
 // ============================================================
@@ -1065,110 +947,98 @@ const vrMsg = document.getElementById('vr-message');
 const listenBtn = document.getElementById('listen-btn');
 const desktopStatus = document.getElementById('desktop-status');
 const sceneEl = document.getElementById('scene');
-
 async function checkVR() {
-  if (!navigator.xr) {
-    vrMsg.textContent = 'WebXR nao disponivel. Acesse pelo Meta Quest para experiencia VR completa.';
-    enterBtn.disabled = true;
-    return;
-  }
-  try {
-    const supported = await navigator.xr.isSessionSupported('immersive-vr');
-    if (supported) {
-      enterBtn.disabled = false;
-      vrMsg.textContent = 'Meta Quest detectado. Pronto para VR.';
-      vrMsg.style.color = '#00cc66';
-    } else {
-      enterBtn.disabled = true;
-      vrMsg.textContent = 'Acesse pelo Meta Quest para experiencia VR. Use o modo Preview 3D para visualizar.';
-    }
-  } catch(e) {
-    enterBtn.disabled = true;
-    vrMsg.textContent = 'Erro ao verificar WebXR.';
-  }
+if (!navigator.xr) {
+vrMsg.textContent = 'WebXR nao disponivel. Acesse pelo Meta Quest para experiencia VR completa.';
+enterBtn.disabled = true;
+return;
 }
-
+try {
+const supported = await navigator.xr.isSessionSupported('immersive-vr');
+if (supported) {
+enterBtn.disabled = false;
+vrMsg.textContent = 'Meta Quest detectado. Pronto para VR.';
+vrMsg.style.color = '#00cc66';
+} else {
+enterBtn.disabled = true;
+vrMsg.textContent = 'Acesse pelo Meta Quest para experiencia VR. Use o modo Preview 3D para visualizar.';
+}
+} catch(e) {
+enterBtn.disabled = true;
+vrMsg.textContent = 'Erro ao verificar WebXR.';
+}
+}
 enterBtn.addEventListener('click', async () => {
-  if (enterBtn.disabled) return;
-  try {
-    overlay.classList.add('hidden');
-    ZAYA.isVR = true;
-
-    // Request mic permission early
-    await ensureMic();
-
-    // Make hands visible
-    document.getElementById('left-hand').setAttribute('visible', true);
-    document.getElementById('right-hand').setAttribute('visible', true);
-
-    // Hide reticle in VR
-    document.getElementById('reticle').setAttribute('visible', false);
-
-    // Enter VR
-    sceneEl.enterVR();
-  } catch(e) {
-    console.error('VR entry failed:', e);
-    vrMsg.textContent = 'Erro ao entrar no VR: ' + e.message;
-    overlay.classList.remove('hidden');
-  }
+if (enterBtn.disabled) return;
+try {
+overlay.classList.add('hidden');
+ZAYA.isVR = true;
+// Request mic permission early
+await ensureMic();
+// Make hands visible
+document.getElementById('left-hand').setAttribute('visible', true);
+document.getElementById('right-hand').setAttribute('visible', true);
+// Hide reticle in VR
+document.getElementById('reticle').setAttribute('visible', false);
+// Enter VR
+sceneEl.enterVR();
+} catch(e) {
+console.error('VR entry failed:', e);
+vrMsg.textContent = 'Erro ao entrar no VR: ' + e.message;
+overlay.classList.remove('hidden');
+}
 });
-
 previewBtn.addEventListener('click', () => {
-  overlay.classList.add('hidden');
-  listenBtn.style.display = 'flex';
-  desktopStatus.style.display = 'block';
-  document.getElementById('reticle').setAttribute('visible', true);
-  ZAYA.isVR = false;
+overlay.classList.add('hidden');
+listenBtn.style.display = 'flex';
+desktopStatus.style.display = 'block';
+document.getElementById('reticle').setAttribute('visible', true);
+ZAYA.isVR = false;
 });
-
 // Desktop listen button
 let desktopListening = false;
 listenBtn.addEventListener('click', async () => {
-  if (!desktopListening) {
-    desktopListening = true;
-    listenBtn.classList.add('active');
-    listenBtn.innerHTML = '&#9632;'; // stop icon
-    await startListening();
-  } else {
-    desktopListening = false;
-    listenBtn.classList.remove('active');
-    listenBtn.innerHTML = '&#127908;';
-    stopListening();
-  }
+if (!desktopListening) {
+desktopListening = true;
+listenBtn.classList.add('active');
+listenBtn.innerHTML = '&#9632;'; // stop icon
+await startListening();
+} else {
+desktopListening = false;
+listenBtn.classList.remove('active');
+listenBtn.innerHTML = '&#127908;';
+stopListening();
+}
 });
-
 // Reset button on state change to idle
 const _origSetState = setState;
 // We patch to also reset desktop button
 const origSetState = setState;
 setState = function(s) {
-  origSetState(s);
-  if (s === 'idle' && desktopListening) {
-    desktopListening = false;
-    listenBtn.classList.remove('active');
-    listenBtn.innerHTML = '&#127908;';
-  }
+origSetState(s);
+if (s === 'idle' && desktopListening) {
+desktopListening = false;
+listenBtn.classList.remove('active');
+listenBtn.innerHTML = '&#127908;';
+}
 };
-
 // Click orb to toggle listen (non-VR)
 document.getElementById('orb-core').addEventListener('click', () => {
-  if (ZAYA.isVR) return;
-  listenBtn.click();
+if (ZAYA.isVR) return;
+listenBtn.click();
 });
-
 // VR session events
 sceneEl.addEventListener('enter-vr', () => {
-  listenBtn.style.display = 'none';
-  desktopStatus.style.display = 'none';
+listenBtn.style.display = 'none';
+desktopStatus.style.display = 'none';
 });
 sceneEl.addEventListener('exit-vr', () => {
-  if (!ZAYA.isVR) return;
-  ZAYA.isVR = false;
-  overlay.classList.remove('hidden');
-  document.getElementById('left-hand').setAttribute('visible', false);
-  document.getElementById('right-hand').setAttribute('visible', false);
+if (!ZAYA.isVR) return;
+ZAYA.isVR = false;
+overlay.classList.remove('hidden');
+document.getElementById('left-hand').setAttribute('visible', false);
+document.getElementById('right-hand').setAttribute('visible', false);
 });
-
 // ============================================================
 //  INIT
 // ============================================================
