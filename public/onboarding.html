@@ -606,7 +606,7 @@
 
         await typeMultiple([
             'Ola! Eu sou a Zaya, sua nova assistente pessoal.',
-            'Vou precisar te conhecer um pouquinho para me adaptar a voce.',
+            'Vou precisar te conhecer um pouquinho pra me adaptar ao seu jeito.',
         ]);
 
         clearInput();
@@ -626,7 +626,7 @@
         orb.setAudioLevel(0.2);
 
         const nameDisplay = adminName || 'voce';
-        await typeText(`Vi que seu nome e ${nameDisplay}. Como voce prefere que eu te chame?`);
+        await typeText(`Vi que seu nome e ${nameDisplay}. Como prefere que eu te chame?`);
 
         await sleep(200);
         const val = await createTextInput('Ex: Alisson, Sr. Silva, Chefe, Boss...', 'Proximo');
@@ -639,7 +639,7 @@
         orb.setState('idle');
         orb.setAudioLevel(0);
 
-        await typeText('Como voce quer que eu fale com voce?');
+        await typeText('Como quer que eu fale contigo?');
         await sleep(200);
 
         const val = await createSingleSelect([
@@ -677,7 +677,7 @@
         orb.setState('listening');
         orb.setAudioLevel(0.15);
 
-        await typeText('Me conta um pouco sobre voce. O que voce faz?');
+        await typeText('Me conta um pouco sobre ti. O que tu faz?');
         await sleep(200);
 
         const val = await createTextInput('Ex: Sou empreendedor, trabalho com marketing digital...', 'Proximo');
@@ -690,7 +690,7 @@
         orb.setState('idle');
         orb.setAudioLevel(0);
 
-        await typeText('O que voce mais espera da Zaya? No que posso te ajudar mais?');
+        await typeText('No que posso te ajudar mais? O que espera de mim?');
         await sleep(200);
 
         const val = await createMultiSelect([
@@ -777,7 +777,7 @@
         // ───── Final cinematic sequence ─────
         orb.setState('speaking');
         orb.setAudioLevel(0.4);
-        await typeText(`Perfeito, ${answers.callName}! Ja sei como me adaptar a voce.`);
+        await typeText(`Perfeito, ${answers.callName}! Ja sei como me adaptar ao teu jeito.`);
         await sleep(1200);
 
         await typeText('Vou configurar minha personalidade agora...');

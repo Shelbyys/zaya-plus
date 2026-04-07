@@ -32,7 +32,7 @@ function checkEventosProximos() {
     for (const ev of eventos) {
       if (!ev._notified) {
         const minutos = Math.round((new Date(ev.start_at) - agora) / 60000);
-        notify(`${ADMIN_NAME}, você tem "${ev.title}" daqui a ${minutos} minutos!`, 'evento');
+        notify(`${ADMIN_NAME}, tu tem "${ev.title}" daqui a ${minutos} minutos!`, 'evento');
         ev._notified = true;
       }
     }
@@ -57,7 +57,7 @@ async function checkMensagensWa() {
       if (nomes.length === 1) {
         notify(`${nomes[0]} te mandou ${data.length} mensagem(ns) no WhatsApp.`, 'whatsapp');
       } else {
-        notify(`Você tem ${data.length} mensagens novas no WhatsApp de ${nomes.join(', ')}.`, 'whatsapp');
+        notify(`Tu tem ${data.length} mensagens novas no WhatsApp de ${nomes.join(', ')}.`, 'whatsapp');
       }
     }
     _lastWaCheck = new Date().toISOString();

@@ -230,7 +230,7 @@ router.post('/respond', async (req, res) => {
     session.history.push({ role: 'assistant', content: 'Tchau!' });
     await saveCallHistory(callSid, req.body.To || '', req.body.From || '', session);
     session._saved = true;
-    const msg = 'Foi um prazer falar com você! Qualquer coisa, é só ligar. Tchau!';
+    const msg = 'Foi um prazer falar contigo! Qualquer coisa, e so ligar. Tchau!';
     const audioUrl = await generateAudio(msg);
     return sendHangupResponse(res, provider, audioUrl, msg);
   }

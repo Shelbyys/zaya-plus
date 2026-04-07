@@ -84,9 +84,13 @@ export function getSystemPrompt() {
 
   return `Voce e a ${botName}, assistente de IA pessoal de ${callName}. Voce e DELE/DELA. Disponivel 24h, proativa, atenta a tudo.
 
+=== IDIOMA ===
+SEMPRE responda em PORTUGUES BRASILEIRO. NUNCA responda em ingles ou outro idioma, a menos que o usuario EXPLICITAMENTE peca.
+Toda comunicacao, fala, mensagem e resposta DEVE ser em pt-BR.
+
 === QUEM VOCE E ===
 Feminina, carismatica, inteligente e adaptavel. Voce e uma assistente de confianca que sabe TUDO e resolve TUDO.
-Trate o usuario como "${callName}".
+Trate o usuario como "${callName}". NUNCA use "voce" — use "tu", "te", "teu/tua" ou chame pelo nome "${callName}".
 ${professionContext}
 ${expectationsContext}
 
@@ -722,7 +726,7 @@ async function executeVoiceTool(name, args) {
         }
         case 'enviar_template': {
           if (!args.numero || !args.template_name) return 'Informe numero e template_name.';
-          const payload = { messaging_product: 'whatsapp', to: args.numero.replace(/\D/g, ''), type: 'template', template: { name: args.template_name, language: { code: args.language_code || 'en_US' } } };
+          const payload = { messaging_product: 'whatsapp', to: args.numero.replace(/\D/g, ''), type: 'template', template: { name: args.template_name, language: { code: args.language_code || 'pt_BR' } } };
           if (args.components) payload.template.components = args.components;
           const data = await graphCall(`/${WA_PHONE_ID}/messages`, 'POST', payload);
           return data.error ? `Erro: ${data.error.message}` : `Template "${args.template_name}" enviado! ID: ${data.messages?.[0]?.id}`;
@@ -732,7 +736,7 @@ async function executeVoiceTool(name, args) {
           let ok = 0;
           for (const num of args.numeros) {
             try {
-              const data = await graphCall(`/${WA_PHONE_ID}/messages`, 'POST', { messaging_product: 'whatsapp', to: num.replace(/\D/g, ''), type: 'template', template: { name: args.template_name, language: { code: args.language_code || 'en_US' }, ...(args.components ? { components: args.components } : {}) } });
+              const data = await graphCall(`/${WA_PHONE_ID}/messages`, 'POST', { messaging_product: 'whatsapp', to: num.replace(/\D/g, ''), type: 'template', template: { name: args.template_name, language: { code: args.language_code || 'pt_BR' }, ...(args.components ? { components: args.components } : {}) } });
               if (!data.error) ok++;
               await new Promise(r => setTimeout(r, 50));
             } catch {}
@@ -748,7 +752,7 @@ async function executeVoiceTool(name, args) {
         }
         case 'criar_template': {
           if (!args.template_name || !args.template_category || !args.template_components) return 'Informe template_name, template_category e template_components.';
-          const data = await graphCall(`/${WABA_ID}/message_templates`, 'POST', { name: args.template_name, category: args.template_category, language: args.language_code || 'en_US', components: args.template_components });
+          const data = await graphCall(`/${WABA_ID}/message_templates`, 'POST', { name: args.template_name, category: args.template_category, language: args.language_code || 'pt_BR', components: args.template_components });
           return data.error ? `Erro: ${data.error.message}` : `Template "${args.template_name}" criado! ID: ${data.id}`;
         }
         default: return `Ação "${args.acao}" não reconhecida.`;
