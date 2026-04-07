@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAYA PLUS — Atualizacoes Abril 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--bg2:#111118;--bg3:#1a1a2e;--accent:#6c5ce7;--accent2:#a29bfe;--green:#00e676;--green2:#25d366;--red:#ff5252;--text:#eee;--text2:#aaa;--text3:#666}
+html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
+
+.slide{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:60px 40px;scroll-snap-align:start;position:relative;overflow:hidden}
+.slide::before{content:'';position:absolute;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:0.08;pointer-events:none}
+
+.slide-cover::before{background:var(--accent);top:-200px;right:-200px}
+.slide-install::before{background:var(--green);bottom:-200px;left:-200px}
+.slide-settings::before{background:#e17055;top:-100px;left:-300px}
+.slide-voice::before{background:#00b894;bottom:-100px;right:-200px}
+.slide-hf::before{background:#fdcb6e;top:-200px;left:-100px}
+.slide-wa::before{background:var(--green2);bottom:-200px;right:-100px}
+.slide-admin::before{background:var(--accent2);top:-100px;right:-200px}
+.slide-images::before{background:#e84393;bottom:-100px;left:-200px}
+.slide-end::before{background:var(--accent);top:-200px;right:-200px}
+
+.slide-inner{max-width:900px;width:100%;animation:fadeUp 0.6s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+.tag{font-size:0.6rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent2);font-weight:600;margin-bottom:16px}
+h1{font-size:3rem;font-weight:800;line-height:1.1;margin-bottom:16px;background:linear-gradient(135deg,#fff,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+h2{font-size:2rem;font-weight:700;margin-bottom:20px;line-height:1.2}
+h3{font-size:1.2rem;font-weight:600;margin-bottom:8px;color:var(--accent2)}
+p{font-size:1rem;color:var(--text2);line-height:1.7;max-width:700px}
+.subtitle{font-size:1.1rem;color:var(--text2);margin-bottom:32px;line-height:1.6}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:24px;width:100%}
+@media(max-width:700px){.grid{grid-template-columns:1fr}h1{font-size:2rem}h2{font-size:1.5rem}.slide{padding:40px 24px}}
+
+.card{background:var(--bg2);border:1px solid rgba(255,255,255,0.06);border-radius:16px;padding:24px;transition:transform 0.3s,border-color 0.3s}
+.card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.12)}
+.card-icon{font-size:1.8rem;margin-bottom:12px}
+.card-title{font-size:0.95rem;font-weight:600;margin-bottom:6px}
+.card-desc{font-size:0.8rem;color:var(--text2);line-height:1.5}
+
+.feature{display:flex;gap:16px;align-items:flex-start;margin-bottom:20px}
+.feature-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.feature-text h3{margin-bottom:4px}
+.feature-text p{font-size:0.85rem;margin:0}
+
+.code-block{background:var(--bg3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;font-family:monospace;font-size:0.8rem;color:var(--green);margin:12px 0;overflow-x:auto;line-height:1.6}
+
+.steps{counter-reset:step;margin-top:20px}
+.step{display:flex;gap:14px;margin-bottom:16px;align-items:flex-start}
+.step::before{counter-increment:step;content:counter(step);width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;flex-shrink:0}
+.step-text{font-size:0.9rem;color:var(--text2);line-height:1.5;padding-top:4px}
+
+.badge-row{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.badge{padding:6px 14px;border-radius:8px;font-size:0.7rem;font-weight:600;letter-spacing:0.5px}
+.badge-purple{background:rgba(108,92,231,0.15);color:var(--accent2)}
+.badge-green{background:rgba(0,230,118,0.15);color:var(--green)}
+.badge-yellow{background:rgba(253,203,110,0.15);color:#fdcb6e}
+.badge-red{background:rgba(255,82,82,0.15);color:var(--red)}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
+@media(max-width:600px){.stat-grid{grid-template-columns:1fr 1fr}}
+.stat{text-align:center;padding:20px;background:var(--bg2);border-radius:12px;border:1px solid rgba(255,255,255,0.06)}
+.stat-value{font-size:2rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:0.7rem;color:var(--text3);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+
+.nav-dots{position:fixed;right:20px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:100}
+.nav-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.15);cursor:pointer;transition:all 0.3s}
+.nav-dot.active{background:var(--accent);transform:scale(1.4)}
+
+.table-wrap{width:100%;overflow-x:auto;margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:0.8rem}
+th{text-align:left;padding:10px 12px;background:var(--bg3);color:var(--text2);font-weight:600;font-size:0.7rem;letter-spacing:1px;text-transform:uppercase}
+td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.04);color:var(--text2)}
+tr:hover td{background:rgba(255,255,255,0.02)}
+
+.highlight{color:var(--green);font-weight:600}
+.price-old{text-decoration:line-through;color:var(--red);opacity:0.7}
+.price-new{color:var(--green);font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- Nav Dots -->
+<div class="nav-dots" id="navDots"></div>
+
+<!-- SLIDE 1: Cover -->
+<div class="slide slide-cover" data-title="Inicio">
+<div class="slide-inner" style="text-align:center">
+  <div class="tag">Atualizacao — 6 e 7 de Abril 2026</div>
+  <h1>ZAYA PLUS<br>O que mudou</h1>
+  <p style="margin:0 auto">30+ atualizacoes em 2 dias. Novos provedores de voz, IA gratuita, pagina de configuracoes, WhatsApp redesenhado e muito mais.</p>
+  <div class="stat-grid" style="max-width:600px;margin:32px auto">
+    <div class="stat"><div class="stat-value">30+</div><div class="stat-label">Commits</div></div>
+    <div class="stat"><div class="stat-value">4</div><div class="stat-label">Novas Paginas</div></div>
+    <div class="stat"><div class="stat-value">4</div><div class="stat-label">Provedores Voz</div></div>
+    <div class="stat"><div class="stat-value">4</div><div class="stat-label">IAs Gratis</div></div>
+  </div>
+  <div style="color:var(--text3);font-size:0.8rem;margin-top:24px">&#8595; Role para ver tudo</div>
+</div>
+</div>
+
+<!-- SLIDE 2: Instalacao -->
+<div class="slide slide-install" data-title="Instalacao">
+<div class="slide-inner">
+  <div class="tag">Instalacao simplificada</div>
+  <h2>Um comando. Tudo pronto.</h2>
+  <p>O novo instalador automatico cuida de tudo: instala Node.js, clona o repositorio, ativa a licenca e inicia o servidor.</p>
+
+  <h3 style="margin-top:24px">Como instalar</h3>
+  <div class="code-block">curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.sh | bash -s SEU-TOKEN</div>
+
+  <div class="steps">
+    <div class="step"><div class="step-text"><strong>Instala Node.js</strong> — via nvm, sem precisar de Homebrew. Funciona em Mac e Linux.</div></div>
+    <div class="step"><div class="step-text"><strong>Clona o repositorio</strong> — baixa a Zaya Plus em ~/zaya-plus</div></div>
+    <div class="step"><div class="step-text"><strong>Instala dependencias</strong> — roda npm install automaticamente</div></div>
+    <div class="step"><div class="step-text"><strong>Ativa a licenca</strong> — usa o token passado no comando</div></div>
+    <div class="step"><div class="step-text"><strong>Inicia o servidor</strong> — abre em http://localhost:3001</div></div>
+  </div>
+
+  <h3 style="margin-top:24px">Atalho para reabrir</h3>
+  <p>Depois de instalar, basta digitar no terminal:</p>
+  <div class="code-block">zaya</div>
+  <p style="font-size:0.8rem;color:var(--text3)">O atalho e criado automaticamente durante a instalacao.</p>
+</div>
+</div>
+
+<!-- SLIDE 3: Settings -->
+<div class="slide slide-settings" data-title="Configuracoes">
+<div class="slide-inner">
+  <div class="tag">Nova pagina</div>
+  <h2>Configuracoes Dedicadas</h2>
+  <p>Pagina separada em <span class="highlight">/settings.html</span> com todas as configuracoes organizadas por categoria.</p>
+
+  <div class="grid">
+    <div class="card"><div class="card-icon">&#129504;</div><div class="card-title">Inteligencia Artificial</div><div class="card-desc">OpenAI, Anthropic, Groq ou HuggingFace. Escolha e configure em 1 clique.</div></div>
+    <div class="card"><div class="card-icon">&#128100;</div><div class="card-title">Identidade</div><div class="card-desc">Nome, telefone e como a Zaya se comunica com voce.</div></div>
+    <div class="card"><div class="card-icon">&#127917;</div><div class="card-title">Personalidade</div><div class="card-desc">Estilo, sotaque, profissao e expectativas.</div></div>
+    <div class="card"><div class="card-icon">&#128266;</div><div class="card-title">Voz / TTS</div><div class="card-desc">ElevenLabs, OpenAI TTS ou Kokoro (gratis). Teste antes de salvar.</div></div>
+    <div class="card"><div class="card-icon">&#127908;</div><div class="card-title">Transcricao / STT</div><div class="card-desc">Whisper API ou Whisper local (gratis no seu Mac).</div></div>
+    <div class="card"><div class="card-icon">&#128444;</div><div class="card-title">Geracao de Imagens</div><div class="card-desc">DALL-E 3, Google Gemini ou FLUX.1 (gratis via HuggingFace).</div></div>
+    <div class="card"><div class="card-icon">&#128222;</div><div class="card-title">Ligacoes Telefonicas</div><div class="card-desc">Twilio, Plivo, Telnyx ou Vonage. 4 provedores disponiveis.</div></div>
+    <div class="card"><div class="card-icon">&#9729;</div><div class="card-title">Supabase, Meta, Firecrawl...</div><div class="card-desc">Todas as integracoes em cards expansiveis com passos e links.</div></div>
+  </div>
+
+  <h3 style="margin-top:24px">Como acessar</h3>
+  <p>Clique no botao <strong>SETUP</strong> na interface principal, ou acesse direto: <span class="highlight">http://localhost:3001/settings.html</span></p>
+</div>
+</div>
+
+<!-- SLIDE 4: Provedores de Voz -->
+<div class="slide slide-voice" data-title="Voz">
+<div class="slide-inner">
+  <div class="tag">4 provedores de voz</div>
+  <h2>Ligacoes Telefonicas</h2>
+  <p>Escolha entre 4 provedores para fazer e receber ligacoes. Configure no setup e pronto.</p>
+
+  <div class="grid">
+    <div class="card"><div class="card-icon">&#128222;</div><div class="card-title">Twilio</div><div class="card-desc">O mais popular. twilio.com — Account SID + Auth Token + numero.</div></div>
+    <div class="card"><div class="card-icon">&#128222;</div><div class="card-title">Plivo</div><div class="card-desc">Mais barato que Twilio. plivo.com — Auth ID + Token + numero.</div></div>
+    <div class="card"><div class="card-icon">&#128222;</div><div class="card-title">Telnyx</div><div class="card-desc">Preco competitivo. telnyx.com — API Key + numero.</div></div>
+    <div class="card"><div class="card-icon">&#128222;</div><div class="card-title">Vonage</div><div class="card-desc">Antigo Nexmo. vonage.com — API Key + Secret + numero.</div></div>
+  </div>
+
+  <h3 style="margin-top:24px">Teste de voz no setup</h3>
+  <p>Selecione o provedor de TTS, escolha a voz e clique em <strong>Testar</strong> para ouvir antes de salvar. Troque quantas vezes quiser.</p>
+  <div class="badge-row">
+    <span class="badge badge-green">ElevenLabs</span>
+    <span class="badge badge-purple">OpenAI TTS (6 vozes)</span>
+    <span class="badge badge-yellow">Kokoro Local (17 vozes, gratis)</span>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 5: HuggingFace -->
+<div class="slide slide-hf" data-title="HuggingFace">
+<div class="slide-inner">
+  <div class="tag">Integracao HuggingFace</div>
+  <h2>IA Gratuita. Sem limites.</h2>
+  <p>4 servicos gratuitos do HuggingFace integrados como opcoes extras. Nada do que ja existia foi removido.</p>
+
+  <div class="feature" style="margin-top:24px">
+    <div class="feature-icon" style="background:rgba(108,92,231,0.15)">&#127908;</div>
+    <div class="feature-text"><h3>Whisper Local (STT)</h3><p>Transcreve audios do WhatsApp e mic sem custo. Roda 100% no Mac via Transformers.js.</p></div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon" style="background:rgba(0,184,148,0.15)">&#128266;</div>
+    <div class="feature-text"><h3>Kokoro TTS (Voz)</h3><p>17 vozes incluindo PT-BR (Faber e Camoes). Roda local, sem API, sem custo mensal.</p></div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon" style="background:rgba(232,67,147,0.15)">&#128444;</div>
+    <div class="feature-text"><h3>FLUX.1 (Imagens)</h3><p>Geracao de imagens com qualidade comparavel ao DALL-E 3. Free tier do HuggingFace.</p></div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon" style="background:rgba(253,203,110,0.15)">&#129504;</div>
+    <div class="feature-text"><h3>HuggingFace LLM</h3><p>DeepSeek-V3, Llama 3.3, Qwen como 4o provedor de IA. API compativel com OpenAI.</p></div>
+  </div>
+
+  <h3 style="margin-top:20px">Economia</h3>
+  <div class="table-wrap">
+    <table>
+      <tr><th>Servico</th><th>Antes</th><th>Com HuggingFace</th></tr>
+      <tr><td>Transcricao (STT)</td><td class="price-old">$0.006/min</td><td class="price-new">$0 (local)</td></tr>
+      <tr><td>Voz (TTS)</td><td class="price-old">$5-99/mes</td><td class="price-new">$0 (local)</td></tr>
+      <tr><td>Imagens</td><td class="price-old">$0.04-0.12/img</td><td class="price-new">~$0.001/img</td></tr>
+      <tr><td>Chat IA</td><td class="price-old">$0.005-0.015/1K tok</td><td class="price-new">Free tier</td></tr>
+    </table>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 6: WhatsApp -->
+<div class="slide slide-wa" data-title="WhatsApp">
+<div class="slide-inner">
+  <div class="tag">Nova pagina</div>
+  <h2>WhatsApp Redesenhado</h2>
+  <p>Pagina dedicada em <span class="highlight">/whatsapp.html</span> para gerenciar conexoes e configurar o bot.</p>
+
+  <div class="grid">
+    <div class="card"><div class="card-icon">&#128241;</div><div class="card-title">Instancias</div><div class="card-desc">Veja todas as conexoes, status em tempo real, defina padrao, reconecte ou remova.</div></div>
+    <div class="card"><div class="card-icon">&#9641;</div><div class="card-title">Conexao QR Code</div><div class="card-desc">QR em tempo real com timer. Ate 8 tentativas automaticas.</div></div>
+    <div class="card"><div class="card-icon">&#128290;</div><div class="card-title">Codigo Numerico</div><div class="card-desc">Alternativa ao QR — codigo de 8 digitos com polling automatico.</div></div>
+    <div class="card"><div class="card-icon">&#9881;</div><div class="card-title">Config do Bot</div><div class="card-desc">Toggles, permissoes, modelo IA, monitoramento — tudo em um lugar.</div></div>
+  </div>
+
+  <h3 style="margin-top:24px">Configuracoes do Bot</h3>
+  <div class="badge-row">
+    <span class="badge badge-green">Bot Ativo</span>
+    <span class="badge badge-purple">Transcrever Audios</span>
+    <span class="badge badge-yellow">Analisar Imagens</span>
+    <span class="badge badge-green">Editar Videos</span>
+    <span class="badge badge-purple">Permissoes</span>
+    <span class="badge badge-yellow">Monitoramento</span>
+  </div>
+  <p style="font-size:0.85rem">Todas as configuracoes salvam em tempo real. Muda o toggle e ja esta funcionando.</p>
+</div>
+</div>
+
+<!-- SLIDE 7: Admin -->
+<div class="slide slide-admin" data-title="Admin">
+<div class="slide-inner">
+  <div class="tag">Painel admin melhorado</div>
+  <h2>Gerenciamento de Licencas</h2>
+  <p>Novos botoes de acao em cada licenca e modal de edicao completo.</p>
+
+  <div class="feature" style="margin-top:24px">
+    <div class="feature-icon" style="background:rgba(108,92,231,0.15)">&#9998;</div>
+    <div class="feature-text"><h3>Editar Licenca</h3><p>Modal para alterar nome, email, plano e validade de qualquer licenca.</p></div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon" style="background:rgba(0,184,148,0.15)">&#128203;</div>
+    <div class="feature-text"><h3>Copiar Comando</h3><p>Copia o comando de instalacao completo (com Node.js + token) de cada licenca.</p></div>
+  </div>
+  <div class="feature">
+    <div class="feature-icon" style="background:rgba(255,82,82,0.15)">&#10006;</div>
+    <div class="feature-text"><h3>Desativar / Revogar</h3><p>Desativa para permitir reativar, ou revoga permanentemente.</p></div>
+  </div>
+
+  <h3 style="margin-top:20px">Reativacao inteligente</h3>
+  <p>Quando o usuario atualiza a Zaya (git pull), o fingerprint muda. Agora o sistema reconhece que e a <strong>mesma maquina</strong> e reatualiza automaticamente — sem pedir token de novo.</p>
+</div>
+</div>
+
+<!-- SLIDE 8: Imagens -->
+<div class="slide slide-images" data-title="Imagens">
+<div class="slide-inner">
+  <div class="tag">Melhoria</div>
+  <h2>Imagens sem Supabase</h2>
+  <p>Agora as imagens geradas sao acessiveis pelo navegador mesmo sem Supabase configurado.</p>
+
+  <div class="feature" style="margin-top:24px">
+    <div class="feature-icon" style="background:rgba(232,67,147,0.15)">&#128444;</div>
+    <div class="feature-text"><h3>Link local automatico</h3><p>A Zaya retorna um link clicavel <span class="highlight">/files/...</span> que abre a imagem direto no navegador. Funciona com DALL-E 3, FLUX.1 e Google Gemini.</p></div>
+  </div>
+
+  <h3 style="margin-top:24px">Outras melhorias</h3>
+  <div class="steps">
+    <div class="step"><div class="step-text"><strong>Saudacao personalizada</strong> — Greeting dinamico baseado no estilo configurado (amigavel, formal, informal, direto). Removidos textos hardcoded.</div></div>
+    <div class="step"><div class="step-text"><strong>Paineis persistentes</strong> — Setup e WhatsApp permanecem abertos depois de refresh da pagina.</div></div>
+    <div class="step"><div class="step-text"><strong>TTS melhorado</strong> — Modelo atualizado para tts-1-hd (qualidade superior).</div></div>
+    <div class="step"><div class="step-text"><strong>Puppeteer-core</strong> — Dependencia adicionada ao package.json (resolvia erro ao iniciar).</div></div>
+  </div>
+</div>
+</div>
+
+<!-- SLIDE 9: End -->
+<div class="slide slide-end" data-title="Fim">
+<div class="slide-inner" style="text-align:center">
+  <div class="tag">Resumo</div>
+  <h1>Pronto para usar</h1>
+  <p style="margin:0 auto 32px">Todas as atualizacoes ja estao no repositorio. Basta rodar o update ou reinstalar.</p>
+
+  <div class="code-block" style="max-width:600px;margin:0 auto;text-align:left">
+# Atualizar instalacao existente<br>
+cd ~/zaya-plus && git pull && npm install && npm start<br><br>
+# Ou instalar do zero<br>
+curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.sh | bash -s TOKEN
+  </div>
+
+  <div style="margin-top:40px">
+    <a href="/" style="color:var(--accent2);text-decoration:none;font-size:0.9rem;font-weight:600">&#8592; Voltar para a Zaya</a>
+  </div>
+</div>
+</div>
+
+<script>
+// Nav dots
+const slides=document.querySelectorAll('.slide');
+const dots=document.getElementById('navDots');
+slides.forEach((s,i)=>{
+  const d=document.createElement('div');
+  d.className='nav-dot'+(i===0?' active':'');
+  d.title=s.dataset.title||'';
+  d.onclick=()=>s.scrollIntoView({behavior:'smooth'});
+  dots.appendChild(d);
+});
+const observer=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const idx=[...slides].indexOf(e.target);
+      dots.querySelectorAll('.nav-dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+    }
+  });
+},{threshold:0.5});
+slides.forEach(s=>observer.observe(s));
+</script>
+</body>
+</html>
