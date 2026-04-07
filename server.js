@@ -32,35 +32,51 @@ const io = new SocketIO(server);
 setIO(io);
 
 // ================================================================
+// ROTA PRINCIPAL + STATIC — ANTES DE TUDO (fix Windows/Node24)
+// ================================================================
+const PUBLIC_DIR = join(__dirname, 'public');
+
+app.get('/', (req, res) => {
+  try {
+    if (!isLicensed()) return res.sendFile(join(PUBLIC_DIR, 'license.html'));
+    if (isSetupNeeded()) return res.sendFile(join(PUBLIC_DIR, 'onboarding.html'));
+    return res.sendFile(join(PUBLIC_DIR, 'index.html'));
+  } catch {
+    return res.sendFile(join(PUBLIC_DIR, 'onboarding.html'));
+  }
+});
+
+app.get('/index.html', (req, res) => {
+  try {
+    if (!isLicensed()) return res.sendFile(join(PUBLIC_DIR, 'license.html'));
+    if (isSetupNeeded()) return res.sendFile(join(PUBLIC_DIR, 'onboarding.html'));
+    return res.sendFile(join(PUBLIC_DIR, 'index.html'));
+  } catch {
+    return res.sendFile(join(PUBLIC_DIR, 'onboarding.html'));
+  }
+});
+
+// ================================================================
 // MIDDLEWARE GLOBAL
 // ================================================================
+// Páginas HTML servidas explicitamente (fix Windows/Node24)
+app.get('/onboarding.html', (req, res) => res.sendFile(join(PUBLIC_DIR, 'onboarding.html')));
+app.get('/license.html', (req, res) => res.sendFile(join(PUBLIC_DIR, 'license.html')));
+app.get('/setup.html', (req, res) => res.sendFile(join(PUBLIC_DIR, 'setup.html')));
+app.get('/settings.html', (req, res) => res.sendFile(join(PUBLIC_DIR, 'settings.html')));
+app.get('/whatsapp.html', (req, res) => res.sendFile(join(PUBLIC_DIR, 'whatsapp.html')));
+app.get('/admin.html', (req, res) => res.sendFile(join(PUBLIC_DIR, 'admin.html')));
+app.get('/meta.html', (req, res) => res.sendFile(join(PUBLIC_DIR, 'meta.html')));
+app.get('/vr.html', (req, res) => res.sendFile(join(PUBLIC_DIR, 'vr.html')));
+
+// Static files (CSS, JS, imagens, fontes, etc)
+app.use(express.static(PUBLIC_DIR));
+
 app.use(securityHeaders);
+
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(requestLogger);
-
-// Rota principal — ANTES de qualquer middleware de proteção
-app.get('/', (req, res) => {
-  try {
-    const licensed = isLicensed();
-    const needsSetup = licensed ? isSetupNeeded() : false;
-    if (!licensed) return res.redirect('/license.html');
-    if (needsSetup) return res.redirect('/onboarding.html');
-    const indexPath = join(__dirname, 'public', 'index.html');
-    if (existsSync(indexPath)) return res.sendFile(indexPath);
-    res.redirect('/onboarding.html');
-  } catch (e) {
-    log.server.error({ err: e.message }, 'Erro na rota /');
-    res.redirect('/license.html');
-  }
-});
-// Fallback: garante que / nunca retorna 404
-app.use((req, res, next) => {
-  if (req.path === '/' && !res.headersSent) {
-    return res.redirect('/onboarding.html');
-  }
-  next();
-});
 
 // Protege páginas HTML — licença + acesso externo
 app.use((req, res, next) => {
@@ -153,13 +169,7 @@ function isSetupNeeded() {
 }
 
 
-app.get('/index.html', (req, res) => {
-  if (!isLicensed()) return res.redirect('/license.html');
-  if (isSetupNeeded()) return res.redirect('/onboarding.html');
-  res.sendFile(join(__dirname, 'public', 'index.html'));
-});
-
-app.use(express.static(join(__dirname, 'public')));
+// static e index.html já servidos no topo do arquivo
 
 // Serve arquivos gerados (slides, vídeos, etc) de /tmp/
 app.get('/files/*', (req, res) => {
