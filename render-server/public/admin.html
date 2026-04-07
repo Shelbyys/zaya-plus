@@ -1078,7 +1078,7 @@
 
         function buildInstallCommand(token, os) {
             if (os === 'windows') {
-                return `powershell -ExecutionPolicy Bypass -c "irm https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.ps1 -OutFile setup.ps1; .\\setup.ps1 ${token}"`;
+                return `powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.ps1 -OutFile setup.ps1; .\\setup.ps1 ${token}"`;
             }
             return `curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.sh | bash -s ${token}`;
         }
