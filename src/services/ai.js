@@ -1903,8 +1903,28 @@ export async function processVoiceChat(message, statusCallback) {
     return reply;
   } catch (e) {
     log.ai.error({ err: e.message }, 'Erro processVoiceChat');
-    return `Vixe, deu um erro aqui: ${e.message}`;
+    return traduzirErroAPI(e.message);
   }
+}
+
+export function traduzirErroAPI(msg) {
+  if (!msg) return 'Deu um erro aqui. Tenta de novo.';
+  const m = msg.toLowerCase();
+  if (m.includes('incorrect api key') || m.includes('invalid api key') || m.includes('authentication'))
+    return 'A chave da API esta incorreta ou nao foi configurada. Vai no Setup e coloca a chave certa.';
+  if (m.includes('insufficient_quota') || m.includes('exceeded your current quota') || m.includes('billing'))
+    return 'O saldo da API acabou. Recarrega no site do provedor ou troca pra Groq (gratuito) no Setup.';
+  if (m.includes('rate_limit') || m.includes('too many requests'))
+    return 'Muitas requisicoes. Espera uns segundos e tenta de novo.';
+  if (m.includes('model_not_found') || m.includes('does not exist'))
+    return 'O modelo de IA configurado nao existe. Vai no Setup e escolhe outro modelo.';
+  if (m.includes('connection') || m.includes('network') || m.includes('econnrefused') || m.includes('fetch failed'))
+    return 'Sem conexao com o servidor de IA. Verifica tua internet.';
+  if (m.includes('timeout'))
+    return 'A IA demorou demais pra responder. Tenta de novo.';
+  if (m.includes('overloaded') || m.includes('server_error'))
+    return 'O servidor de IA ta sobrecarregado. Tenta de novo em uns segundos.';
+  return 'Deu um erro aqui: ' + msg;
 }
 
 // ================================================================
@@ -1948,7 +1968,7 @@ export async function processVoiceVision(image, message) {
     return reply;
   } catch (e) {
     log.ai.error({ err: e.message }, 'Erro processVoiceVision');
-    return `Erro ao analisar imagem: ${e.message}`;
+    return traduzirErroAPI(e.message);
   }
 }
 

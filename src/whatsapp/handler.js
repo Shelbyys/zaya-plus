@@ -5,7 +5,7 @@ import { videoSessions, processingQueue } from '../state.js';
 import { openai } from '../state.js';
 import { isAuthenticated, loginSession, logoutSession, sendWhatsApp } from '../services/messaging.js';
 import { chatHistories, saveHistory, addToHistory } from '../services/chat-history.js';
-import { processWithAI } from '../services/ai.js';
+import { processWithAI, traduzirErroAPI } from '../services/ai.js';
 import { editVideo, startVideoSession, processVideoAnswer, buildInstruction, whisperTranscribe } from '../services/media.js';
 import { exec } from 'child_process';
 import { log } from '../logger.js';
@@ -182,7 +182,7 @@ export function setupMessageHandler(sock, instanceName) {
               const aiResult = await processWithAI(transcribedText, jid, isAdmin && isAuthenticated(jid));
               if (aiResult.text) await sendText(aiResult.text);
               for (const img of aiResult.images) { await sendMedia(img); try { unlinkSync(img); } catch {} }
-            } catch (e) { await sendText(`Erro na transcrição: ${e.message}`); }
+            } catch (e) { await sendText(traduzirErroAPI(e.message)); }
           });
           return;
         }
@@ -213,7 +213,7 @@ export function setupMessageHandler(sock, instanceName) {
               addToHistory(jid, 'user', `[Imagem${text ? ': ' + text : ''}]`);
               addToHistory(jid, 'assistant', analysis);
               await sendText(analysis);
-            } catch (e) { await sendText(`Erro ao analisar imagem: ${e.message}`); }
+            } catch (e) { await sendText(traduzirErroAPI(e.message)); }
           });
           return;
         }
