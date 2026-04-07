@@ -51,6 +51,39 @@ async function sbUpdate(filter, body) {
 app.use(express.json());
 app.use(express.static(join(__dirname, 'public')));
 
+// ================================================================
+// INSTALAÇÃO RÁPIDA — link curto pra mandar no WhatsApp
+// GET /i/:token → página com comando pra copiar
+// ================================================================
+app.get('/i/:token', (req, res) => {
+  const token = req.params.token;
+  const cmdWin = 'curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus-app/main/setup.ps1 -o %TEMP%\\zaya-setup.ps1 && powershell -ExecutionPolicy Bypass -File %TEMP%\\zaya-setup.ps1 -Token ' + token;
+  const cmdMac = 'curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus-app/main/setup.sh | bash -s ' + token;
+  res.send(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Instalar ZAYA PLUS</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a0f;color:#eee;font-family:system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.card{max-width:600px;width:100%;background:#12121a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:32px;text-align:center}
+h1{font-size:1.5rem;margin-bottom:8px}p{color:#888;font-size:0.9rem;margin-bottom:24px}
+.step{text-align:left;margin-bottom:20px}.step-title{font-size:0.75rem;font-weight:600;color:#6c5ce7;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.cmd{background:#0a0a0f;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;font-family:monospace;font-size:0.8rem;color:#00e676;word-break:break-all;cursor:pointer;position:relative;line-height:1.5}
+.cmd:hover{border-color:#00e676}.copied{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:#00e676;color:#000;padding:6px 16px;border-radius:8px;font-weight:700;font-size:0.85rem}
+.btn{display:inline-block;background:linear-gradient(135deg,#6c5ce7,#8b5cf6);color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:0.85rem;font-weight:600;cursor:pointer;margin-top:6px}
+.btn:hover{opacity:0.9}.or{color:#444;font-size:0.75rem;margin:12px 0}
+</style></head><body><div class="card">
+<h1>ZAYA PLUS</h1><p>Cole o comando no terminal e aperte Enter</p>
+<div class="step"><div class="step-title">Windows (CMD)</div>
+<div class="cmd" id="cmdWin" onclick="copyCmd('cmdWin')">${cmdWin}</div>
+<button class="btn" onclick="copyCmd('cmdWin')">Copiar comando Windows</button></div>
+<div class="or">ou</div>
+<div class="step"><div class="step-title">Mac / Linux (Terminal)</div>
+<div class="cmd" id="cmdMac" onclick="copyCmd('cmdMac')">${cmdMac}</div>
+<button class="btn" onclick="copyCmd('cmdMac')">Copiar comando Mac</button></div>
+<p style="margin-top:24px;font-size:0.75rem;color:#444">Token: ${token.slice(0,8)}...</p>
+</div><script>
+function copyCmd(id){var el=document.getElementById(id);navigator.clipboard.writeText(el.textContent).then(function(){
+var d=document.createElement('div');d.className='copied';d.textContent='Copiado!';el.appendChild(d);setTimeout(function(){d.remove()},1500)});}
+</script></body></html>`);
+});
+
 // CORS para o cliente local validar licença
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');

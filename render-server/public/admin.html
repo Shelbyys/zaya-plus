@@ -744,6 +744,11 @@ autofocus
 <button class="btn btn-copy btn-sm" onclick="copyFullCommandWin()" style="background:linear-gradient(135deg,#0078d4,#00bcf2)">&#128187; Windows</button>
 </div>
 </div>
+<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
+<div class="token-label">Link pra WhatsApp (abre pagina com comando)</div>
+<div class="token-value" id="installLink" style="font-size:0.7rem;color:#25d366"></div>
+<button class="btn btn-copy btn-sm" onclick="copyInstallLink()" style="background:linear-gradient(135deg,#25d366,#128c7e)">&#128279; Copiar Link</button>
+</div>
 </div>
 </div>
 <!-- Section: Trial -->
@@ -913,6 +918,7 @@ generatedToken = data.token || data.license?.token || '';
 document.getElementById('tokenValue').textContent = generatedToken;
 document.getElementById('activateCommand').textContent = `cd ~/zaya-plus && node activate.js ${generatedToken} && npm start`;
 document.getElementById('fullCommand').textContent = buildInstallCommand(generatedToken);
+document.getElementById('installLink').textContent = buildInstallLink(generatedToken);
 document.getElementById('tokenDisplay').classList.add('visible');
 showToast('Licenca gerada com sucesso!', 'success');
 document.getElementById('generateForm').reset();
@@ -952,6 +958,13 @@ copyText(buildInstallCommand(generatedToken));
 function copyFullCommandWin() {
 if (!generatedToken) return;
 copyText(buildInstallCommand(generatedToken, 'windows'));
+}
+function buildInstallLink(token) {
+return 'https://zaya-plus.onrender.com/i/' + token;
+}
+function copyInstallLink() {
+if (!generatedToken) return;
+copyText(buildInstallLink(generatedToken));
 }
 // ═══════ Trial ═══════
 let trialToken = '';
@@ -1139,6 +1152,7 @@ return `<tr>
 <button class="btn btn-sm" onclick="openEditModal('${safeData}')" title="Editar" style="background:linear-gradient(135deg,#6c5ce7,#a29bfe);margin:2px;min-width:32px">&#9998;</button>
 <button class="btn btn-sm" onclick="copyInstallCmd('${token}')" title="Copiar comando Mac/Linux" style="background:linear-gradient(135deg,#00b894,#00e676);margin:2px;min-width:32px">&#127822;</button>
 <button class="btn btn-sm" onclick="copyInstallCmdWin('${token}')" title="Copiar comando Windows" style="background:linear-gradient(135deg,#0078d4,#00bcf2);margin:2px;min-width:32px">&#128187;</button>
+<button class="btn btn-sm" onclick="copyLink('${token}')" title="Copiar link WhatsApp" style="background:linear-gradient(135deg,#25d366,#128c7e);margin:2px;min-width:32px">&#128279;</button>
 ${status === 'ativo' ? `<button class="btn btn-danger btn-sm" onclick="deactivateLicense('${token}')" title="Desativar" style="margin:2px;min-width:32px">&#10006;</button>` : ''}
 ${status !== 'expirado' && !l.revoked ? `<button class="btn btn-sm" onclick="revokeLicense('${token}')" title="Revogar" style="background:rgba(255,82,82,0.15);color:#ff5252;border:1px solid rgba(255,82,82,0.3);margin:2px;min-width:32px">&#128683;</button>` : ''}
 </td>
@@ -1187,6 +1201,11 @@ function copyInstallCmd(token) {
 const cmd = buildInstallCommand(token);
 navigator.clipboard.writeText(cmd).then(() => {
 showToast('Comando Mac/Linux copiado!', 'success');
+});
+}
+function copyLink(token) {
+navigator.clipboard.writeText(buildInstallLink(token)).then(() => {
+showToast('Link copiado!', 'success');
 });
 }
 function copyInstallCmdWin(token) {
