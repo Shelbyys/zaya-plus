@@ -39,6 +39,13 @@ app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(requestLogger);
 
+// Rota principal — ANTES de qualquer middleware de proteção
+app.get('/', (req, res) => {
+  if (!isLicensed()) return res.redirect('/license.html');
+  if (isSetupNeeded()) return res.redirect('/onboarding.html');
+  res.sendFile(join(__dirname, 'public', 'index.html'));
+});
+
 // Protege páginas HTML — licença + acesso externo
 app.use((req, res, next) => {
   // Só protege páginas HTML (não API, não assets)
@@ -129,17 +136,6 @@ function isSetupNeeded() {
   }
 }
 
-app.get('/', (req, res) => {
-  const licensed = isLicensed();
-  const needsSetup = isSetupNeeded();
-  log.server.info({ licensed, needsSetup, path: req.path }, 'Rota / acessada');
-  // 1. Sem licença → página de licença
-  if (!licensed) return res.redirect('/license.html');
-  // 2. Sem setup → onboarding
-  if (needsSetup) return res.redirect('/onboarding.html');
-  // 3. Tudo ok → index.html
-  res.sendFile(join(__dirname, 'public', 'index.html'));
-});
 
 app.get('/index.html', (req, res) => {
   if (!isLicensed()) return res.redirect('/license.html');
