@@ -1,4 +1,4 @@
-import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, makeInMemoryStore } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
 import { join } from 'path';
 import { writeFileSync, mkdirSync, existsSync } from 'fs';
 import { WA_DIR, ROOT_DIR } from '../config.js';
@@ -16,8 +16,8 @@ export async function createClient(name) {
   const { state, saveCreds } = await useMultiFileAuthState(authDir);
   const { version } = await fetchLatestBaileysVersion();
 
-  // Store em memória — necessário para Baileys guardar contatos
-  const store = makeInMemoryStore({});
+  // Store simples para guardar contatos e chats
+  const store = { contacts: {}, chats: {} };
 
   const sock = makeWASocket({
     version,
@@ -29,8 +29,16 @@ export async function createClient(name) {
     markOnlineOnConnect: false,
   });
 
-  // Vincula store ao socket (captura contatos, chats, etc)
-  store.bind(sock.ev);
+  // Captura contatos e chats nos eventos do Baileys
+  sock.ev.on('contacts.set', ({ contacts }) => {
+    for (const c of contacts) { if (c.id) store.contacts[c.id] = c; }
+  });
+  sock.ev.on('contacts.update', (updates) => {
+    for (const u of updates) { if (u.id) store.contacts[u.id] = { ...store.contacts[u.id], ...u }; }
+  });
+  sock.ev.on('chats.set', ({ chats }) => {
+    for (const c of chats) { if (c.id) store.chats[c.id] = c; }
+  });
   sock.store = store;
 
   // Salva credenciais quando atualizam
