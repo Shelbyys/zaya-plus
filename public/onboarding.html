@@ -937,8 +937,8 @@
         await sleep(200);
 
         const waMethod = await createSingleSelect([
-            { emoji: '\uD83D\uDCF1', label: 'Direto (Baileys)', desc: 'Gratis, conexao local', value: 'baileys' },
-            { emoji: '\u2601\uFE0F', label: 'Evolution API', desc: 'Mais estavel, precisa de servidor', value: 'evolution' },
+            { emoji: '\uD83D\uDCF1', label: 'Gratis (padrao)', desc: 'Conecta direto, sem pagar nada', value: 'direto' },
+            { emoji: '\u2B50', label: 'WaSender (pago)', desc: 'Mais estavel, $6/mes, sem quedas', value: 'wasender' },
             { emoji: '\u23E9', label: 'Pular', desc: 'Configura depois', value: 'skip' },
         ]);
 
@@ -949,54 +949,25 @@
             return;
         }
 
-        if (waMethod === 'evolution') {
+        if (waMethod === 'wasender') {
             clearInput();
-            await typeText('Cola a URL do teu Evolution API (ex: http://localhost:8080):');
-            const evoUrl = await createTextInput('http://localhost:8080', 'Proximo');
-            clearInput();
-            await typeText('Agora a API Key do Evolution:');
-            const evoKey = await createTextInput('SUA_CHAVE_AQUI', 'Salvar');
+            await typeText('Cola a API Key do WaSender (wasenderapi.com):');
+            await sleep(200);
+            const wsKey = await createTextInput('SUA_API_KEY', 'Salvar');
 
             await saveToBackend('/api/setup/save-module', {
-                module: 'evolution',
-                config: {
-                    EVOLUTION_API_URL: evoUrl.trim(),
-                    EVOLUTION_API_KEY: evoKey.trim(),
-                    EVOLUTION_INSTANCE: 'principal',
-                },
+                module: 'whatsapp',
+                config: { WASENDER_API_KEY: wsKey.trim() },
             });
 
             clearInput();
-            orb.setState('processing');
-            await typeText('Testando conexao com Evolution API...');
-
-            try {
-                const testR = await fetch('/api/setup/test-module', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ module: 'evolution', config: { EVOLUTION_API_URL: evoUrl.trim(), EVOLUTION_API_KEY: evoKey.trim() } }),
-                });
-                const testData = await testR.json();
-
-                if (testR.ok && testData.success) {
-                    clearInput();
-                    orb.setState('speaking');
-                    await typeText('Evolution API conectado! WhatsApp vai funcionar por la.');
-                    await sleep(1000);
-                } else {
-                    clearInput();
-                    await typeText('Nao consegui conectar. Verifica a URL e chave. Pode ajustar depois no Setup.');
-                    await sleep(1500);
-                }
-            } catch {
-                clearInput();
-                await typeText('Erro de conexao. Configura depois no Setup.');
-                await sleep(1500);
-            }
+            orb.setState('speaking');
+            await typeText('WaSender configurado! WhatsApp pronto, sem quedas.');
+            await sleep(1000);
             return;
         }
 
-        // Baileys (direto)
+        // Conexao direta (Baileys) — padrao gratis
         clearInput();
         await typeText('Digita teu numero com DDD pra gerar o codigo.');
         await sleep(200);

@@ -250,8 +250,6 @@ app.use('/api', mediaRoutes);
 app.use('/api', dataRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/webhook', webhookRoutes);
-import evolutionWebhook from './src/routes/evolution-webhook.js';
-app.use('/webhook/evolution', evolutionWebhook);
 app.use('/api/calendar', calendarRoutes);
 
 app.use('/voice', twilioVoiceRoutes);

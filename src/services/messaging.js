@@ -42,10 +42,9 @@ export function normalizeBRPhone(phone) {
 export { waLoadConfig };
 
 import * as wasender from './wasender.js';
-import * as evo from './evolution-api.js';
 
 // ================================================================
-// WhatsApp Send (Evolution API > WaSenderAPI > Baileys)
+// WhatsApp Send (WaSenderAPI pago > Baileys gratis)
 // ================================================================
 export async function sendWhatsApp(phone, message) {
   const cleanPhone = normalizeBRPhone(phone);
@@ -53,20 +52,7 @@ export async function sendWhatsApp(phone, message) {
     return { success: false, output: `Numero invalido: ${phone}` };
   }
 
-  // Evolution API (preferencial — mais estavel)
-  if (evo.isEvolutionEnabled()) {
-    try {
-      const instName = process.env.EVOLUTION_INSTANCE || 'principal';
-      await evo.sendText(instName, cleanPhone, message);
-      log.wa.info({ phone: cleanPhone }, 'Evolution API enviado');
-      return { success: true, output: `Mensagem enviada para ${phone}` };
-    } catch (e) {
-      log.wa.error({ error: e.message, phone: cleanPhone }, 'Evolution API erro — tentando fallback');
-      // Cai pro proximo provedor
-    }
-  }
-
-  // WaSenderAPI
+  // WaSenderAPI (pago — mais estavel, sem quedas)
   if (wasender.isWaSenderEnabled()) {
     try {
       const r = await wasender.sendText(cleanPhone, message);
