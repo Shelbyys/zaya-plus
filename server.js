@@ -297,6 +297,8 @@ import { initSupabaseTables, syncAllToSupabase, isSupabaseEnabled } from './src/
 import { startScheduler } from './src/services/scheduler.js';
 import { startInboxPoller } from './src/services/inbox-poller.js';
 import { startProactiveMonitor } from './src/services/proactive.js';
+import { startAlertMonitor } from './src/services/alerts.js';
+import { startFolderWatcher } from './src/services/folder-watcher.js';
 
 server.listen(PORT, '0.0.0.0', async () => {
   log.server.info(`Iniciando ZAYA PLUS...`);
@@ -304,6 +306,8 @@ server.listen(PORT, '0.0.0.0', async () => {
   startScheduler();
   startInboxPoller();
   startProactiveMonitor();
+  startAlertMonitor();
+  startFolderWatcher();
   await waAutoConnect();
 
   // Supabase: init + sync em background

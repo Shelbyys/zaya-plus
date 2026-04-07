@@ -364,6 +364,7 @@ export const voiceTools = [
   { type: 'function', function: { name: 'youtube', description: 'Assiste/transcreve vídeos do YouTube. Extrai legendas ou baixa áudio e transcreve com Whisper. Use para: "transcreve esse vídeo", "o que fala nesse vídeo", "resume esse vídeo do YouTube".', parameters: { type: 'object', properties: { url: { type: 'string', description: 'URL do vídeo do YouTube' }, acao: { type: 'string', enum: ['transcrever', 'resumir', 'info'], description: 'transcrever=texto completo, resumir=resumo com GPT-4o, info=título/duração/canal' } }, required: ['url'] } } },
   { type: 'function', function: { name: 'reuniao', description: `Modo reunião: grava tudo que é falado, transcreve em blocos de 3 min, e ao encerrar gera relatório completo com tópicos, demandas, menções ao ${ADMIN_NAME}, decisões e próximos passos. Use para: "entra no modo reunião", "grava a reunião", "para a reunião", "relatório da reunião".`, parameters: { type: 'object', properties: { acao: { type: 'string', enum: ['iniciar', 'encerrar', 'status'], description: 'iniciar=começa gravar, encerrar=para e gera relatório, status=mostra progresso' }, titulo: { type: 'string', description: 'Título da reunião (opcional)' } }, required: ['acao'] } } },
   { type: 'function', function: { name: 'monitor_tela', description: `Monitora a tela do Mac e gera relatório de produtividade. Captura screenshots periódicos, analisa com IA o que o ${ADMIN_NAME} está fazendo, classifica em categorias (TRABALHO, ESTUDO, LAZER, REDE_SOCIAL, etc). Use quando pedir: "monitora minha tela", "como tá minha produtividade", "o que fiz hoje", "tive foco?".`, parameters: { type: 'object', properties: { acao: { type: 'string', enum: ['iniciar', 'parar', 'relatorio', 'status'], description: 'iniciar=começa monitorar, parar=para, relatorio=gera relatório de produtividade, status=mostra se está ativo' }, periodo: { type: 'string', enum: ['hoje', 'ontem', 'semana'], description: 'Período do relatório (padrão: hoje)' }, intervalo: { type: 'number', description: 'Intervalo entre capturas em minutos (padrão: 5)' } }, required: ['acao'] } } },
+  { type: 'function', function: { name: 'alerta_preco', description: 'Cria, lista ou deleta alertas de preço/moeda/crypto/ações/clima. A Zaya monitora em background e avisa quando o valor atingir o limite. Usa APIs gratuitas (sem chave). Exemplos: "me avisa quando o dólar passar de 5.50", "alerta bitcoin abaixo de 200000", "como tá o clima em SP?".', parameters: { type: 'object', properties: { acao: { type: 'string', enum: ['criar', 'listar', 'deletar', 'checar', 'resetar'], description: 'criar=novo alerta, listar=ver ativos, deletar=remove, checar=verifica agora, resetar=reativa' }, titulo: { type: 'string', description: 'Nome do alerta (ex: "Dólar alto")' }, alvo: { type: 'string', description: 'O que monitorar: USD, EUR, bitcoin, ethereum, PETR4, clima_aracaju' }, condicao: { type: 'string', enum: ['acima', 'abaixo', 'igual'], description: 'Quando disparar' }, limite: { type: 'number', description: 'Valor limite para disparar' }, intervalo: { type: 'number', description: 'Checar a cada X minutos (padrão 5)' }, id: { type: 'number', description: 'ID do alerta (para deletar/checar/resetar)' } }, required: ['acao'] } } },
   { type: 'function', function: { name: 'meta', description: 'Gerencia Instagram, Facebook e Ads via Meta API. Cria, edita, pausa, ativa, deleta campanhas. Posta no Instagram/Facebook. Gerencia comentários e DMs.', parameters: { type: 'object', properties: { acao: { type: 'string', enum: ['ig_perfil', 'ig_posts', 'ig_criar_post', 'ig_deletar_post', 'ig_comentarios', 'ig_responder_comentario', 'ig_deletar_comentario', 'ig_dm', 'ig_enviar_dm', 'ig_insights', 'fb_pagina', 'fb_posts', 'fb_criar_post', 'fb_deletar_post', 'fb_messenger', 'fb_enviar_msg', 'ads_contas', 'ads_campanhas', 'ads_criar_campanha', 'ads_criar_anuncio', 'ads_ativar_campanha', 'ads_pausar_campanha', 'ads_editar_campanha', 'ads_deletar_campanha', 'ads_editar_adset'], description: 'Ação' }, image_url: { type: 'string' }, caption: { type: 'string' }, post_id: { type: 'string' }, comment_id: { type: 'string' }, texto: { type: 'string' }, destinatario_id: { type: 'string' }, nome_campanha: { type: 'string' }, objetivo: { type: 'string', enum: ['OUTCOME_AWARENESS', 'OUTCOME_ENGAGEMENT', 'OUTCOME_TRAFFIC', 'OUTCOME_LEADS', 'OUTCOME_SALES'] }, orcamento_diario: { type: 'number', description: 'Centavos (2000=R$20)' }, idade_min: { type: 'number' }, idade_max: { type: 'number' }, pais: { type: 'string' }, duracao_dias: { type: 'number' }, campaign_id: { type: 'string', description: 'ID campanha ou adset. Se não informado, usa a ÚLTIMA campanha criada automaticamente. NÃO crie nova campanha se o usuário pedir para alterar/ativar/pausar — use a que já existe.' }, novo_status: { type: 'string', enum: ['ACTIVE', 'PAUSED'] }, novo_nome: { type: 'string' }, novo_orcamento: { type: 'number', description: 'Novo orçamento em centavos' } }, required: ['acao'] } } },
 ];
 
@@ -877,6 +878,35 @@ async function executeVoiceTool(name, args) {
     case 'cancelar_agendamento': {
       deleteSchedule(args.id);
       return `Agendamento ${args.id} cancelado!`;
+    }
+
+    case 'alerta_preco': {
+      const { createAlert, listAlerts, deleteAlert, checkAlertNow, resetAlert } = await import('./alerts.js');
+      switch (args.acao) {
+        case 'criar':
+          if (!args.titulo || !args.alvo) return 'Informe o título e o alvo do alerta.';
+          const alert = createAlert({ title: args.titulo, target: args.alvo, condition: args.condicao || 'acima', threshold: args.limite, check_interval_min: args.intervalo || 5 });
+          return `Alerta criado! ID: ${alert.id}\n${alert.title}: ${alert.target} ${args.condicao || 'acima'} de ${args.limite}\nVerificando a cada ${args.intervalo || 5} min.`;
+        case 'listar':
+          const list = listAlerts();
+          if (list.length === 0) return 'Nenhum alerta ativo.';
+          return list.map(a => `#${a.id} ${a.title}: ${a.target} ${a.condition} ${a.threshold} (atual: ${a.current_value ?? '?'}) ${a.triggered ? '🔔 DISPARADO' : '⏳ ativo'}`).join('\n');
+        case 'deletar':
+          if (!args.id) return 'Informe o ID do alerta.';
+          const del = deleteAlert(args.id);
+          return del ? `Alerta #${args.id} deletado.` : 'Alerta não encontrado.';
+        case 'checar':
+          if (!args.id) return 'Informe o ID do alerta.';
+          const check = await checkAlertNow(args.id);
+          if (!check) return 'Alerta não encontrado.';
+          return `${check.title}: ${check.target} = ${check.current_value ?? 'indisponível'} (limite: ${check.threshold}) ${check.would_trigger ? '⚠️ DISPARARIA!' : '✅ OK'}`;
+        case 'resetar':
+          if (!args.id) return 'Informe o ID do alerta.';
+          resetAlert(args.id);
+          return `Alerta #${args.id} resetado e reativado.`;
+        default:
+          return 'Ação inválida. Use: criar, listar, deletar, checar, resetar.';
+      }
     }
 
     case 'configurar_whatsapp': {
