@@ -662,7 +662,7 @@ async function testVoice() {
   const text = document.getElementById('voiceTestText')?.value || 'Oi, eu sou a Zaya.';
   try {
     showToast('Gerando voz...', 'success');
-    const res = await fetch('/api/media/speak', {
+    const res = await fetch('/api/speak', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })
