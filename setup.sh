@@ -72,6 +72,23 @@ install_node() {
 
     nvm install --lts > /dev/null 2>&1
     nvm use --lts > /dev/null 2>&1
+
+    # Garantir que nvm carrega automaticamente em novos terminais
+    local RC_FILE=""
+    if [ -n "$ZSH_VERSION" ] || [ "$SHELL" = "/bin/zsh" ]; then
+        RC_FILE="$HOME/.zshrc"
+    elif [ -f "$HOME/.bashrc" ]; then
+        RC_FILE="$HOME/.bashrc"
+    elif [ -f "$HOME/.bash_profile" ]; then
+        RC_FILE="$HOME/.bash_profile"
+    fi
+
+    if [ -n "$RC_FILE" ] && ! grep -q 'NVM_DIR' "$RC_FILE" 2>/dev/null; then
+        echo '' >> "$RC_FILE"
+        echo '# Node Version Manager' >> "$RC_FILE"
+        echo 'export NVM_DIR="$HOME/.nvm"' >> "$RC_FILE"
+        echo '[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"' >> "$RC_FILE"
+    fi
 }
 
 if command -v node &> /dev/null; then
@@ -151,7 +168,7 @@ if [ -n "$SHELL_RC" ]; then
     if grep -q 'alias zaya=' "$SHELL_RC" 2>/dev/null; then
         sed -i.bak '/alias zaya=/d' "$SHELL_RC"
     fi
-    echo "alias zaya='cd $INSTALL_DIR && npm start'" >> "$SHELL_RC"
+    echo "alias zaya='export NVM_DIR=\"\$HOME/.nvm\"; [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"; cd $INSTALL_DIR && npm start'" >> "$SHELL_RC"
     echo -e "  ${GREEN}✓${NC} Atalho criado! Digite ${CYAN}zaya${NC} no terminal pra iniciar"
 fi
 
