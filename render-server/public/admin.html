@@ -1281,7 +1281,6 @@
                     ? `<span class="badge badge-${plan}">${planLabel}</span><span style="font-size:0.6rem;color:#ffd740;display:block;margin-top:2px">TRIAL</span>`
                     : `<span class="badge badge-${plan}">${planLabel}</span>`;
 
-                const expiresAt = l.expires_at || l.expiresAt || '';
                 const safeData = btoa(JSON.stringify({ token, name: l.name||'', email: l.email||'', plan, expires_at: expiresAt }));
 
                 return `<tr>
