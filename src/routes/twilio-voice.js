@@ -1,5 +1,5 @@
 // ================================================================
-// TWILIO VOICE — ligação conversacional com voz ElevenLabs
+// VOICE ROUTES — ligação conversacional (Twilio/Plivo/Telnyx/Vonage)
 // ================================================================
 import { Router } from 'express';
 import { log } from '../logger.js';
@@ -7,6 +7,7 @@ import { openai } from '../state.js';
 import { createClient } from '@supabase/supabase-js';
 import { SUPABASE_URL, SUPABASE_KEY, AI_MODEL_MINI, ADMIN_NAME } from '../config.js';
 import { settingsDB } from '../database.js';
+import { getVoiceProvider } from '../services/voice-provider.js';
 
 let sb = null;
 function getSb() { if (!sb && SUPABASE_URL && SUPABASE_KEY) sb = createClient(SUPABASE_URL, SUPABASE_KEY); return sb; }
@@ -131,26 +132,86 @@ function twimlPlayOrSay(audioUrl, text) {
 // POST /voice/start — Início da ligação
 // ================================================================
 router.post('/start', async (req, res) => {
-  const callSid = req.body.CallSid || 'unknown';
+  const provider = getVoiceProvider();
+  const callSid = extractCallId(req.body, provider);
   const session = getSession(callSid);
   const initialMsg = req.query.msg || `Oi, aqui é a Zaya, assistente ${ADMIN_NAME ? 'do ' + ADMIN_NAME : 'pessoal'}. Me conta, como posso te ajudar?`;
   session.history.push({ role: 'assistant', content: initialMsg });
 
-  log.ai.info({ callSid, msg: initialMsg.slice(0, 60) }, 'Ligação iniciada');
+  log.ai.info({ callSid, provider, msg: initialMsg.slice(0, 60) }, 'Ligação iniciada');
 
-  // Gera áudio com ElevenLabs
   const audioUrl = await generateAudio(initialMsg);
 
+  if (provider === 'vonage') {
+    const { generateNcco } = await import('../services/vonage.js');
+    return res.json(generateNcco(audioUrl, initialMsg, '/voice/respond'));
+  }
+  if (provider === 'plivo') {
+    const { generatePlivoXml } = await import('../services/plivo.js');
+    res.type('text/xml');
+    return res.send(generatePlivoXml(audioUrl, initialMsg, '/voice/respond'));
+  }
+  // Twilio e Telnyx usam TwiML
   res.type('text/xml');
   res.send(twimlWithAudioAndGather(audioUrl, initialMsg, '/voice/respond'));
 });
 
 // ================================================================
+// HELPERS — Extração e resposta multi-provedor
+// ================================================================
+function extractCallId(body, provider) {
+  switch (provider) {
+    case 'plivo': return body.CallUUID || body.CallSid || 'unknown';
+    case 'telnyx': return body.data?.payload?.call_control_id || body.call_control_id || 'unknown';
+    case 'vonage': return body.uuid || body.conversation_uuid || 'unknown';
+    default: return body.CallSid || 'unknown';
+  }
+}
+
+function extractSpeechResult(body, provider) {
+  switch (provider) {
+    case 'plivo': return body.Speech || body.UnstableSpeech || '';
+    case 'telnyx': return body.data?.payload?.speech?.result || body.speech?.result || '';
+    case 'vonage': return body.speech?.results?.[0]?.text || '';
+    default: return body.SpeechResult || '';
+  }
+}
+
+async function sendGatherResponse(res, provider, audioUrl, fallbackText, callbackPath) {
+  if (provider === 'vonage') {
+    const { generateNcco } = await import('../services/vonage.js');
+    return res.json(generateNcco(audioUrl, fallbackText, callbackPath));
+  }
+  if (provider === 'plivo') {
+    const { generatePlivoXml } = await import('../services/plivo.js');
+    res.type('text/xml');
+    return res.send(generatePlivoXml(audioUrl, fallbackText, callbackPath));
+  }
+  res.type('text/xml');
+  res.send(twimlWithAudioAndGather(audioUrl, fallbackText, callbackPath));
+}
+
+async function sendHangupResponse(res, provider, audioUrl, text) {
+  if (provider === 'vonage') {
+    const { generateNccoHangup } = await import('../services/vonage.js');
+    return res.json(generateNccoHangup(audioUrl, text));
+  }
+  if (provider === 'plivo') {
+    const { generatePlivoHangupXml } = await import('../services/plivo.js');
+    res.type('text/xml');
+    return res.send(generatePlivoHangupXml(audioUrl, text));
+  }
+  res.type('text/xml');
+  res.send(twimlPlayOrSay(audioUrl, text));
+}
+
+// ================================================================
 // POST /voice/respond — Recebe fala e responde
 // ================================================================
 router.post('/respond', async (req, res) => {
-  const callSid = req.body.CallSid || 'unknown';
-  const speechResult = req.body.SpeechResult || '';
+  const provider = getVoiceProvider();
+  const callSid = extractCallId(req.body, provider);
+  const speechResult = extractSpeechResult(req.body, provider);
   const session = getSession(callSid);
 
   log.ai.info({ callSid, speech: speechResult.slice(0, 80) }, 'Fala recebida');
@@ -159,9 +220,7 @@ router.post('/respond', async (req, res) => {
     const isSilence = req.query.silence === 'true';
     const msg = isSilence ? 'Oi, ainda tá aí? Pode falar!' : 'Não ouvi, pode repetir?';
     const audioUrl = await generateAudio(msg);
-    res.type('text/xml');
-    res.send(twimlWithAudioAndGather(audioUrl, msg, '/voice/respond'));
-    return;
+    return sendGatherResponse(res, provider, audioUrl, msg, '/voice/respond');
   }
 
   // Despedida
@@ -169,15 +228,11 @@ router.post('/respond', async (req, res) => {
   if (bye.test(speechResult)) {
     session.history.push({ role: 'user', content: speechResult });
     session.history.push({ role: 'assistant', content: 'Tchau!' });
-    // Salva histórico da ligação no Supabase
     await saveCallHistory(callSid, req.body.To || '', req.body.From || '', session);
-    session._saved = true; // Marca como salvo
+    session._saved = true;
     const msg = 'Foi um prazer falar com você! Qualquer coisa, é só ligar. Tchau!';
     const audioUrl = await generateAudio(msg);
-    res.type('text/xml');
-    res.send(twimlPlayOrSay(audioUrl, msg));
-    // Não deleta sessão aqui — deixa pro status callback ou cleanup
-    return;
+    return sendHangupResponse(res, provider, audioUrl, msg);
   }
 
   session.history.push({ role: 'user', content: speechResult });
@@ -199,16 +254,12 @@ router.post('/respond', async (req, res) => {
 
     log.ai.info({ callSid, reply: shortReply.slice(0, 60) }, 'Resposta ligação');
 
-    // Gera áudio com ElevenLabs (paralelo seria ideal, mas sequencial funciona)
     const audioUrl = await generateAudio(shortReply);
-
-    res.type('text/xml');
-    res.send(twimlWithAudioAndGather(audioUrl, shortReply, '/voice/respond'));
+    return sendGatherResponse(res, provider, audioUrl, shortReply, '/voice/respond');
   } catch (e) {
     log.ai.error({ err: e.message, callSid }, 'Erro na ligação');
     const audioUrl = await generateAudio('Desculpa, pode repetir?');
-    res.type('text/xml');
-    res.send(twimlWithAudioAndGather(audioUrl, 'Desculpa, pode repetir?', '/voice/respond'));
+    return sendGatherResponse(res, provider, audioUrl, 'Desculpa, pode repetir?', '/voice/respond');
   }
 });
 

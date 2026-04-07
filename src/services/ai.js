@@ -19,7 +19,7 @@ import { syncPesquisa, syncChatMessage, logActivity, uploadToStorage, listStorag
 import { doResearch } from './research.js';
 import { extractMemories, getMemoriesForPrompt } from './memory.js';
 import { memoriesDB, getBotConfig, updateBotConfig } from '../database.js';
-import { makeCallWithZayaVoice, isTwilioEnabled } from './twilio.js';
+import { isVoiceEnabled } from './voice-provider.js';
 import { addSchedule, listSchedules, deleteSchedule } from './scheduler.js';
 import { calendarDB, CATEGORIES } from './calendar.js';
 import { startScreenMonitor, stopScreenMonitor, gerarRelatorioTela, getMonitorStatus } from './screen-monitor.js';
@@ -467,7 +467,7 @@ async function monitorCallStatus(callSid, numero) {
 // ================================================================
 // Mapeamento: tool → módulo necessário → env var que precisa existir
 const TOOL_MODULE_MAP = {
-  'fazer_ligacao': { module: 'twilio', env: 'TWILIO_ACCOUNT_SID', label: 'Ligações (Twilio)' },
+  'fazer_ligacao': { module: 'voice', env: 'VOICE_PROVIDER', label: 'Ligações (Voz)' },
   'whatsapp_cloud': { module: 'meta', env: 'FACEBOOK_ACCESS_TOKEN', label: 'Meta (Instagram/Facebook)' },
   'meta': { module: 'meta', env: 'FACEBOOK_ACCESS_TOKEN', label: 'Meta (Instagram/Facebook)' },
   'pesquisar': { module: 'firecrawl', env: 'FIRECRAWL_API_KEY', label: 'Pesquisa Web (Firecrawl)' },
@@ -846,14 +846,13 @@ async function executeVoiceTool(name, args) {
         } catch (e) { return `Erro: ${e.message}`; }
       }
       if (args.tipo === 'conversa') {
-        const { makeCall } = await import('./twilio.js');
+        const { makeCall } = await import('./voice-provider.js');
         const result = await makeCall(args.numero, args.mensagem);
         if (!result.success) return `Erro: ${result.error}`;
-        // Monitora status da ligação em background
         monitorCallStatus(result.callSid, args.numero);
         return `Ligando para ${args.numero} (modo conversa)... Quando terminar, te mando o relatório.`;
       } else {
-        const { makeSimpleCall } = await import('./twilio.js');
+        const { makeSimpleCall } = await import('./voice-provider.js');
         const result = await makeSimpleCall(args.numero, args.mensagem);
         if (!result.success) return `Erro: ${result.error}`;
         monitorCallStatus(result.callSid, args.numero);

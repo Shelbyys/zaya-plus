@@ -2,7 +2,7 @@
 // SCHEDULER — agendamentos e lembretes com ligação
 // ================================================================
 import { log } from '../logger.js';
-import { makeCallWithZayaVoice, isTwilioEnabled } from './twilio.js';
+import { isVoiceEnabled, makeCall as makeVoiceCall } from './voice-provider.js';
 import { sendText, isWaSenderEnabled } from './wasender.js';
 import { io } from '../state.js';
 import db from '../database.js';
@@ -69,8 +69,8 @@ async function executePending() {
       // Notifica de acordo com o método escolhido
       switch (schedule.notify_via) {
         case 'call': {
-          if (isTwilioEnabled()) {
-            await makeCallWithZayaVoice(schedule.phone, schedule.message);
+          if (isVoiceEnabled()) {
+            await makeVoiceCall(schedule.phone, schedule.message);
           } else {
             // Fallback: WhatsApp
             if (isWaSenderEnabled()) await sendText(schedule.phone, `🔔 *Lembrete:* ${schedule.message}`);
@@ -94,7 +94,7 @@ async function executePending() {
         }
         case 'all': {
           // Todos os métodos
-          if (isTwilioEnabled()) await makeCallWithZayaVoice(schedule.phone, schedule.message);
+          if (isVoiceEnabled()) await makeVoiceCall(schedule.phone, schedule.message);
           if (isWaSenderEnabled()) await sendText(schedule.phone, `🔔 *Lembrete:* ${schedule.message}`);
           io?.emit('incoming-notification', { type: 'reminder', title: schedule.title, text: schedule.message, phone: schedule.phone, timestamp: new Date().toISOString() });
           break;
@@ -151,7 +151,7 @@ async function executeEventReminders() {
 
       switch (event.remind_via) {
         case 'call':
-          if (isTwilioEnabled()) await makeCallWithZayaVoice(phone, msg);
+          if (isVoiceEnabled()) await makeVoiceCall(phone, msg);
           else if (isWaSenderEnabled()) await sendText(phone, `📅 *${msg}*`);
           break;
         case 'whatsapp':
@@ -162,7 +162,7 @@ async function executeEventReminders() {
           break;
         case 'all':
         default:
-          if (isTwilioEnabled()) await makeCallWithZayaVoice(phone, msg);
+          if (isVoiceEnabled()) await makeVoiceCall(phone, msg);
           if (isWaSenderEnabled()) await sendText(phone, `📅 *${msg}*`);
           io?.emit('incoming-notification', { type: 'event_reminder', title: event.title, text: msg, timestamp: new Date().toISOString() });
           break;
