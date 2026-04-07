@@ -372,7 +372,7 @@
         expectations: [],
     };
 
-    const TOTAL_STEPS = 8;
+    const TOTAL_STEPS = 10;
 
     // Build progress dots
     for (let i = 0; i < TOTAL_STEPS; i++) {
@@ -620,7 +620,7 @@
     }
 
     async function q2_callName() {
-        setStep(2);
+        setStep(4);
         clearInput();
         orb.setState('listening');
         orb.setAudioLevel(0.2);
@@ -634,7 +634,7 @@
     }
 
     async function q3_communicationStyle() {
-        setStep(3);
+        setStep(5);
         clearInput();
         orb.setState('idle');
         orb.setAudioLevel(0);
@@ -652,7 +652,7 @@
     }
 
     async function q4_accent() {
-        setStep(4);
+        setStep(6);
         clearInput();
         orb.setState('idle');
         orb.setAudioLevel(0.1);
@@ -672,7 +672,7 @@
     }
 
     async function q5_profession() {
-        setStep(5);
+        setStep(7);
         clearInput();
         orb.setState('listening');
         orb.setAudioLevel(0.15);
@@ -685,7 +685,7 @@
     }
 
     async function q6_expectations() {
-        setStep(6);
+        setStep(8);
         clearInput();
         orb.setState('idle');
         orb.setAudioLevel(0);
@@ -705,7 +705,7 @@
     }
 
     async function q7_final() {
-        setStep(7);
+        setStep(9);
         clearInput();
 
         // ───── Save personality via API ─────
@@ -929,10 +929,198 @@
         answers.provider = provider;
     }
 
+    // ───── Q1c: Conectar WhatsApp ─────
+    async function q1c_whatsapp() {
+        setStep(2);
+        clearInput();
+        orb.setState('processing');
+        orb.setAudioLevel(0.3);
+
+        await typeMultiple([
+            'Agora vamos conectar teu WhatsApp.',
+            'Vou precisar do teu numero pra gerar o codigo de pareamento.',
+        ]);
+        await sleep(200);
+
+        const phone = await createTextInput('Numero com DDD (ex: 5511999999999)', 'Conectar');
+        clearInput();
+
+        orb.setState('processing');
+        await typeText('Gerando codigo de pareamento...');
+
+        try {
+            const instName = 'principal';
+            const r = await fetch('/api/whatsapp/pair', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: instName, phone: phone.trim(), label: 'Principal' }),
+            });
+            const data = await r.json();
+
+            if (data.success && data.code) {
+                clearInput();
+                orb.setState('speaking');
+
+                // Mostra o codigo grande
+                const codeDiv = document.createElement('div');
+                codeDiv.style.cssText = 'font-family:monospace;font-size:32px;letter-spacing:8px;color:#00e676;text-align:center;padding:20px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);border-radius:12px;margin:12px 0;';
+                codeDiv.textContent = data.code;
+                inputArea.innerHTML = '';
+                inputArea.appendChild(codeDiv);
+                showInput();
+
+                await typeText('Abre o WhatsApp no celular > Aparelhos conectados > Conectar com numero. Cola esse codigo:');
+
+                // Timer de 60s
+                const timerEl = document.createElement('div');
+                timerEl.style.cssText = 'text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;';
+                inputArea.appendChild(timerEl);
+
+                // Polling: espera conectar
+                let connected = false;
+                for (let i = 0; i < 60; i++) {
+                    timerEl.textContent = (60 - i) + 's restantes';
+                    await sleep(2000);
+                    try {
+                        const check = await fetch('/api/whatsapp/instances');
+                        const instData = await check.json();
+                        const inst = instData.instances?.find(x => x.name === instName);
+                        if (inst && inst.status === 'connected') {
+                            connected = true;
+                            break;
+                        }
+                    } catch {}
+                }
+
+                clearInput();
+                if (connected) {
+                    orb.setState('speaking');
+                    orb.setAudioLevel(0.5);
+                    await typeText('WhatsApp conectado! Ja consigo mandar e receber mensagens.');
+                    await sleep(1000);
+
+                    // Salva identidade
+                    try {
+                        await fetch('/api/setup/save-identity', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: adminName || '', phone: phone.trim() }),
+                        });
+                    } catch {}
+                } else {
+                    orb.setState('idle');
+                    await typeText('Nao conectou a tempo, mas tudo bem. Pode conectar depois pelo painel WhatsApp.');
+                    await sleep(1500);
+                }
+            } else {
+                clearInput();
+                await typeText('Erro ao gerar codigo: ' + (data.error || 'tente depois pelo painel WhatsApp.'));
+                await sleep(1500);
+            }
+        } catch (e) {
+            clearInput();
+            await typeText('Erro de conexao. Pode configurar o WhatsApp depois pelo painel.');
+            await sleep(1500);
+        }
+    }
+
+    // ───── Q1d: Configurar Supabase ─────
+    async function q1d_supabase() {
+        setStep(3);
+        clearInput();
+        orb.setState('idle');
+        orb.setAudioLevel(0.1);
+
+        await typeMultiple([
+            'Quer salvar tudo na nuvem? Contatos, mensagens, historico...',
+            'Pra isso preciso do Supabase. E gratis!',
+        ]);
+        await sleep(200);
+
+        const wantSupabase = await createSingleSelect([
+            { emoji: '\u2601\uFE0F', label: 'Sim, configurar agora', desc: 'Precisa de conta no supabase.com', value: 'yes' },
+            { emoji: '\u23E9', label: 'Pular por enquanto', desc: 'Funciona local, configura depois', value: 'skip' },
+        ]);
+
+        if (wantSupabase === 'skip') {
+            clearInput();
+            await typeText('Sem problema! Tudo funciona local. Pode configurar depois no Setup.');
+            await sleep(800);
+            return;
+        }
+
+        clearInput();
+        await typeText('Cola a URL do teu projeto Supabase (supabase.com > Settings > API):');
+        await sleep(200);
+        const sbUrl = await createTextInput('https://xxxxx.supabase.co', 'Proximo');
+
+        clearInput();
+        await typeText('Agora a chave anon/public (comeca com eyJ...):');
+        await sleep(200);
+        const sbKey = await createTextInput('eyJhbGciOi...', 'Validar');
+
+        clearInput();
+        orb.setState('processing');
+        orb.setAudioLevel(0.4);
+        await typeText('Validando conexao com Supabase...');
+
+        try {
+            // Salva no .env
+            await fetch('/api/setup/save-module', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ module: 'supabase', config: { SUPABASE_URL: sbUrl.trim(), SUPABASE_KEY: sbKey.trim() } }),
+            });
+
+            // Testa conexao
+            const testR = await fetch('/api/setup/test-module', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ module: 'supabase', config: { SUPABASE_URL: sbUrl.trim(), SUPABASE_KEY: sbKey.trim() } }),
+            });
+            const testData = await testR.json();
+
+            if (testR.ok && testData.success) {
+                clearInput();
+                await typeText('Conectado! Criando tabelas...');
+                await sleep(500);
+
+                // Cria todas as tabelas
+                const createR = await fetch('/api/setup/create-tables', { method: 'POST' });
+                const createData = await createR.json();
+
+                if (createData.success) {
+                    orb.setState('speaking');
+                    await typeText('Tudo pronto! Tabelas criadas: contatos, mensagens, leads, inbox e mais.');
+                    await sleep(1000);
+
+                    // Sync contatos locais pro Supabase
+                    try {
+                        await fetch('/api/whatsapp/sync-contacts', { method: 'POST' });
+                    } catch {}
+                } else {
+                    await typeText('Conectou mas nao consegui criar as tabelas automaticamente. O SQL ta no Setup pra rodar manualmente.');
+                    await sleep(1500);
+                }
+            } else {
+                clearInput();
+                orb.setState('idle');
+                await typeText('URL ou chave incorreta. Pode configurar depois no Setup.');
+                await sleep(1500);
+            }
+        } catch (e) {
+            clearInput();
+            await typeText('Erro de conexao. Configura o Supabase depois no Setup.');
+            await sleep(1500);
+        }
+    }
+
     // ───── Run Flow ─────
     try {
         await q1_intro();
         await q1b_apiKey();
+        await q1c_whatsapp();
+        await q1d_supabase();
         await q2_callName();
         await q3_communicationStyle();
         await q4_accent();

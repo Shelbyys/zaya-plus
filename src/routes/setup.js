@@ -487,6 +487,28 @@ router.post('/test-module', async (req, res) => {
   }
 });
 
+// ─── POST /create-tables (Supabase) ─────────────────────────
+
+router.post('/create-tables', async (req, res) => {
+  try {
+    // Recarrega .env pra pegar SUPABASE_URL e SUPABASE_KEY recém-salvos
+    try {
+      const envPath = join(ROOT_DIR, '.env');
+      const content = fs.readFileSync(envPath, 'utf-8');
+      content.split('\n').forEach(line => {
+        const match = line.match(/^([^#=]+)=(.*)$/);
+        if (match) process.env[match[1].trim()] = match[2].trim();
+      });
+    } catch {}
+
+    const { createSupabaseTables } = await import('../services/supabase.js');
+    const result = await createSupabaseTables();
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ─── POST /complete ─────────────────────────────────────────
 
 router.post('/complete', (req, res) => {
