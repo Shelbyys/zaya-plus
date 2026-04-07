@@ -704,12 +704,24 @@
         answers.expectations = val;
     }
 
+    // ───── Helper: salvar config no backend ─────
+    async function saveToBackend(endpoint, body) {
+        try {
+            const r = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+            return r.ok;
+        } catch { return false; }
+    }
+
     async function q7_final() {
         setStep(9);
         clearInput();
 
         // ───── Save personality via API ─────
-        const configPayload = {
+        await saveToBackend('/api/setup/save-module', {
             module: 'personality',
             config: {
                 ZAYA_CALL_NAME: answers.callName,
@@ -718,66 +730,18 @@
                 ZAYA_USER_PROFESSION: answers.profession,
                 ZAYA_USER_EXPECTATIONS: answers.expectations.join(','),
             }
-        };
+        });
 
-        try {
-            await fetch('/api/setup/save-module', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(configPayload),
-            });
-        } catch (e) {
-            console.error('Failed to save personality module', e);
-        }
-
-        // ───── Save personality to memories via chat ─────
-        const styleLabels = {
-            formal: 'formal e profissional',
-            informal: 'informal e descontraido',
-            direto: 'direto e objetivo',
-            amigavel: 'amigavel e carinhosa',
-        };
-        const accentLabels = {
-            neutro: 'portugues brasileiro padrao',
-            nordestino: 'sotaque nordestino',
-            paulista: 'sotaque paulista',
-            mineiro: 'sotaque mineiro',
-            carioca: 'sotaque carioca',
-            sem_preferencia: 'sem sotaque especifico',
-        };
-        const expectationLabels = {
-            responder_clientes: 'responder clientes',
-            gerenciar_redes: 'gerenciar redes sociais',
-            organizar_rotina: 'organizar rotina',
-            criar_conteudo: 'criar conteudo',
-            pesquisar_info: 'pesquisar informacoes',
-            assistente_geral: 'assistente geral',
-        };
-
-        const memoryMsg = [
-            `[MEMORIA DE PERSONALIDADE] Lembre-se destas preferencias do usuario para TODAS as conversas futuras:`,
-            `- Chamar o usuario de: "${answers.callName}"`,
-            `- Estilo de comunicacao: ${styleLabels[answers.communicationStyle] || answers.communicationStyle}`,
-            `- Sotaque/jeito de falar: ${accentLabels[answers.accent] || answers.accent}`,
-            `- Profissao do usuario: ${answers.profession}`,
-            `- O usuario espera ajuda com: ${answers.expectations.map(e => expectationLabels[e] || e).join(', ')}`,
-            `Adapte sua personalidade e linguagem a essas preferencias em todas as interacoes.`,
-        ].join('\n');
-
-        try {
-            await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: memoryMsg, role: 'system' }),
-            });
-        } catch (e) {
-            console.error('Failed to save personality to memories', e);
-        }
+        // ───── Save identity (nome + telefone se tiver) ─────
+        await saveToBackend('/api/setup/save-identity', {
+            name: answers.callName,
+            phone: answers.phone || '',
+        });
 
         // ───── Final cinematic sequence ─────
         orb.setState('speaking');
         orb.setAudioLevel(0.4);
-        await typeText(`Perfeito, ${answers.callName}! Ja sei como me adaptar ao teu jeito.`);
+        await typeText('Perfeito, ' + answers.callName + '! Ja sei como me adaptar ao teu jeito.');
         await sleep(1200);
 
         await typeText('Vou configurar minha personalidade agora...');
@@ -786,7 +750,6 @@
         orb.setState('processing');
         orb.setAudioLevel(0.6);
 
-        // Processing messages
         const processingEl = document.createElement('div');
         processingEl.className = 'processing-msg';
         inputArea.innerHTML = '';
@@ -796,8 +759,8 @@
         const steps = [
             { text: 'Ajustando linguagem...', delay: 1500 },
             { text: 'Carregando personalidade...', delay: 1500 },
-            { text: 'Memorizando suas preferencias...', delay: 1500 },
-            { text: `Zaya pronta para ${answers.callName}!`, delay: 2000 },
+            { text: 'Memorizando preferencias...', delay: 1500 },
+            { text: 'Zaya pronta para ' + answers.callName + '!', delay: 2000 },
         ];
 
         for (const step of steps) {
@@ -812,6 +775,9 @@
             }
             await sleep(step.delay);
         }
+
+        // ───── Marcar setup como completo ─────
+        await saveToBackend('/api/setup/complete', {});
 
         // Mark all dots done
         dotsContainer.querySelectorAll('.dot').forEach(d => {
@@ -1022,6 +988,7 @@
                     orb.setAudioLevel(0.5);
                     await typeText('WhatsApp conectado! Ja consigo mandar e receber mensagens.');
                     await sleep(1000);
+                    answers.phone = phone.trim();
                     try {
                         await fetch('/api/setup/save-identity', {
                             method: 'POST',
@@ -1215,42 +1182,21 @@
 
     // ───── Setup: Configurar ferramentas selecionadas ─────
     async function q1c_setupTools() {
-        let stepNum = 3;
+        const toolOrder = ['whatsapp', 'supabase', 'images', 'search', 'meta', 'voice'];
+        const toolSetup = {
+            whatsapp: setupWhatsApp,
+            supabase: setupSupabase,
+            images: setupImages,
+            search: setupSearch,
+            meta: setupMeta,
+            voice: setupVoice,
+        };
 
-        // WhatsApp SEMPRE primeiro
-        if (selectedTools.includes('whatsapp')) {
-            setStep(stepNum);
-            await setupWhatsApp();
-        }
-
-        // Supabase segundo
-        if (selectedTools.includes('supabase')) {
-            setStep(stepNum);
-            await setupSupabase();
-        }
-
-        // Imagens
-        if (selectedTools.includes('images')) {
-            setStep(stepNum);
-            await setupImages();
-        }
-
-        // Pesquisa
-        if (selectedTools.includes('search')) {
-            setStep(stepNum);
-            await setupSearch();
-        }
-
-        // Meta
-        if (selectedTools.includes('meta')) {
-            setStep(stepNum);
-            await setupMeta();
-        }
-
-        // Voz
-        if (selectedTools.includes('voice')) {
-            setStep(stepNum);
-            await setupVoice();
+        for (const tool of toolOrder) {
+            if (selectedTools.includes(tool)) {
+                setStep(3);
+                await toolSetup[tool]();
+            }
         }
 
         if (selectedTools.length > 0) {

@@ -132,14 +132,14 @@ function isSetupNeeded() {
 app.get('/', (req, res, next) => {
   // 1. Sem licença → página de licença
   if (!isLicensed()) return res.redirect('/license.html');
-  // 2. Sem setup → setup wizard
-  if (isSetupNeeded()) return res.redirect('/setup.html');
+  // 2. Sem setup → onboarding
+  if (isSetupNeeded()) return res.redirect('/onboarding.html');
   next();
 });
 
 app.get('/index.html', (req, res) => {
   if (!isLicensed()) return res.redirect('/license.html');
-  if (isSetupNeeded()) return res.redirect('/setup.html');
+  if (isSetupNeeded()) return res.redirect('/onboarding.html');
   res.sendFile(join(__dirname, 'public', 'index.html'));
 });
 

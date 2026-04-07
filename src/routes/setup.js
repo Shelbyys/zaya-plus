@@ -245,11 +245,13 @@ router.post('/save-mind', (req, res) => {
 router.post('/save-identity', async (req, res) => {
   try {
     const { name, phone } = req.body;
-    if (!name || !phone) {
-      return res.status(400).json({ error: 'name and phone are required' });
+    if (!name) {
+      return res.status(400).json({ error: 'name is required' });
     }
 
-    updateEnv({ ADMIN_NAME: name, ADMIN_NUMBER: phone, ZAYA_CALL_NAME: name });
+    const updates = { ADMIN_NAME: name, ZAYA_CALL_NAME: name };
+    if (phone) updates.ADMIN_NUMBER = phone;
+    updateEnv(updates);
 
     // Salvar callName no botConfig tambem
     try {
