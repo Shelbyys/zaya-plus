@@ -130,10 +130,13 @@ function isSetupNeeded() {
 }
 
 app.get('/', (req, res) => {
+  const licensed = isLicensed();
+  const needsSetup = isSetupNeeded();
+  log.server.info({ licensed, needsSetup, path: req.path }, 'Rota / acessada');
   // 1. Sem licença → página de licença
-  if (!isLicensed()) return res.redirect('/license.html');
+  if (!licensed) return res.redirect('/license.html');
   // 2. Sem setup → onboarding
-  if (isSetupNeeded()) return res.redirect('/onboarding.html');
+  if (needsSetup) return res.redirect('/onboarding.html');
   // 3. Tudo ok → index.html
   res.sendFile(join(__dirname, 'public', 'index.html'));
 });
@@ -254,6 +257,13 @@ app.use('/webhook', webhookRoutes);
 app.use('/api/calendar', calendarRoutes);
 
 app.use('/voice', twilioVoiceRoutes);
+
+// Catch-all: qualquer rota não encontrada
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  log.server.warn({ path: req.path, method: req.method }, 'Rota nao encontrada — redirecionando');
+  res.redirect('/');
+});
 
 // Error handler (DEVE ser o último)
 app.use(errorHandler);
