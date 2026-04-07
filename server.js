@@ -41,9 +41,25 @@ app.use(requestLogger);
 
 // Rota principal — ANTES de qualquer middleware de proteção
 app.get('/', (req, res) => {
-  if (!isLicensed()) return res.redirect('/license.html');
-  if (isSetupNeeded()) return res.redirect('/onboarding.html');
-  res.sendFile(join(__dirname, 'public', 'index.html'));
+  try {
+    const licensed = isLicensed();
+    const needsSetup = licensed ? isSetupNeeded() : false;
+    if (!licensed) return res.redirect('/license.html');
+    if (needsSetup) return res.redirect('/onboarding.html');
+    const indexPath = join(__dirname, 'public', 'index.html');
+    if (existsSync(indexPath)) return res.sendFile(indexPath);
+    res.redirect('/onboarding.html');
+  } catch (e) {
+    log.server.error({ err: e.message }, 'Erro na rota /');
+    res.redirect('/license.html');
+  }
+});
+// Fallback: garante que / nunca retorna 404
+app.use((req, res, next) => {
+  if (req.path === '/' && !res.headersSent) {
+    return res.redirect('/onboarding.html');
+  }
+  next();
 });
 
 // Protege páginas HTML — licença + acesso externo
