@@ -605,8 +605,8 @@
         orb.setAudioLevel(0);
 
         await typeMultiple([
-            'Ola! Eu sou a Zaya, sua nova assistente pessoal.',
-            'Vou precisar te conhecer um pouquinho pra me adaptar ao seu jeito.',
+            'Olá! Eu sou a Zaya, sua nova assistente pessoal.',
+            'Vou precisar te conhecer um pouquinho pra me adaptar ao teu jeito.',
         ]);
 
         clearInput();
@@ -626,7 +626,7 @@
         orb.setAudioLevel(0.2);
 
         const nameDisplay = adminName || 'voce';
-        await typeText(`Vi que seu nome e ${nameDisplay}. Como prefere que eu te chame?`);
+        await typeText(`Vi que teu nome é ${nameDisplay}. Como prefere que eu te chame?`);
 
         await sleep(200);
         const val = await createTextInput('Ex: Alisson, Sr. Silva, Chefe, Boss...', 'Proximo');
@@ -677,7 +677,7 @@
         orb.setState('listening');
         orb.setAudioLevel(0.15);
 
-        await typeText('Me conta um pouco sobre ti. O que tu faz?');
+        await typeText('Me conta um pouco sobre ti. O que tu faz da vida?');
         await sleep(200);
 
         const val = await createTextInput('Ex: Sou empreendedor, trabalho com marketing digital...', 'Proximo');
@@ -690,7 +690,7 @@
         orb.setState('idle');
         orb.setAudioLevel(0);
 
-        await typeText('No que posso te ajudar mais? O que espera de mim?');
+        await typeText('No que posso te ajudar mais? O que tu espera de mim?');
         await sleep(200);
 
         const val = await createMultiSelect([
@@ -741,10 +741,10 @@
         // ───── Final cinematic sequence ─────
         orb.setState('speaking');
         orb.setAudioLevel(0.4);
-        await typeText('Perfeito, ' + answers.callName + '! Ja sei como me adaptar ao teu jeito.');
+        await typeText('Perfeito, ' + answers.callName + '! Já sei como me adaptar ao teu jeito.');
         await sleep(1200);
 
-        await typeText('Vou configurar minha personalidade agora...');
+        await typeText('Vou configurar a minha personalidade agora...');
         await sleep(800);
 
         orb.setState('processing');
@@ -757,10 +757,10 @@
         showInput();
 
         const steps = [
-            { text: 'Ajustando linguagem...', delay: 1500 },
-            { text: 'Carregando personalidade...', delay: 1500 },
-            { text: 'Memorizando preferencias...', delay: 1500 },
-            { text: 'Zaya pronta para ' + answers.callName + '!', delay: 2000 },
+            { text: 'Ajustando a linguagem...', delay: 1500 },
+            { text: 'Carregando a personalidade...', delay: 1500 },
+            { text: 'Memorizando as preferências...', delay: 1500 },
+            { text: 'Zaya pronta pra ' + answers.callName + '!', delay: 2000 },
         ];
 
         for (const step of steps) {
@@ -805,7 +805,7 @@
 
         await typeMultiple([
             'Antes de tudo, preciso de uma mente pra funcionar.',
-            'Escolhe qual IA eu vou usar:',
+            'Escolhe qual inteligência artificial eu vou usar:',
         ]);
         await sleep(200);
 
@@ -830,7 +830,7 @@
             huggingface: { model: 'deepseek-ai/DeepSeek-V3-0324', modelMini: 'meta-llama/Llama-3.3-70B-Instruct', baseUrl: 'https://router.huggingface.co/v1' },
         };
 
-        await typeText('Agora cola a chave da API. Pega em: ' + providerLinks[provider]);
+        await typeText('Agora cola a chave da API. Pega no site: ' + providerLinks[provider]);
         await sleep(200);
 
         let apiKey = '';
@@ -871,23 +871,23 @@
                     if (testR.ok && testData.success) {
                         clearInput();
                         orb.setState('speaking');
-                        await typeText('Perfeito! Minha mente ta funcionando!');
+                        await typeText('Perfeito! Minha mente tá funcionando!');
                         await sleep(800);
                         validated = true;
                     } else {
                         clearInput();
                         orb.setState('idle');
-                        await typeText('Hmm, essa chave nao funcionou. Verifica e tenta de novo.');
+                        await typeText('Hmm, essa chave não funcionou. Verifica e tenta de novo.');
                         await sleep(500);
                     }
                 } else {
                     clearInput();
-                    await typeText('Erro ao salvar. Tenta de novo.');
+                    await typeText('Deu um erro ao salvar. Tenta de novo.');
                     await sleep(500);
                 }
             } catch (e) {
                 clearInput();
-                await typeText('Erro de conexao. Verifica a internet e tenta de novo.');
+                await typeText('Erro de conexão. Verifica a internet e tenta de novo.');
                 await sleep(500);
             }
         }
@@ -904,7 +904,7 @@
         orb.setState('idle');
         orb.setAudioLevel(0.1);
 
-        await typeText('O que tu quer que eu conecte? Escolhe tudo que quiser:');
+        await typeText('O que tu quer que eu conecte? Escolhe tudo que quiser!');
         await sleep(200);
 
         selectedTools = await createMultiSelect([
@@ -921,7 +921,7 @@
             await typeText('Tudo bem! Pode configurar depois no Setup. Vamos pro resto.');
         } else {
             const nomes = selectedTools.length === 1 ? selectedTools[0] : selectedTools.slice(0, -1).join(', ') + ' e ' + selectedTools[selectedTools.length - 1];
-            await typeText('Otimo! Vou configurar ' + nomes + ' passo a passo.');
+            await typeText('Ótimo! Vou configurar ' + nomes + ' passo a passo.');
         }
         await sleep(800);
     }
@@ -944,7 +944,7 @@
 
         if (waMethod === 'skip') {
             clearInput();
-            await typeText('Sem problema! Conecta depois pelo painel WhatsApp.');
+            await typeText('Sem problema! Tu conecta depois pelo painel do WhatsApp.');
             await sleep(800);
             return;
         }
@@ -962,7 +962,7 @@
 
             clearInput();
             orb.setState('speaking');
-            await typeText('WaSender configurado! WhatsApp pronto.');
+            await typeText('WaSender configurado! Teu WhatsApp tá pronto.');
             await sleep(1000);
             return;
         }
@@ -970,8 +970,8 @@
         // Evolution API (padrao)
         clearInput();
         await typeMultiple([
-            'Pra usar o Evolution API, precisa ter ele rodando.',
-            'Se ainda nao tem, instala com: docker pull atendai/evolution-api',
+            'Pra usar o Evolution API, precisa ter ele rodando no teu servidor.',
+            'Se ainda não tem, instala com: docker pull atendai/evolution-api',
         ]);
         await sleep(200);
 
@@ -984,7 +984,7 @@
         clearInput();
 
         orb.setState('processing');
-        await typeText('Conectando ao Evolution API...');
+        await typeText('Conectando com o Evolution API...');
 
         // Salva config
         await saveToBackend('/api/setup/save-module', {
@@ -1009,7 +1009,7 @@
                 clearInput();
                 orb.setState('speaking');
                 orb.setAudioLevel(0.5);
-                await typeText('Evolution API conectado! WhatsApp funcionando.');
+                await typeText('Evolution API conectado! Teu WhatsApp tá funcionando.');
                 await sleep(1000);
 
                 // Tenta criar instancia e pegar pairing code
@@ -1018,7 +1018,7 @@
                 const waPhone = await createTextInput('5511999999999', 'Parear');
                 clearInput();
                 orb.setState('processing');
-                await typeText('Criando instancia e gerando codigo...');
+                await typeText('Criando instância e gerando código...');
 
                 try {
                     // Cria instancia no Evolution
@@ -1055,7 +1055,7 @@
                         inputArea.appendChild(codeDiv);
                         showInput();
 
-                        await typeText('Abre o WhatsApp > Aparelhos conectados > Conectar com numero. Cola esse codigo:');
+                        await typeText('Abre o WhatsApp no celular, vai em Aparelhos conectados, e conecta com esse código:');
                         answers.phone = waPhone.trim();
 
                         // Polling: espera conectar
@@ -1080,7 +1080,7 @@
                             await typeText('WhatsApp conectado via Evolution API!');
                             await sleep(1000);
                         } else {
-                            await typeText('Nao conectou a tempo, mas pode parear depois pelo painel.');
+                            await typeText('Não conectou a tempo, mas pode parear depois pelo painel.');
                             await sleep(1500);
                         }
                     } else if (createData?.qrcode?.base64) {
@@ -1092,28 +1092,28 @@
                         inputArea.innerHTML = '';
                         inputArea.appendChild(qrImg);
                         showInput();
-                        await typeText('Escaneia esse QR Code no WhatsApp > Aparelhos conectados:');
+                        await typeText('Escaneia esse QR Code no WhatsApp, em Aparelhos conectados:');
                         await sleep(30000);
                         clearInput();
                     } else {
                         clearInput();
-                        await typeText('Instancia criada! Pode parear pelo painel WhatsApp.');
+                        await typeText('Instância criada! Pode parear pelo painel do WhatsApp.');
                         await sleep(1500);
                     }
                 } catch (e) {
                     clearInput();
-                    await typeText('Instancia criada, mas nao consegui parear agora. Faz pelo painel.');
+                    await typeText('Instância criada, mas não consegui parear agora. Faz pelo painel.');
                     await sleep(1500);
                 }
             } else {
                 clearInput();
                 orb.setState('idle');
-                await typeText('Nao consegui conectar. Verifica a URL e chave no Setup.');
+                await typeText('Não consegui conectar. Verifica a URL e a chave no Setup.');
                 await sleep(1500);
             }
         } catch {
             clearInput();
-            await typeText('Erro de conexao. Configura depois no Setup.');
+            await typeText('Erro de conexão. Configura depois no Setup.');
             await sleep(1500);
         }
     }
@@ -1124,18 +1124,18 @@
         orb.setState('idle');
         orb.setAudioLevel(0.1);
 
-        await typeText('Agora o Supabase! Cola a URL do teu projeto (supabase.com > Settings > API):');
+        await typeText('Agora o Supabase! Cola a URL do teu projeto. Tá em supabase.com, Settings, API:');
         await sleep(200);
         const sbUrl = await createTextInput('https://xxxxx.supabase.co', 'Proximo');
 
         clearInput();
-        await typeText('Agora a chave anon/public (comeca com eyJ...):');
+        await typeText('Agora a chave anon pública. Começa com eyJ:');
         await sleep(200);
         const sbKey = await createTextInput('eyJhbGciOi...', 'Validar');
 
         clearInput();
         orb.setState('processing');
-        await typeText('Validando conexao...');
+        await typeText('Validando conexão...');
 
         try {
             await fetch('/api/setup/save-module', {
@@ -1158,21 +1158,21 @@
                 const createData = await createR.json();
                 if (createData.success) {
                     orb.setState('speaking');
-                    await typeText('Tabelas criadas! Contatos, mensagens, leads, inbox — tudo pronto na nuvem.');
+                    await typeText('Tabelas criadas! Contatos, mensagens, leads, inbox. Tudo pronto na nuvem.');
                     await sleep(1000);
                     try { await fetch('/api/whatsapp/sync-contacts', { method: 'POST' }); } catch {}
                 } else {
-                    await typeText('Conectou mas as tabelas precisam ser criadas manualmente no Setup.');
+                    await typeText('Conectou, mas as tabelas precisam ser criadas manualmente no Setup.');
                     await sleep(1500);
                 }
             } else {
                 clearInput();
-                await typeText('URL ou chave incorreta. Configura depois no Setup.');
+                await typeText('A URL ou a chave tá incorreta. Configura depois no Setup.');
                 await sleep(1500);
             }
         } catch (e) {
             clearInput();
-            await typeText('Erro. Configura o Supabase depois no Setup.');
+            await typeText('Deu erro. Configura o Supabase depois no Setup.');
             await sleep(1500);
         }
     }
@@ -1194,7 +1194,7 @@
         if (provider === 'openai') {
             await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'images', config: { IMAGE_PROVIDER: 'openai' } }) });
             clearInput();
-            await typeText('DALL-E 3 ativado! Usa a mesma chave da IA.');
+            await typeText('DALL-E três ativado! Usa a mesma chave da IA.');
             await sleep(800);
         } else if (provider === 'google') {
             clearInput();
@@ -1210,7 +1210,7 @@
             const hfkey = await createTextInput('hf_...', 'Salvar');
             await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'images', config: { IMAGE_PROVIDER: 'flux', HUGGINGFACE_API_KEY: hfkey.trim(), HF_TOKEN: hfkey.trim() } }) });
             clearInput();
-            await typeText('FLUX.1 ativado! Imagens gratis.');
+            await typeText('FLUX ponto um ativado! Imagens de graça.');
             await sleep(800);
         }
     }
@@ -1224,7 +1224,7 @@
         const fckey = await createTextInput('fc-...', 'Salvar');
         await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'firecrawl', config: { FIRECRAWL_API_KEY: fckey.trim() } }) });
         clearInput();
-        await typeText('Pesquisa web ativada!');
+        await typeText('Pesquisa na web ativada!');
         await sleep(800);
     }
 
@@ -1266,7 +1266,7 @@
             const num = await createTextInput('+1...', 'Salvar');
             await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'twilio', config: { VOICE_PROVIDER: 'twilio', TWILIO_ACCOUNT_SID: sid.trim(), TWILIO_AUTH_TOKEN: token.trim(), TWILIO_PHONE_NUMBER: num.trim() } }) });
             clearInput();
-            await typeText('Twilio conectado! Ja posso fazer ligacoes.');
+            await typeText('Twilio conectado! Já posso fazer ligações.');
             await sleep(800);
         } else if (provider === 'plivo') {
             clearInput();
@@ -1307,7 +1307,7 @@
         if (selectedTools.length > 0) {
             clearInput();
             orb.setState('speaking');
-            await typeText('Ferramentas configuradas! Agora vou te conhecer melhor.');
+            await typeText('Ferramentas configuradas! Agora vou te conhecer um pouco melhor.');
             await sleep(1000);
         }
     }
