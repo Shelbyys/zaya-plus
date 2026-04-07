@@ -87,44 +87,61 @@ router.post('/pair', async (req, res) => {
     const sock = await createClient(name);
     waConnections[name] = { client: sock, status: 'connecting', handlerSetup: false };
 
-    // Espera o pairing code
     let responded = false;
+    let wsReady = false;
 
     sock.ev.on('connection.update', async (update) => {
-      if (responded) return;
       const { connection } = update;
 
+      // WebSocket abriu — agora pode pedir pairing code
+      if (connection === 'open' || update.receivedPendingNotifications) {
+        wsReady = true;
+      }
+
       if (connection === 'open') {
-        responded = true;
         const cfg = waLoadConfig();
         cfg.instances[name] = { phone: cleanPhone, label: label || name, createdAt: new Date().toISOString(), active: true, type: 'local' };
         if (!cfg.defaultInstance) cfg.defaultInstance = name;
         waSaveConfig(cfg);
         waConnections[name].status = 'connected';
-        setupMessageHandler(sock, name);
-        waConnections[name].handlerSetup = true;
-        if (!res.headersSent) res.json({ success: true, paired: true });
+        if (!waConnections[name].handlerSetup) {
+          setupMessageHandler(sock, name);
+          waConnections[name].handlerSetup = true;
+        }
+        log.wa.info({ name }, 'Pareamento concluido — conectado!');
       }
 
       if (connection === 'close' && !responded) {
         responded = true;
-        if (!res.headersSent) res.status(500).json({ error: 'Conexão fechada. Tente novamente.' });
+        if (!res.headersSent) res.status(500).json({ error: 'Conexao fechada. Tente novamente.' });
       }
     });
 
-    // Solicita código de pareamento
+    // Espera o WebSocket ficar pronto (max 15s)
+    for (let i = 0; i < 30; i++) {
+      if (wsReady || responded) break;
+      await new Promise(r => setTimeout(r, 500));
+    }
+
+    if (responded) return;
+
+    // Solicita codigo de pareamento
     try {
       const code = await sock.requestPairingCode(cleanPhone);
-      log.wa.info({ name, code }, 'Código de pareamento gerado');
+      log.wa.info({ name, code }, 'Codigo de pareamento gerado');
       if (!responded && !res.headersSent) {
+        responded = true;
         res.json({ success: true, code: code.toUpperCase() });
       }
     } catch (err) {
-      log.wa.error({ err: err.message }, 'Erro ao gerar código de pareamento');
-      if (!responded && !res.headersSent) res.status(500).json({ error: err.message });
+      log.wa.error({ err: err.message }, 'Erro ao gerar codigo de pareamento');
+      if (!responded && !res.headersSent) {
+        responded = true;
+        res.status(500).json({ error: 'Erro ao gerar codigo: ' + err.message });
+      }
     }
 
-    // Timeout
+    // Timeout geral
     setTimeout(() => {
       if (!responded) {
         responded = true;
@@ -133,6 +150,7 @@ router.post('/pair', async (req, res) => {
       }
     }, 120_000);
   } catch (e) {
+    log.wa.error({ err: e.message }, 'Erro fatal no pair');
     if (!res.headersSent) res.status(500).json({ error: e.message });
   }
 });
