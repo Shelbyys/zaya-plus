@@ -28,9 +28,15 @@ echo -e "${CYAN}           P L U S${NC}"
 echo ""
 
 if [ -z "$TOKEN" ]; then
-    echo -e "  ${RED}✗ Token nao informado!${NC}"
-    echo -e "  Uso: curl -sL URL | bash -s SEU-TOKEN"
-    exit 1
+    echo -e "  ${YELLOW}!${NC} Token nao detectado no comando."
+    echo ""
+    printf "  Cole seu token aqui: "
+    read -r TOKEN
+    echo ""
+    if [ -z "$TOKEN" ]; then
+        echo -e "  ${RED}✗ Token obrigatorio!${NC}"
+        exit 1
+    fi
 fi
 
 echo -e "  ${CYAN}Token:${NC} ${TOKEN:0:8}...${TOKEN: -6}"
