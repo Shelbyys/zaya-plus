@@ -1,8 +1,9 @@
 import { execSync } from 'child_process';
 import { readFileSync, writeFileSync } from 'fs';
 import { extname } from 'path';
+import { waConnections } from '../state.js';
+import { waLoadConfig } from '../whatsapp/utils.js';
 import { log } from '../logger.js';
-import * as evo from './evolution-api.js';
 
 // ================================================================
 // WhatsApp utils
@@ -38,10 +39,12 @@ export function normalizeBRPhone(phone) {
   return p;
 }
 
+export { waLoadConfig };
+
 import * as wasender from './wasender.js';
 
 // ================================================================
-// WhatsApp Send (Evolution API padrao > WaSender pago)
+// WhatsApp Send (WaSender pago > Baileys grátis)
 // ================================================================
 export async function sendWhatsApp(phone, message) {
   const cleanPhone = normalizeBRPhone(phone);
@@ -49,9 +52,7 @@ export async function sendWhatsApp(phone, message) {
     return { success: false, output: `Numero invalido: ${phone}` };
   }
 
-  const instName = process.env.EVOLUTION_INSTANCE || 'principal';
-
-  // WaSenderAPI (pago)
+  // WaSenderAPI (pago — mais estável)
   if (wasender.isWaSenderEnabled()) {
     try {
       const r = await wasender.sendText(cleanPhone, message);
@@ -59,33 +60,41 @@ export async function sendWhatsApp(phone, message) {
         log.wa.info({ phone: cleanPhone }, 'WaSender enviado');
         return { success: true, output: `Mensagem enviada para ${phone}` };
       }
-      log.wa.error({ error: r.error, phone: cleanPhone }, 'WaSender erro — tentando Evolution');
+      log.wa.error({ error: r.error, phone: cleanPhone }, 'WaSender erro');
     } catch (e) {
-      log.wa.error({ err: e.message }, 'WaSender erro — tentando Evolution');
+      log.wa.error({ err: e.message }, 'WaSender erro');
     }
   }
 
-  // Evolution API (padrao gratis)
-  if (evo.isEvolutionEnabled()) {
+  // Baileys (grátis — padrão)
+  const jid = cleanPhone + '@s.whatsapp.net';
+  const config = waLoadConfig();
+  let name = config.defaultInstance;
+
+  if (!name || !waConnections[name]?.client || waConnections[name]?.status !== 'connected') {
+    const connected = Object.entries(waConnections).find(([, c]) => c.status === 'connected' && c.client);
+    if (connected) { name = connected[0]; }
+  }
+
+  if (name && waConnections[name]?.status === 'connected' && waConnections[name]?.client) {
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
-        await evo.sendText(instName, cleanPhone, message);
-        log.wa.info({ phone: cleanPhone, instance: instName }, 'Evolution API enviado');
+        await waConnections[name].client.sendMessage(jid, { text: message });
+        log.wa.info({ jid, instance: name }, 'Baileys enviado');
         return { success: true, output: `Mensagem enviada para ${phone}` };
       } catch (e) {
-        log.wa.error({ err: e.message, phone: cleanPhone, attempt }, 'Evolution API erro');
+        log.wa.error({ err: e.message, jid, attempt }, 'Baileys erro');
         if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt));
-        else return { success: false, output: `Erro ao enviar apos 3 tentativas: ${e.message}` };
+        else return { success: false, output: `Erro ao enviar: ${e.message}` };
       }
     }
   }
 
-  return { success: false, output: 'WhatsApp nao configurado. Configure a Evolution API ou WaSender no Setup.' };
+  return { success: false, output: 'Nenhuma instância WhatsApp conectada. Conecte pelo painel do WhatsApp.' };
 }
 
 export async function sendWhatsAppMedia(jid, filePath, caption) {
-  const cleanPhone = jid.replace('@c.us', '').replace('@s.whatsapp.net', '').replace(/\D/g, '');
-  const instName = process.env.EVOLUTION_INSTANCE || 'principal';
+  const cleanPhone = jid.replace('@c.us', '').replace('@s.whatsapp.net', '');
 
   // WaSenderAPI
   if (wasender.isWaSenderEnabled()) {
@@ -95,34 +104,28 @@ export async function sendWhatsAppMedia(jid, filePath, caption) {
     } catch {}
   }
 
-  // Evolution API
-  if (evo.isEvolutionEnabled()) {
-    try {
-      const ext = extname(filePath).toLowerCase();
-      // Converte arquivo local pra base64 data URI
-      const buffer = readFileSync(filePath);
-      const base64 = buffer.toString('base64');
-      const mimeMap = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.gif': 'image/gif', '.webp': 'image/webp', '.mp4': 'video/mp4', '.mov': 'video/mp4', '.mp3': 'audio/mpeg', '.ogg': 'audio/ogg', '.pdf': 'application/pdf' };
-      const mime = mimeMap[ext] || 'application/octet-stream';
-      const dataUri = 'data:' + mime + ';base64,' + base64;
+  // Baileys
+  const config = waLoadConfig();
+  const name = config.defaultInstance || Object.keys(waConnections).find(k => waConnections[k]?.status === 'connected');
+  if (!name || !waConnections[name]?.client) return false;
 
-      if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
-        await evo.sendImage(instName, cleanPhone, dataUri, caption || '');
-      } else if (['.mp4', '.mov'].includes(ext)) {
-        await evo.sendVideo(instName, cleanPhone, dataUri, caption || '');
-      } else if (['.mp3', '.ogg', '.wav', '.opus'].includes(ext)) {
-        await evo.sendAudio(instName, cleanPhone, dataUri);
-      } else {
-        await evo.sendDocument(instName, cleanPhone, dataUri, filePath.split('/').pop(), caption || '');
-      }
-      return true;
-    } catch (e) {
-      log.wa.error({ err: e.message }, 'Evolution API media erro');
-      return false;
+  try {
+    const buffer = readFileSync(filePath);
+    const ext = extname(filePath).toLowerCase();
+    const chatJid = jid.includes('@') ? jid : jid + '@s.whatsapp.net';
+
+    if (['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+      await waConnections[name].client.sendMessage(chatJid, { image: buffer, caption: caption || '' });
+    } else if (['.mp4', '.mov'].includes(ext)) {
+      await waConnections[name].client.sendMessage(chatJid, { video: buffer, caption: caption || '' });
+    } else {
+      await waConnections[name].client.sendMessage(chatJid, { document: buffer, fileName: filePath.split('/').pop(), caption: caption || '' });
     }
+    return true;
+  } catch (e) {
+    log.wa.error({ err: e.message }, 'Erro enviando mídia');
+    return false;
   }
-
-  return false;
 }
 
 // ================================================================

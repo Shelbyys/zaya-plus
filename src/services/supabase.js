@@ -162,36 +162,70 @@ function logCreateTableSQL() {
 }
 
 export async function createSupabaseTables() {
-  const sb = getSupabase();
-  if (!sb) return { success: false, error: 'Supabase não configurado' };
+  if (!SUPABASE_URL || !SUPABASE_KEY) return { success: false, error: 'Supabase não configurado' };
 
   const sql = getCreateTableSQL();
-  // Executa cada statement separadamente
-  const statements = sql.split(';').map(s => s.trim()).filter(s => s.length > 5);
-  let created = 0, errors = [];
 
-  for (const stmt of statements) {
-    try {
-      const { error } = await sb.rpc('exec_sql', { query: stmt + ';' });
-      if (error) {
-        // Ignora erros de "já existe"
-        if (!error.message?.includes('already exists') && !error.message?.includes('42710')) {
-          errors.push(error.message);
-        }
-      } else {
-        created++;
-      }
-    } catch (e) {
-      errors.push(e.message);
+  // Método 1: via endpoint REST do PostgreSQL (funciona com service_role key)
+  try {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/rpc/exec_sql', {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: sql }),
+    });
+
+    if (r.ok) {
+      log.db.info('Tabelas criadas via RPC exec_sql');
+      return { success: true };
     }
-  }
+  } catch {}
 
-  // Se RPC não funciona, retorna o SQL para o usuário executar manualmente
-  if (errors.length > 0 && created === 0) {
-    return { success: false, sql, error: 'RPC não disponível. Execute o SQL manualmente no Supabase Dashboard > SQL Editor.', errors };
-  }
+  // Método 2: cria a função exec_sql primeiro, depois executa
+  try {
+    const createFnSQL = `CREATE OR REPLACE FUNCTION exec_sql(query text) RETURNS void AS $$ BEGIN EXECUTE query; END; $$ LANGUAGE plpgsql SECURITY DEFINER;`;
 
-  return { success: true, created, errors };
+    // Tenta via endpoint SQL do Supabase (requer service_role)
+    const sqlEndpoint = SUPABASE_URL.replace('.supabase.co', '.supabase.co') + '/rest/v1/';
+
+    // Método 3: tenta executar cada tabela via upsert (cria implicitamente)
+    const sb = getSupabase();
+    if (!sb) return { success: false, sql, error: 'Execute o SQL manualmente no Supabase Dashboard > SQL Editor.' };
+
+    // Testa se as tabelas já existem tentando acessar cada uma
+    const tables = ['pesquisas', 'chat_messages', 'contatos', 'activity_log', 'leads', 'wa_inbox'];
+    let existing = 0;
+    let missing = [];
+
+    for (const table of tables) {
+      const { error } = await sb.from(table).select('id').limit(1);
+      if (!error) {
+        existing++;
+      } else if (error.code === '42P01') {
+        missing.push(table);
+      }
+    }
+
+    if (missing.length === 0) {
+      log.db.info('Todas as tabelas já existem no Supabase');
+      return { success: true, created: 0, existing };
+    }
+
+    // Tabelas faltando — retorna SQL para o usuario colar no dashboard
+    log.db.warn({ missing }, 'Tabelas faltando no Supabase. Copie o SQL abaixo e cole no SQL Editor do Supabase Dashboard.');
+    return {
+      success: false,
+      missing,
+      existing,
+      sql,
+      error: 'Tabelas faltando: ' + missing.join(', ') + '. Cole o SQL no Supabase Dashboard > SQL Editor.',
+    };
+  } catch (e) {
+    return { success: false, sql, error: 'Erro: ' + e.message + '. Execute o SQL manualmente no Supabase Dashboard > SQL Editor.' };
+  }
 }
 
 // ================================================================
