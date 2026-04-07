@@ -42,9 +42,9 @@ app.use(requestLogger);
 // Protege páginas HTML — licença + acesso externo
 app.use((req, res, next) => {
   // Só protege páginas HTML (não API, não assets)
-  if (!req.path.endsWith('.html') && req.path !== '/' && req.path !== '/index.html') return next();
+  if (!req.path.endsWith('.html')) return next();
 
-  // license.html, admin.html, onboarding.html — sempre acessíveis
+  // Páginas sempre acessíveis
   if (req.path === '/license.html' || req.path === '/admin.html' || req.path === '/onboarding.html' || req.path === '/settings.html' || req.path === '/whatsapp.html' || req.path.startsWith('/updates')) return next();
 
   // Página de login — sempre acessível
@@ -53,10 +53,10 @@ app.use((req, res, next) => {
   // Todas as outras páginas HTML exigem licença ativa
   if (!isLicensed()) return res.redirect('/license.html');
 
-  // Local: libera direto
+  // Local: libera direto (cobre IPv4, IPv6, Windows, Mac, Linux)
   const ip = req.ip || req.connection?.remoteAddress || '';
-  if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return next();
-  if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip.includes('::ffff:192.168.') || ip.includes('::ffff:10.')) return next();
+  if (ip === '127.0.0.1' || ip === '::1' || ip.includes('127.0.0.1') || ip === '0.0.0.0' || ip.startsWith('::ffff:0:')) return next();
+  if (ip.startsWith('192.168.') || ip.startsWith('10.') || ip.includes('192.168.') || ip.includes('10.')) return next();
 
   // Verifica cookie de autenticação
   const cookies = Object.fromEntries((req.headers.cookie||'').split(';').map(c=>{const [k,...v]=c.trim().split('=');return [k,v.join('=')];}));
