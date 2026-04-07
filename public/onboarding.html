@@ -372,7 +372,7 @@
         expectations: [],
     };
 
-    const TOTAL_STEPS = 10;
+    const TOTAL_STEPS = 7;
 
     // Build progress dots
     for (let i = 0; i < TOTAL_STEPS; i++) {
@@ -597,8 +597,17 @@
         });
     }
 
+    // ───── Helper: salvar no backend ─────
+    async function saveToBackend(endpoint, body) {
+        try {
+            const r = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            return r.ok;
+        } catch { return false; }
+    }
+
     // ───── Question Flow ─────
 
+    // === ETAPA 1: Introdução ===
     async function q1_intro() {
         setStep(0);
         orb.setState('idle');
@@ -606,269 +615,64 @@
 
         await typeMultiple([
             'Olá! Eu sou a Zaya, sua nova assistente pessoal.',
-            'Vou precisar te conhecer um pouquinho pra me adaptar ao teu jeito.',
+            'Vou te guiar pra configurar tudo rapidinho.',
         ]);
 
         clearInput();
         await sleep(300);
 
         return new Promise(resolve => {
-            const btn = createButton('Vamos la!', () => resolve());
+            const btn = createButton('Bora!', () => resolve());
             inputArea.appendChild(btn);
             showInput();
         });
     }
 
-    async function q2_callName() {
-        setStep(4);
-        clearInput();
-        orb.setState('listening');
-        orb.setAudioLevel(0.2);
-
-        const nameDisplay = adminName || 'voce';
-        await typeText(`Vi que teu nome é ${nameDisplay}. Como prefere que eu te chame?`);
-
-        await sleep(200);
-        const val = await createTextInput('Ex: Alisson, Sr. Silva, Chefe, Boss...', 'Proximo');
-        answers.callName = val;
-    }
-
-    async function q3_communicationStyle() {
-        setStep(5);
-        clearInput();
-        orb.setState('idle');
-        orb.setAudioLevel(0);
-
-        await typeText('Como quer que eu fale contigo?');
-        await sleep(200);
-
-        const val = await createSingleSelect([
-            { emoji: '\uD83E\uDD1D', label: 'Formal', desc: 'Senhor/Senhora, linguagem profissional', value: 'formal' },
-            { emoji: '\uD83D\uDE04', label: 'Informal', desc: 'De boa, descontraido, com girias', value: 'informal' },
-            { emoji: '\uD83C\uDFAF', label: 'Direto', desc: 'Sem enrolacao, objetivo e rapido', value: 'direto' },
-            { emoji: '\uD83E\uDD17', label: 'Amigavel', desc: 'Como uma amiga proxima, carinhosa', value: 'amigavel' },
-        ]);
-        answers.communicationStyle = val;
-    }
-
-    async function q4_accent() {
-        setStep(6);
-        clearInput();
-        orb.setState('idle');
-        orb.setAudioLevel(0.1);
-
-        await typeText('Quer que eu tenha algum sotaque ou jeito de falar?');
-        await sleep(200);
-
-        const val = await createSingleSelect([
-            { emoji: '\uD83C\uDDE7\uD83C\uDDF7', label: 'Neutro', desc: 'Portugues brasileiro padrao', value: 'neutro' },
-            { emoji: '\uD83C\uDF34', label: 'Nordestino', desc: 'Oxe, arretado, visse', value: 'nordestino' },
-            { emoji: '\u2615', label: 'Paulista', desc: 'Mano, tipo, da hora', value: 'paulista' },
-            { emoji: '\uD83C\uDFD4\uFE0F', label: 'Mineiro', desc: 'Uai, trem bao, ne', value: 'mineiro' },
-            { emoji: '\uD83C\uDFD6\uFE0F', label: 'Carioca', desc: 'Cara, muito maneiro', value: 'carioca' },
-            { emoji: '\uD83C\uDF0E', label: 'Sem preferencia', desc: 'Fala como quiser', value: 'sem_preferencia' },
-        ]);
-        answers.accent = val;
-    }
-
-    async function q5_profession() {
-        setStep(7);
-        clearInput();
-        orb.setState('listening');
-        orb.setAudioLevel(0.15);
-
-        await typeText('Me conta um pouco sobre ti. O que tu faz da vida?');
-        await sleep(200);
-
-        const val = await createTextInput('Ex: Sou empreendedor, trabalho com marketing digital...', 'Proximo');
-        answers.profession = val;
-    }
-
-    async function q6_expectations() {
-        setStep(8);
-        clearInput();
-        orb.setState('idle');
-        orb.setAudioLevel(0);
-
-        await typeText('No que posso te ajudar mais? O que tu espera de mim?');
-        await sleep(200);
-
-        const val = await createMultiSelect([
-            { emoji: '\uD83D\uDCAC', label: 'Responder clientes', desc: 'WhatsApp, Instagram, atendimento', value: 'responder_clientes' },
-            { emoji: '\uD83D\uDCCA', label: 'Gerenciar redes sociais', desc: 'Posts, stories, ads', value: 'gerenciar_redes' },
-            { emoji: '\uD83D\uDCDD', label: 'Organizar minha rotina', desc: 'Agenda, lembretes, tarefas', value: 'organizar_rotina' },
-            { emoji: '\uD83C\uDFA8', label: 'Criar conteudo', desc: 'Imagens, videos, textos', value: 'criar_conteudo' },
-            { emoji: '\uD83D\uDD0D', label: 'Pesquisar informacoes', desc: 'Buscar dados, analisar', value: 'pesquisar_info' },
-            { emoji: '\uD83E\uDD16', label: 'Ser minha assistente geral', desc: 'Um pouco de tudo', value: 'assistente_geral' },
-        ]);
-        answers.expectations = val;
-    }
-
-    // ───── Helper: salvar config no backend ─────
-    async function saveToBackend(endpoint, body) {
-        try {
-            const r = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body),
-            });
-            return r.ok;
-        } catch { return false; }
-    }
-
-    async function q7_final() {
-        setStep(9);
-        clearInput();
-
-        // ───── Save personality via API ─────
-        await saveToBackend('/api/setup/save-module', {
-            module: 'personality',
-            config: {
-                ZAYA_CALL_NAME: answers.callName,
-                ZAYA_STYLE: answers.communicationStyle,
-                ZAYA_ACCENT: answers.accent,
-                ZAYA_USER_PROFESSION: answers.profession,
-                ZAYA_USER_EXPECTATIONS: answers.expectations.join(','),
-            }
-        });
-
-        // ───── Save identity (nome + telefone se tiver) ─────
-        await saveToBackend('/api/setup/save-identity', {
-            name: answers.callName,
-            phone: answers.phone || '',
-        });
-
-        // ───── Final cinematic sequence ─────
-        orb.setState('speaking');
-        orb.setAudioLevel(0.4);
-        await typeText('Perfeito, ' + answers.callName + '! Já sei como me adaptar ao teu jeito.');
-        await sleep(1200);
-
-        await typeText('Vou configurar a minha personalidade agora...');
-        await sleep(800);
-
-        orb.setState('processing');
-        orb.setAudioLevel(0.6);
-
-        const processingEl = document.createElement('div');
-        processingEl.className = 'processing-msg';
-        inputArea.innerHTML = '';
-        inputArea.appendChild(processingEl);
-        showInput();
-
-        const steps = [
-            { text: 'Ajustando a linguagem...', delay: 1500 },
-            { text: 'Carregando a personalidade...', delay: 1500 },
-            { text: 'Memorizando as preferências...', delay: 1500 },
-            { text: 'Zaya pronta pra ' + answers.callName + '!', delay: 2000 },
-        ];
-
-        for (const step of steps) {
-            processingEl.style.opacity = '0';
-            await sleep(250);
-            processingEl.textContent = step.text;
-            processingEl.style.opacity = '1';
-
-            if (step === steps[steps.length - 1]) {
-                orb.setState('speaking');
-                orb.setAudioLevel(0.5);
-            }
-            await sleep(step.delay);
-        }
-
-        // ───── Marcar setup como completo ─────
-        await saveToBackend('/api/setup/complete', {});
-
-        // Mark all dots done
-        dotsContainer.querySelectorAll('.dot').forEach(d => {
-            d.className = 'dot done';
-        });
-
-        await sleep(2000);
-
-        // Fade out and redirect
-        document.getElementById('onboarding').style.transition = 'opacity 0.8s ease';
-        document.getElementById('onboarding').style.opacity = '0';
-        dotsContainer.style.transition = 'opacity 0.8s ease';
-        dotsContainer.style.opacity = '0';
-
-        await sleep(900);
-        window.location.href = '/';
-    }
-
-    // ───── Q1.5: API Key (mente da Zaya) ─────
-    async function q1b_apiKey() {
+    // === ETAPA 2: Inteligência Artificial ===
+    async function q2_apiKey() {
         setStep(1);
         clearInput();
         orb.setState('processing');
         orb.setAudioLevel(0.3);
 
         await typeMultiple([
-            'Antes de tudo, preciso de uma mente pra funcionar.',
+            'Primeiro, preciso de uma mente pra funcionar.',
             'Escolhe qual inteligência artificial eu vou usar:',
         ]);
         await sleep(200);
 
         const provider = await createSingleSelect([
-            { emoji: '\uD83E\uDDE0', label: 'Groq (Gratis)', desc: 'Rapido e sem custo. Ideal pra comecar.', value: 'groq' },
-            { emoji: '\uD83D\uDCAB', label: 'ChatGPT (OpenAI)', desc: 'GPT-4o, o mais completo.', value: 'openai' },
-            { emoji: '\uD83E\uDD16', label: 'Claude (Anthropic)', desc: 'Inteligente e preciso.', value: 'anthropic' },
-            { emoji: '\uD83C\uDD93', label: 'HuggingFace (Gratis)', desc: 'DeepSeek, Llama, Qwen.', value: 'huggingface' },
+            { emoji: '\uD83E\uDDE0', label: 'Groq (grátis)', desc: 'Rápido e sem custo, ideal pra começar', value: 'groq' },
+            { emoji: '\uD83D\uDCAB', label: 'ChatGPT (OpenAI)', desc: 'GPT quatro o, o mais completo', value: 'openai' },
+            { emoji: '\uD83E\uDD16', label: 'Claude (Anthropic)', desc: 'Inteligente e preciso', value: 'anthropic' },
+            { emoji: '\uD83C\uDD93', label: 'HuggingFace (grátis)', desc: 'DeepSeek, Llama, Qwen', value: 'huggingface' },
         ]);
 
         clearInput();
-        const providerLinks = {
-            groq: 'console.groq.com/keys',
-            openai: 'platform.openai.com/api-keys',
-            anthropic: 'console.anthropic.com/settings/keys',
-            huggingface: 'huggingface.co/settings/tokens',
-        };
-        const providerModels = {
+        const links = { groq: 'console.groq.com/keys', openai: 'platform.openai.com/api-keys', anthropic: 'console.anthropic.com/settings/keys', huggingface: 'huggingface.co/settings/tokens' };
+        const models = {
             groq: { model: 'llama-3.3-70b-versatile', modelMini: 'llama-3.1-8b-instant', baseUrl: 'https://api.groq.com/openai/v1' },
             openai: { model: 'gpt-4o', modelMini: 'gpt-4o-mini' },
             anthropic: { model: 'claude-sonnet-4-20250514', modelMini: 'claude-haiku-4-5-20251001' },
             huggingface: { model: 'deepseek-ai/DeepSeek-V3-0324', modelMini: 'meta-llama/Llama-3.3-70B-Instruct', baseUrl: 'https://router.huggingface.co/v1' },
         };
 
-        await typeText('Agora cola a chave da API. Pega no site: ' + providerLinks[provider]);
+        await typeText('Agora cola a chave da API. Pega no site: ' + links[provider]);
         await sleep(200);
 
-        let apiKey = '';
         let validated = false;
         while (!validated) {
-            apiKey = await createTextInput('Cole a API key aqui...', 'Validar');
+            const apiKey = await createTextInput('Cola a chave aqui...', 'Validar');
             clearInput();
-
-            // Mostra processando
             orb.setState('processing');
             await typeText('Validando a chave...');
-            await sleep(500);
 
             try {
-                const saveBody = {
-                    provider: provider,
-                    key: apiKey.trim(),
-                    ...(providerModels[provider].baseUrl ? { baseUrl: providerModels[provider].baseUrl } : {}),
-                    model: providerModels[provider].model,
-                    modelMini: providerModels[provider].modelMini,
-                };
-
-                const r = await fetch('/api/setup/save-mind', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(saveBody),
-                });
-
+                const body = { provider, key: apiKey.trim(), ...(models[provider].baseUrl ? { baseUrl: models[provider].baseUrl } : {}), model: models[provider].model, modelMini: models[provider].modelMini };
+                const r = await fetch('/api/setup/save-mind', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
                 if (r.ok) {
-                    // Testa a chave
-                    const testR = await fetch('/api/setup/test-module', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ module: 'mind', config: saveBody }),
-                    });
-                    const testData = await testR.json();
-
-                    if (testR.ok && testData.success) {
+                    const testR = await fetch('/api/setup/test-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'mind', config: body }) });
+                    if (testR.ok && (await testR.json()).success) {
                         clearInput();
                         orb.setState('speaking');
                         await typeText('Perfeito! Minha mente tá funcionando!');
@@ -876,100 +680,30 @@
                         validated = true;
                     } else {
                         clearInput();
-                        orb.setState('idle');
-                        await typeText('Hmm, essa chave não funcionou. Verifica e tenta de novo.');
+                        await typeText('Essa chave não funcionou. Verifica e tenta de novo.');
                         await sleep(500);
                     }
                 } else {
                     clearInput();
-                    await typeText('Deu um erro ao salvar. Tenta de novo.');
+                    await typeText('Deu erro ao salvar. Tenta de novo.');
                     await sleep(500);
                 }
-            } catch (e) {
+            } catch {
                 clearInput();
                 await typeText('Erro de conexão. Verifica a internet e tenta de novo.');
                 await sleep(500);
             }
         }
-
-        answers.provider = provider;
     }
 
-    // ───── Q1c: Escolher ferramentas ─────
-    let selectedTools = [];
-
-    async function q1c_chooseTools() {
+    // === ETAPA 3: WhatsApp ===
+    async function q3_whatsapp() {
         setStep(2);
-        clearInput();
-        orb.setState('idle');
-        orb.setAudioLevel(0.1);
-
-        await typeText('O que tu quer que eu conecte? Escolhe tudo que quiser!');
-        await sleep(200);
-
-        selectedTools = await createMultiSelect([
-            { emoji: '\uD83D\uDCAC', label: 'WhatsApp', desc: 'Mandar e receber mensagens', value: 'whatsapp' },
-            { emoji: '\u2601\uFE0F', label: 'Nuvem (Supabase)', desc: 'Salvar contatos, historico, leads', value: 'supabase' },
-            { emoji: '\uD83C\uDFA8', label: 'Gerar Imagens', desc: 'DALL-E, Gemini, FLUX', value: 'images' },
-            { emoji: '\uD83D\uDD0D', label: 'Pesquisa Web', desc: 'Firecrawl para buscar na internet', value: 'search' },
-            { emoji: '\uD83D\uDCF8', label: 'Instagram & Facebook', desc: 'Gerenciar redes sociais', value: 'meta' },
-            { emoji: '\uD83D\uDCDE', label: 'Ligacoes', desc: 'Fazer e receber ligacoes', value: 'voice' },
-        ]);
-
-        clearInput();
-        if (selectedTools.length === 0) {
-            await typeText('Tudo bem! Pode configurar depois no Setup. Vamos pro resto.');
-        } else {
-            const nomes = selectedTools.length === 1 ? selectedTools[0] : selectedTools.slice(0, -1).join(', ') + ' e ' + selectedTools[selectedTools.length - 1];
-            await typeText('Ótimo! Vou configurar ' + nomes + ' passo a passo.');
-        }
-        await sleep(800);
-    }
-
-    // ───── Setup: WhatsApp ─────
-    async function setupWhatsApp() {
-        setStep(3);
         clearInput();
         orb.setState('processing');
         orb.setAudioLevel(0.3);
 
-        await typeText('Como quer conectar o WhatsApp?');
-        await sleep(200);
-
-        const waMethod = await createSingleSelect([
-            { emoji: '\uD83D\uDCF1', label: 'Grátis (padrão)', desc: 'Conecta direto, sem pagar nada', value: 'direto' },
-            { emoji: '\u2B50', label: 'WaSender (pago)', desc: 'Mais estável, seis dólares por mês', value: 'wasender' },
-            { emoji: '\u23E9', label: 'Pular', desc: 'Configura depois', value: 'skip' },
-        ]);
-
-        if (waMethod === 'skip') {
-            clearInput();
-            await typeText('Sem problema! Tu conecta depois pelo painel do WhatsApp.');
-            await sleep(800);
-            return;
-        }
-
-        if (waMethod === 'wasender') {
-            clearInput();
-            await typeText('Cola a API Key do WaSender (wasenderapi.com):');
-            await sleep(200);
-            const wsKey = await createTextInput('SUA_API_KEY', 'Salvar');
-
-            await saveToBackend('/api/setup/save-module', {
-                module: 'whatsapp',
-                config: { WASENDER_API_KEY: wsKey.trim() },
-            });
-
-            clearInput();
-            orb.setState('speaking');
-            await typeText('WaSender configurado! Teu WhatsApp tá pronto.');
-            await sleep(1000);
-            return;
-        }
-
-        // Conexão direta (Baileys) — padrão grátis
-        clearInput();
-        await typeText('Digita teu número com DDD pra gerar o código de pareamento.');
+        await typeText('Agora vamos conectar teu WhatsApp! Digita teu número com DDD:');
         await sleep(200);
 
         const phone = await createTextInput('Número com DDD (ex: 5511999999999)', 'Conectar');
@@ -978,12 +712,7 @@
         await typeText('Gerando código de pareamento...');
 
         try {
-            const instName = 'principal';
-            const r = await fetch('/api/whatsapp/pair', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: instName, phone: phone.trim(), label: 'Principal' }),
-            });
+            const r = await fetch('/api/whatsapp/pair', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'principal', phone: phone.trim(), label: 'Principal' }) });
             const data = await r.json();
 
             if (data.success && data.code) {
@@ -997,7 +726,7 @@
                 inputArea.appendChild(codeDiv);
                 showInput();
 
-                await typeText('Abre o WhatsApp no celular, vai em Aparelhos conectados, e conecta com esse código:');
+                await typeText('Abre o WhatsApp no celular, vai em Aparelhos conectados, e digita esse código:');
 
                 const timerEl = document.createElement('div');
                 timerEl.style.cssText = 'text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;';
@@ -1010,8 +739,7 @@
                     try {
                         const check = await fetch('/api/whatsapp/instances');
                         const instData = await check.json();
-                        const inst = instData.instances?.find(x => x.name === instName);
-                        if (inst && inst.status === 'connected') { connected = true; break; }
+                        if (instData.instances?.find(x => x.name === 'principal' && x.status === 'connected')) { connected = true; break; }
                     } catch {}
                 }
 
@@ -1024,256 +752,142 @@
                     answers.phone = phone.trim();
                     await saveToBackend('/api/setup/save-identity', { name: adminName || '', phone: phone.trim() });
                 } else {
-                    orb.setState('idle');
-                    await typeText('Não conectou a tempo, mas pode tentar depois pelo painel do WhatsApp.');
+                    await typeText('Não conectou a tempo. Pode tentar depois pelo painel do WhatsApp.');
                     await sleep(1500);
                 }
             } else {
                 clearInput();
-                await typeText('Erro ao gerar código. Pode conectar depois pelo painel do WhatsApp.');
+                await typeText('Erro ao gerar código. Conecta depois pelo painel do WhatsApp.');
                 await sleep(1500);
             }
-        } catch (e) {
+        } catch {
             clearInput();
-            await typeText('Erro de conexão. Pode configurar o WhatsApp depois pelo painel.');
+            await typeText('Erro de conexão. Conecta o WhatsApp depois pelo painel.');
             await sleep(1500);
         }
     }
 
-    // ───── Setup: Supabase ─────
-    async function setupSupabase() {
+    // === ETAPA 4: Como te chamar ===
+    async function q4_nome() {
+        setStep(3);
+        clearInput();
+        orb.setState('listening');
+        orb.setAudioLevel(0.2);
+
+        const nameDisplay = adminName || 'amigo';
+        await typeText('Vi que teu nome é ' + nameDisplay + '. Como prefere que eu te chame?');
+        await sleep(200);
+        answers.callName = await createTextInput('Ex: Alisson, Chefe, Boss, Mi...', 'Próximo');
+    }
+
+    // === ETAPA 5: Estilo de comunicação ===
+    async function q5_estilo() {
+        setStep(4);
         clearInput();
         orb.setState('idle');
-        orb.setAudioLevel(0.1);
+        orb.setAudioLevel(0);
 
-        await typeText('Agora o Supabase! Cola a URL do teu projeto. Tá em supabase.com, Settings, API:');
+        await typeText('Como quer que eu fale contigo?');
         await sleep(200);
-        const sbUrl = await createTextInput('https://xxxxx.supabase.co', 'Proximo');
 
+        answers.communicationStyle = await createSingleSelect([
+            { emoji: '\uD83E\uDD1D', label: 'Formal', desc: 'Senhor, senhora, linguagem profissional', value: 'formal' },
+            { emoji: '\uD83D\uDE04', label: 'Informal', desc: 'De boa, descontraído, com gírias', value: 'informal' },
+            { emoji: '\uD83C\uDFAF', label: 'Direto', desc: 'Sem enrolação, objetivo e rápido', value: 'direto' },
+            { emoji: '\uD83E\uDD17', label: 'Amigável', desc: 'Como uma amiga próxima, carinhosa', value: 'amigavel' },
+        ]);
+    }
+
+    // === ETAPA 6: Profissão ===
+    async function q6_profissao() {
+        setStep(5);
         clearInput();
-        await typeText('Agora a chave anon pública. Começa com eyJ:');
+        orb.setState('listening');
+        orb.setAudioLevel(0.15);
+
+        await typeText('Me conta um pouco sobre ti. O que tu faz da vida?');
         await sleep(200);
-        const sbKey = await createTextInput('eyJhbGciOi...', 'Validar');
+        answers.profession = await createTextInput('Ex: Sou empreendedor, trabalho com marketing...', 'Próximo');
+        answers.accent = 'neutro';
+        answers.expectations = ['assistente_geral'];
+    }
 
+    // === ETAPA 7: Final ===
+    async function q7_final() {
+        setStep(6);
         clearInput();
+
+        // Salva personalidade
+        await saveToBackend('/api/setup/save-module', {
+            module: 'personality',
+            config: {
+                ZAYA_CALL_NAME: answers.callName,
+                ZAYA_STYLE: answers.communicationStyle,
+                ZAYA_ACCENT: answers.accent,
+                ZAYA_USER_PROFESSION: answers.profession,
+                ZAYA_USER_EXPECTATIONS: answers.expectations.join(','),
+            }
+        });
+
+        // Salva identidade
+        await saveToBackend('/api/setup/save-identity', { name: answers.callName, phone: answers.phone || '' });
+
+        // Animação final
+        orb.setState('speaking');
+        orb.setAudioLevel(0.4);
+        await typeText('Perfeito, ' + answers.callName + '! Já sei como me adaptar ao teu jeito.');
+        await sleep(1200);
+
+        await typeText('Configurando tudo pra ti...');
+        await sleep(800);
+
         orb.setState('processing');
-        await typeText('Validando conexão...');
+        orb.setAudioLevel(0.6);
 
-        try {
-            await fetch('/api/setup/save-module', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ module: 'supabase', config: { SUPABASE_URL: sbUrl.trim(), SUPABASE_KEY: sbKey.trim() } }),
-            });
+        const processingEl = document.createElement('div');
+        processingEl.className = 'processing-msg';
+        inputArea.innerHTML = '';
+        inputArea.appendChild(processingEl);
+        showInput();
 
-            const testR = await fetch('/api/setup/test-module', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ module: 'supabase', config: { SUPABASE_URL: sbUrl.trim(), SUPABASE_KEY: sbKey.trim() } }),
-            });
+        const steps = [
+            { text: 'Ajustando a linguagem...', delay: 1200 },
+            { text: 'Carregando a personalidade...', delay: 1200 },
+            { text: 'Zaya pronta pra ' + answers.callName + '!', delay: 2000 },
+        ];
 
-            if (testR.ok && (await testR.json()).success) {
-                clearInput();
-                await typeText('Conectado! Criando tabelas...');
-                await sleep(500);
-                const createR = await fetch('/api/setup/create-tables', { method: 'POST' });
-                const createData = await createR.json();
-                if (createData.success) {
-                    orb.setState('speaking');
-                    await typeText('Tabelas criadas! Contatos, mensagens, leads, inbox. Tudo pronto na nuvem.');
-                    await sleep(1000);
-                    try { await fetch('/api/whatsapp/sync-contacts', { method: 'POST' }); } catch {}
-                } else {
-                    clearInput();
-                    await typeText('Conectou, mas precisa criar as tabelas manualmente. Copia o SQL abaixo e cola no Supabase Dashboard, em SQL Editor:');
-                    await sleep(500);
-
-                    // Mostra o SQL pra copiar
-                    if (createData.sql) {
-                        const sqlBox = document.createElement('div');
-                        sqlBox.style.cssText = 'background:rgba(0,0,0,0.4);border:1px solid rgba(0,230,118,0.2);border-radius:8px;padding:12px;max-height:200px;overflow-y:auto;font-family:monospace;font-size:10px;color:#00e676;white-space:pre-wrap;margin:8px 0;cursor:pointer;';
-                        sqlBox.textContent = createData.sql;
-                        sqlBox.title = 'Clique pra copiar';
-                        sqlBox.onclick = () => { navigator.clipboard.writeText(createData.sql); sqlBox.style.borderColor = '#00e676'; };
-                        inputArea.innerHTML = '';
-                        inputArea.appendChild(sqlBox);
-
-                        const copyBtn = document.createElement('button');
-                        copyBtn.textContent = 'Copiar SQL';
-                        copyBtn.style.cssText = 'background:#00e676;color:#000;border:none;padding:8px 20px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;margin-top:6px;font-weight:bold;';
-                        copyBtn.onclick = () => { navigator.clipboard.writeText(createData.sql); copyBtn.textContent = 'Copiado!'; };
-                        inputArea.appendChild(copyBtn);
-                        showInput();
-
-                        // Espera o usuario copiar
-                        await new Promise(resolve => {
-                            const continueBtn = document.createElement('button');
-                            continueBtn.textContent = 'Ja colei, continuar';
-                            continueBtn.style.cssText = 'background:transparent;color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.2);padding:8px 20px;border-radius:6px;font-family:monospace;font-size:11px;cursor:pointer;margin-top:6px;margin-left:8px;';
-                            continueBtn.onclick = resolve;
-                            inputArea.appendChild(continueBtn);
-                        });
-                    }
-                    await sleep(500);
-                }
-            } else {
-                clearInput();
-                await typeText('A URL ou a chave tá incorreta. Configura depois no Setup.');
-                await sleep(1500);
-            }
-        } catch (e) {
-            clearInput();
-            await typeText('Deu erro. Configura o Supabase depois no Setup.');
-            await sleep(1500);
-        }
-    }
-
-    // ───── Setup: Imagens ─────
-    async function setupImages() {
-        clearInput();
-        orb.setState('idle');
-
-        const provider = await createSingleSelect([
-            { emoji: '\uD83C\uDFA8', label: 'DALL-E 3 (OpenAI)', desc: 'Ja usa a mesma chave da IA', value: 'openai' },
-            { emoji: '\uD83D\uDDBC\uFE0F', label: 'Google Gemini', desc: 'Precisa de chave do AI Studio', value: 'google' },
-            { emoji: '\uD83C\uDD93', label: 'FLUX.1 (Gratis)', desc: 'Via HuggingFace, sem custo', value: 'flux' },
-            { emoji: '\u23E9', label: 'Pular', desc: 'Configura depois', value: 'skip' },
-        ]);
-
-        if (provider === 'skip') return;
-
-        if (provider === 'openai') {
-            await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'images', config: { IMAGE_PROVIDER: 'openai' } }) });
-            clearInput();
-            await typeText('DALL-E três ativado! Usa a mesma chave da IA.');
-            await sleep(800);
-        } else if (provider === 'google') {
-            clearInput();
-            await typeText('Cola a chave do Google AI Studio (aistudio.google.com/apikey):');
-            const gkey = await createTextInput('AIzaSy...', 'Salvar');
-            await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'google_ai', config: { GOOGLE_AI_STUDIO_KEY: gkey.trim() } }) });
-            clearInput();
-            await typeText('Google Gemini ativado!');
-            await sleep(800);
-        } else if (provider === 'flux') {
-            clearInput();
-            await typeText('Cola a chave do HuggingFace (huggingface.co/settings/tokens):');
-            const hfkey = await createTextInput('hf_...', 'Salvar');
-            await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'images', config: { IMAGE_PROVIDER: 'flux', HUGGINGFACE_API_KEY: hfkey.trim(), HF_TOKEN: hfkey.trim() } }) });
-            clearInput();
-            await typeText('FLUX ponto um ativado! Imagens de graça.');
-            await sleep(800);
-        }
-    }
-
-    // ───── Setup: Pesquisa Web ─────
-    async function setupSearch() {
-        clearInput();
-        orb.setState('idle');
-        await typeText('Cola a chave do Firecrawl pra pesquisa web (firecrawl.dev):');
-        await sleep(200);
-        const fckey = await createTextInput('fc-...', 'Salvar');
-        await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'firecrawl', config: { FIRECRAWL_API_KEY: fckey.trim() } }) });
-        clearInput();
-        await typeText('Pesquisa na web ativada!');
-        await sleep(800);
-    }
-
-    // ───── Setup: Meta (Instagram/Facebook) ─────
-    async function setupMeta() {
-        clearInput();
-        orb.setState('idle');
-        await typeText('Cola o Access Token do Facebook/Instagram (developers.facebook.com):');
-        await sleep(200);
-        const mtoken = await createTextInput('EAAG...', 'Salvar');
-        await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'meta', config: { FACEBOOK_ACCESS_TOKEN: mtoken.trim() } }) });
-        clearInput();
-        await typeText('Instagram e Facebook conectados!');
-        await sleep(800);
-    }
-
-    // ───── Setup: Voz/Ligacoes ─────
-    async function setupVoice() {
-        clearInput();
-        orb.setState('idle');
-
-        const provider = await createSingleSelect([
-            { emoji: '\uD83D\uDCDE', label: 'Twilio', desc: 'O mais popular', value: 'twilio' },
-            { emoji: '\uD83D\uDCDE', label: 'Plivo', desc: 'Mais barato', value: 'plivo' },
-            { emoji: '\u23E9', label: 'Pular', desc: 'Configura depois', value: 'skip' },
-        ]);
-
-        if (provider === 'skip') return;
-
-        if (provider === 'twilio') {
-            clearInput();
-            await typeText('Cola o Twilio Account SID:');
-            const sid = await createTextInput('AC...', 'Proximo');
-            clearInput();
-            await typeText('Agora o Auth Token:');
-            const token = await createTextInput('Token...', 'Proximo');
-            clearInput();
-            await typeText('E o numero do Twilio (ex: +15551234567):');
-            const num = await createTextInput('+1...', 'Salvar');
-            await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'twilio', config: { VOICE_PROVIDER: 'twilio', TWILIO_ACCOUNT_SID: sid.trim(), TWILIO_AUTH_TOKEN: token.trim(), TWILIO_PHONE_NUMBER: num.trim() } }) });
-            clearInput();
-            await typeText('Twilio conectado! Já posso fazer ligações.');
-            await sleep(800);
-        } else if (provider === 'plivo') {
-            clearInput();
-            await typeText('Cola o Plivo Auth ID:');
-            const pid = await createTextInput('Auth ID...', 'Proximo');
-            clearInput();
-            await typeText('Agora o Auth Token:');
-            const ptk = await createTextInput('Token...', 'Proximo');
-            clearInput();
-            await typeText('E o numero do Plivo:');
-            const pnum = await createTextInput('+1...', 'Salvar');
-            await fetch('/api/setup/save-module', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ module: 'twilio', config: { VOICE_PROVIDER: 'plivo', PLIVO_AUTH_ID: pid.trim(), PLIVO_AUTH_TOKEN: ptk.trim(), PLIVO_PHONE_NUMBER: pnum.trim() } }) });
-            clearInput();
-            await typeText('Plivo conectado!');
-            await sleep(800);
-        }
-    }
-
-    // ───── Setup: Configurar ferramentas selecionadas ─────
-    async function q1c_setupTools() {
-        const toolOrder = ['whatsapp', 'supabase', 'images', 'search', 'meta', 'voice'];
-        const toolSetup = {
-            whatsapp: setupWhatsApp,
-            supabase: setupSupabase,
-            images: setupImages,
-            search: setupSearch,
-            meta: setupMeta,
-            voice: setupVoice,
-        };
-
-        for (const tool of toolOrder) {
-            if (selectedTools.includes(tool)) {
-                setStep(3);
-                await toolSetup[tool]();
-            }
+        for (const step of steps) {
+            processingEl.style.opacity = '0';
+            await sleep(250);
+            processingEl.textContent = step.text;
+            processingEl.style.opacity = '1';
+            if (step === steps[steps.length - 1]) { orb.setState('speaking'); orb.setAudioLevel(0.5); }
+            await sleep(step.delay);
         }
 
-        if (selectedTools.length > 0) {
-            clearInput();
-            orb.setState('speaking');
-            await typeText('Ferramentas configuradas! Agora vou te conhecer um pouco melhor.');
-            await sleep(1000);
-        }
+        // Marca setup completo
+        await saveToBackend('/api/setup/complete', {});
+
+        dotsContainer.querySelectorAll('.dot').forEach(d => { d.className = 'dot done'; });
+        await sleep(2000);
+
+        document.getElementById('onboarding').style.transition = 'opacity 0.8s ease';
+        document.getElementById('onboarding').style.opacity = '0';
+        dotsContainer.style.transition = 'opacity 0.8s ease';
+        dotsContainer.style.opacity = '0';
+
+        await sleep(900);
+        window.location.href = '/';
     }
 
     // ───── Run Flow ─────
     try {
         await q1_intro();
-        await q1b_apiKey();
-        await q1c_chooseTools();
-        await q1c_setupTools();
-        await q2_callName();
-        await q3_communicationStyle();
-        await q4_accent();
-        await q5_profession();
-        await q6_expectations();
+        await q2_apiKey();
+        await q3_whatsapp();
+        await q4_nome();
+        await q5_estilo();
+        await q6_profissao();
         await q7_final();
     } catch (err) {
         console.error('Onboarding error:', err);
