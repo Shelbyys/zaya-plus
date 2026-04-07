@@ -78,6 +78,18 @@ app.post('/api/license/validate', async (req, res) => {
     if (record.revoked) return res.json({ valid: false, error: 'Licenca revogada' });
     if (record.expires_at && new Date(record.expires_at) < new Date()) return res.json({ valid: false, error: 'Licenca expirada' });
     if (record.activated && record.fingerprint && record.fingerprint !== fingerprint) {
+      // Permite reativar se hostname e platform batem (mesmo PC, fingerprint mudou por update)
+      const savedMachine = record.machine_info || {};
+      const sameHost = machine && savedMachine.hostname && machine.hostname === savedMachine.hostname;
+      const samePlatform = machine && savedMachine.platform && machine.platform === savedMachine.platform;
+      if (sameHost && samePlatform) {
+        // Mesma máquina — atualiza fingerprint
+        await sbUpdate(`token=eq.${encodeURIComponent(token)}`, {
+          fingerprint, machine_info: machine || {},
+          activated_at: new Date().toISOString()
+        });
+        return res.json({ valid: true, plan: record.plan, reactivated: true });
+      }
       return res.json({ valid: false, error: 'Token ja ativado em outro computador' });
     }
 
