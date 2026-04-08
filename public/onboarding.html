@@ -342,7 +342,11 @@ if (i === n) d.classList.add('active');
 // Falar texto usando TTS com orb reagindo ao audio em tempo real
 let audioCtx = null;
 let analyser = null;
+let userInteracted = false;
+document.addEventListener('click', () => { userInteracted = true; }, { once: false });
+document.addEventListener('touchstart', () => { userInteracted = true; }, { once: false });
 async function speak(text) {
+if (!userInteracted) return; // Chrome bloqueia autoplay sem interação
 try {
 const res = await fetch('/api/speak', {
 method: 'POST',
@@ -375,7 +379,7 @@ if (orb) orb.setAudioLevel(avg * 1.5);
 animFrame = requestAnimationFrame(updateOrb);
 }
 updateOrb();
-audio.play();
+audio.play().catch(() => {});
 audio.onended = () => {
 cancelAnimationFrame(animFrame);
 if (orb) { orb.setState('idle'); orb.setAudioLevel(0); }
@@ -601,7 +605,7 @@ await sleep(500);
 }
 }
 }
-// === ETAPA 3: WhatsApp (QR Code) ===
+// === ETAPA 3: WhatsApp (QR Code com 3 tentativas) ===
 async function q3_whatsapp() {
 setStep(2);
 clearInput();
@@ -612,18 +616,28 @@ await typeText('Agora vamos conectar teu WhatsApp!');
 await sleep(200);
 clearInput();
 const phone = await createTextInput('Digita teu número com DDD (ex: 5511999999999)', 'Conectar');
+async function tentarQR(tentativa) {
 clearInput();
 msgEl.innerHTML = '';
 orb.setState('processing');
+if (tentativa > 1) {
+await typeText('Tentativa ' + tentativa + ' de 3... Gerando novo QR Code...');
+} else {
 await typeText('Gerando QR Code...');
-try {
+}
+await sleep(500);
+return new Promise((resolve) => {
 const instName = 'principal';
 const qrUrl = '/api/whatsapp/pair-qr?name=' + encodeURIComponent(instName) + '&phone=' + encodeURIComponent(phone.trim()) + '&label=Principal';
-const evtSource = new EventSource(qrUrl);
+let evtSource;
+try { evtSource = new EventSource(qrUrl); } catch { resolve(false); return; }
 let connected = false;
 let qrCount = 0;
+let gotQR = false;
 evtSource.addEventListener('qr', (e) => {
 qrCount++;
+gotQR = true;
+try {
 const qrData = JSON.parse(e.data);
 inputArea.innerHTML = '';
 const qrImg = document.createElement('img');
@@ -632,50 +646,59 @@ qrImg.style.cssText = 'max-width:280px;border-radius:12px;display:block;margin:0
 inputArea.appendChild(qrImg);
 const statusEl = document.createElement('div');
 statusEl.style.cssText = 'text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;';
-statusEl.textContent = 'Escaneie com o WhatsApp (' + qrCount + '/8)';
+statusEl.textContent = 'Escaneie com o WhatsApp (' + qrCount + '/8) — tentativa ' + tentativa + '/3';
 inputArea.appendChild(statusEl);
 showInput();
 msgEl.innerHTML = '';
-const textNode = document.createTextNode('Abre o WhatsApp no celular, vai em Aparelhos conectados, e escaneia o QR Code:');
-msgEl.appendChild(textNode);
+msgEl.appendChild(document.createTextNode('Abre o WhatsApp no celular, vai em Aparelhos conectados, e escaneia o QR Code:'));
+} catch {}
 });
 evtSource.addEventListener('connected', () => {
 evtSource.close();
 connected = true;
-clearInput();
-msgEl.innerHTML = '';
-orb.setState('speaking');
-orb.setAudioLevel(0.5);
-answers.phone = phone.trim();
-saveToBackend('/api/setup/save-identity', { name: adminName || '', phone: phone.trim() });
-typeText('WhatsApp conectado! Já consigo mandar e receber mensagens.');
+resolve(true);
 });
 evtSource.addEventListener('timeout', () => {
 evtSource.close();
-if (!connected) {
-clearInput();
-typeText('Tempo esgotado. Pode conectar depois pelo painel do WhatsApp.');
-}
+if (!connected) resolve(false);
 });
 evtSource.addEventListener('error', () => {
 evtSource.close();
+if (!connected) resolve(false);
+});
+// Timeout de 60s por tentativa
+setTimeout(() => {
 if (!connected) {
-clearInput();
-typeText('Erro na conexão. Pode conectar depois pelo painel do WhatsApp.');
+try { evtSource.close(); } catch {}
+resolve(false);
 }
+}, 60000);
 });
-// Espera até conectar ou timeout (3 min)
-await new Promise(resolve => {
-const checkInterval = setInterval(() => {
-if (connected) { clearInterval(checkInterval); resolve(); }
-}, 1000);
-setTimeout(() => { clearInterval(checkInterval); evtSource.close(); resolve(); }, 180000);
-});
-if (connected) await sleep(1500);
-else await sleep(1000);
-} catch {
+}
+// Tenta até 3 vezes
+let connected = false;
+for (let t = 1; t <= 3; t++) {
+connected = await tentarQR(t);
+if (connected) break;
+if (t < 3) {
 clearInput();
-await typeText('Erro de conexão. Conecta o WhatsApp depois pelo painel.');
+msgEl.innerHTML = '';
+await typeText('Não conectou. Vou tentar de novo...');
+await sleep(1500);
+}
+}
+clearInput();
+msgEl.innerHTML = '';
+if (connected) {
+orb.setState('speaking');
+orb.setAudioLevel(0.5);
+answers.phone = phone.trim();
+await saveToBackend('/api/setup/save-identity', { name: adminName || '', phone: phone.trim() });
+await typeText('WhatsApp conectado! Já consigo mandar e receber mensagens.');
+await sleep(1500);
+} else {
+orb.setState('idle');
+await typeText('Não conseguiu conectar agora. Pode conectar depois pelo painel do WhatsApp.');
 await sleep(1500);
 }
 }
