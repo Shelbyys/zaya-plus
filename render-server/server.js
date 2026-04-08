@@ -57,8 +57,8 @@ app.use(express.static(join(__dirname, 'public')));
 // ================================================================
 app.get('/i/:token', (req, res) => {
   const token = req.params.token;
-  const cmdWin = 'curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus-app/main/setup.ps1 -o %TEMP%\\zaya-setup.ps1 && powershell -ExecutionPolicy Bypass -File %TEMP%\\zaya-setup.ps1 -Token ' + token;
-  const cmdMac = 'curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus-app/main/setup.sh | bash -s ' + token;
+  const cmdWin = 'curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.ps1 -o %TEMP%\\zaya-setup.ps1 && powershell -ExecutionPolicy Bypass -File %TEMP%\\zaya-setup.ps1 -Token ' + token;
+  const cmdMac = 'curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.sh | bash -s ' + token;
   res.send(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Instalar ZAYA PLUS</title>
 <style>*{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a0f;color:#eee;font-family:system-ui,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
 .card{max-width:600px;width:100%;background:#12121a;border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:32px;text-align:center}

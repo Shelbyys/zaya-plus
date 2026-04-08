@@ -6,7 +6,7 @@
 
 TOKEN="$1"
 INSTALL_DIR="$HOME/zaya-plus"
-REPO="https://github.com/Shelbyys/zaya-plus-app.git"
+REPO="https://github.com/Shelbyys/zaya-plus.git"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'

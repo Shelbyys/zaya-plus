@@ -5,7 +5,7 @@
 param([string]$Token = "")
 
 $INSTALL_DIR = "$env:USERPROFILE\zaya-plus"
-$REPO = "https://github.com/Shelbyys/zaya-plus-app.git"
+$REPO = "https://github.com/Shelbyys/zaya-plus.git"
 
 Write-Host ""
 Write-Host "  ZZZZZZ  AAAAA  Y   Y  AAAAA" -ForegroundColor Magenta

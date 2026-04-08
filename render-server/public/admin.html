@@ -728,8 +728,8 @@ autofocus
 <button class="btn btn-copy btn-sm" onclick="copyGeneratedToken()">Copiar Token</button>
 <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.06)">
 <div class="token-label">Comando 1 — Instalar (envie primeiro)</div>
-<div class="token-value" id="installCommand" style="font-size:0.65rem;color:#00d4ff">git clone https://github.com/Shelbyys/zaya-plus-app.git && cd zaya-plus-app && npm install</div>
-<button class="btn btn-copy btn-sm" onclick="copyText('git clone https://github.com/Shelbyys/zaya-plus-app.git && cd zaya-plus-app && npm install')" style="background:linear-gradient(135deg,#0984e3,#00d4ff)">Copiar Comando 1</button>
+<div class="token-value" id="installCommand" style="font-size:0.65rem;color:#00d4ff">git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install</div>
+<button class="btn btn-copy btn-sm" onclick="copyText('git clone https://github.com/Shelbyys/zaya-plus.git && cd zaya-plus && npm install')" style="background:linear-gradient(135deg,#0984e3,#00d4ff)">Copiar Comando 1</button>
 </div>
 <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.06)">
 <div class="token-label">Comando 2 — Ativar e Iniciar (envie depois)</div>
@@ -947,9 +947,9 @@ copyText(`cd ~/zaya-plus && node activate.js ${generatedToken} && npm start`);
 }
 function buildInstallCommand(token, os) {
 if (os === 'windows') {
-return `curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus-app/main/setup.ps1 -o %TEMP%\\zaya-setup.ps1 && powershell -ExecutionPolicy Bypass -File %TEMP%\\zaya-setup.ps1 -Token ${token}`;
+return `curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.ps1 -o %TEMP%\\zaya-setup.ps1 && powershell -ExecutionPolicy Bypass -File %TEMP%\\zaya-setup.ps1 -Token ${token}`;
 }
-return `curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus-app/main/setup.sh | bash -s ${token}`;
+return `curl -sL https://raw.githubusercontent.com/Shelbyys/zaya-plus/main/setup.sh | bash -s ${token}`;
 }
 function copyFullCommand() {
 if (!generatedToken) return;
