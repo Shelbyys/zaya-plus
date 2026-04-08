@@ -601,61 +601,78 @@ await sleep(500);
 }
 }
 }
-// === ETAPA 3: WhatsApp ===
+// === ETAPA 3: WhatsApp (QR Code) ===
 async function q3_whatsapp() {
 setStep(2);
 clearInput();
+msgEl.innerHTML = '';
 orb.setState('processing');
 orb.setAudioLevel(0.3);
-await typeText('Agora vamos conectar teu WhatsApp! Digita teu número com DDD:');
+await typeText('Agora vamos conectar teu WhatsApp!');
 await sleep(200);
-const phone = await createTextInput('Número com DDD (ex: 5511999999999)', 'Conectar');
 clearInput();
+const phone = await createTextInput('Digita teu número com DDD (ex: 5511999999999)', 'Conectar');
+clearInput();
+msgEl.innerHTML = '';
 orb.setState('processing');
-await typeText('Gerando código de pareamento...');
+await typeText('Gerando QR Code...');
 try {
-const r = await fetch('/api/whatsapp/pair', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: 'principal', phone: phone.trim(), label: 'Principal' }) });
-const data = await r.json();
-if (data.success && data.code) {
-clearInput();
-orb.setState('speaking');
-const codeDiv = document.createElement('div');
-codeDiv.style.cssText = 'font-family:monospace;font-size:32px;letter-spacing:8px;color:#00e676;text-align:center;padding:20px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);border-radius:12px;margin:12px 0;';
-codeDiv.textContent = data.code;
-inputArea.innerHTML = '';
-inputArea.appendChild(codeDiv);
-showInput();
-await typeText('Abre o WhatsApp no celular, vai em Aparelhos conectados, e digita esse código:');
-const timerEl = document.createElement('div');
-timerEl.style.cssText = 'text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;';
-inputArea.appendChild(timerEl);
+const instName = 'principal';
+const qrUrl = '/api/whatsapp/pair-qr?name=' + encodeURIComponent(instName) + '&phone=' + encodeURIComponent(phone.trim()) + '&label=Principal';
+const evtSource = new EventSource(qrUrl);
 let connected = false;
-for (let i = 0; i < 60; i++) {
-timerEl.textContent = (60 - i) + 's restantes';
-await sleep(2000);
-try {
-const check = await fetch('/api/whatsapp/instances');
-const instData = await check.json();
-if (instData.instances?.find(x => x.name === 'principal' && x.status === 'connected')) { connected = true; break; }
-} catch {}
-}
+let qrCount = 0;
+evtSource.addEventListener('qr', (e) => {
+qrCount++;
+const qrData = JSON.parse(e.data);
+inputArea.innerHTML = '';
+const qrImg = document.createElement('img');
+qrImg.src = qrData.qr;
+qrImg.style.cssText = 'max-width:280px;border-radius:12px;display:block;margin:0 auto;';
+inputArea.appendChild(qrImg);
+const statusEl = document.createElement('div');
+statusEl.style.cssText = 'text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;';
+statusEl.textContent = 'Escaneie com o WhatsApp (' + qrCount + '/8)';
+inputArea.appendChild(statusEl);
+showInput();
+msgEl.innerHTML = '';
+const textNode = document.createTextNode('Abre o WhatsApp no celular, vai em Aparelhos conectados, e escaneia o QR Code:');
+msgEl.appendChild(textNode);
+});
+evtSource.addEventListener('connected', () => {
+evtSource.close();
+connected = true;
 clearInput();
-if (connected) {
+msgEl.innerHTML = '';
 orb.setState('speaking');
 orb.setAudioLevel(0.5);
-await typeText('WhatsApp conectado! Já consigo mandar e receber mensagens.');
-await sleep(1000);
 answers.phone = phone.trim();
-await saveToBackend('/api/setup/save-identity', { name: adminName || '', phone: phone.trim() });
-} else {
-await typeText('Não conectou a tempo. Pode tentar depois pelo painel do WhatsApp.');
-await sleep(1500);
-}
-} else {
+saveToBackend('/api/setup/save-identity', { name: adminName || '', phone: phone.trim() });
+typeText('WhatsApp conectado! Já consigo mandar e receber mensagens.');
+});
+evtSource.addEventListener('timeout', () => {
+evtSource.close();
+if (!connected) {
 clearInput();
-await typeText('Erro ao gerar código. Conecta depois pelo painel do WhatsApp.');
-await sleep(1500);
+typeText('Tempo esgotado. Pode conectar depois pelo painel do WhatsApp.');
 }
+});
+evtSource.addEventListener('error', () => {
+evtSource.close();
+if (!connected) {
+clearInput();
+typeText('Erro na conexão. Pode conectar depois pelo painel do WhatsApp.');
+}
+});
+// Espera até conectar ou timeout (3 min)
+await new Promise(resolve => {
+const checkInterval = setInterval(() => {
+if (connected) { clearInterval(checkInterval); resolve(); }
+}, 1000);
+setTimeout(() => { clearInterval(checkInterval); evtSource.close(); resolve(); }, 180000);
+});
+if (connected) await sleep(1500);
+else await sleep(1000);
 } catch {
 clearInput();
 await typeText('Erro de conexão. Conecta o WhatsApp depois pelo painel.');
@@ -666,6 +683,7 @@ await sleep(1500);
 async function q4_nome() {
 setStep(3);
 clearInput();
+msgEl.innerHTML = '';
 orb.setState('listening');
 orb.setAudioLevel(0.2);
 const nameDisplay = adminName || 'amigo';
@@ -677,6 +695,7 @@ answers.callName = await createTextInput('Ex: Alisson, Chefe, Boss, Mi...', 'Pr�
 async function q5_estilo() {
 setStep(4);
 clearInput();
+msgEl.innerHTML = '';
 orb.setState('idle');
 orb.setAudioLevel(0);
 await typeText('Como quer que eu fale contigo?');
@@ -692,6 +711,7 @@ answers.communicationStyle = await createSingleSelect([
 async function q6_profissao() {
 setStep(5);
 clearInput();
+msgEl.innerHTML = '';
 orb.setState('listening');
 orb.setAudioLevel(0.15);
 await typeText('Me conta um pouco sobre ti. O que tu faz da vida?');
@@ -702,6 +722,7 @@ answers.expectations = ['assistente_geral'];
 }
 // === ETAPA 7: Final ===
 async function q7_final() {
+msgEl.innerHTML = '';
 setStep(6);
 clearInput();
 // Salva personalidade
