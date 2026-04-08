@@ -25,9 +25,27 @@ export const processingQueue = {};
 // Mac location (updated periodically)
 export const macLocation = { city: 'desconhecida', region: '', country: 'BR', loc: '', timezone: '' };
 
-// AI client — Zaya IA (ou OpenAI fallback)
+// AI client — Zaya IA (recria automaticamente quando a chave muda)
 import OpenAI from 'openai';
-export const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-placeholder',
-  ...(process.env.OPENAI_BASE_URL ? { baseURL: process.env.OPENAI_BASE_URL } : {}),
+let _openai = null;
+let _lastKey = '';
+let _lastUrl = '';
+
+export function getOpenAI() {
+  const key = process.env.OPENAI_API_KEY || process.env.ANTHROPIC_API_KEY || 'sk-placeholder';
+  const url = process.env.OPENAI_BASE_URL || '';
+  if (!_openai || key !== _lastKey || url !== _lastUrl) {
+    _openai = new OpenAI({
+      apiKey: key,
+      ...(url ? { baseURL: url } : {}),
+    });
+    _lastKey = key;
+    _lastUrl = url;
+  }
+  return _openai;
+}
+
+// Compatibilidade: export openai como getter
+export const openai = new Proxy({}, {
+  get(_, prop) { return getOpenAI()[prop]; }
 });
