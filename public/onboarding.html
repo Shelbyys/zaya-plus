@@ -345,8 +345,9 @@ let analyser = null;
 let userInteracted = false;
 document.addEventListener('click', () => { userInteracted = true; }, { once: false });
 document.addEventListener('touchstart', () => { userInteracted = true; }, { once: false });
+document.addEventListener('keydown', () => { userInteracted = true; }, { once: false });
 async function speak(text) {
-if (!userInteracted) return; // Chrome bloqueia autoplay sem interação
+if (!userInteracted) return;
 try {
 const res = await fetch('/api/speak', {
 method: 'POST',
@@ -355,11 +356,12 @@ body: JSON.stringify({ text })
 });
 if (!res.ok || res.status === 204) return;
 const blob = await res.blob();
-if (blob.size < 100) return; // Audio vazio
+if (blob.size < 100) return;
 const url = URL.createObjectURL(blob);
 const audio = new Audio(url);
-// Criar AudioContext para analisar frequencias em tempo real
+try {
 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+if (audioCtx.state === 'suspended') await audioCtx.resume();
 const source = audioCtx.createMediaElementSource(audio);
 analyser = audioCtx.createAnalyser();
 analyser.fftSize = 256;
@@ -367,11 +369,9 @@ source.connect(analyser);
 analyser.connect(audioCtx.destination);
 const dataArray = new Uint8Array(analyser.frequencyBinCount);
 if (orb) orb.setState('speaking');
-// Loop de animacao sincronizado com o audio
 let animFrame;
 function updateOrb() {
 analyser.getByteFrequencyData(dataArray);
-// Calcular volume medio (0-1)
 let sum = 0;
 for (let i = 0; i < dataArray.length; i++) sum += dataArray[i];
 const avg = sum / dataArray.length / 255;
@@ -379,13 +379,14 @@ if (orb) orb.setAudioLevel(avg * 1.5);
 animFrame = requestAnimationFrame(updateOrb);
 }
 updateOrb();
-audio.play().catch(() => {});
+await audio.play();
 audio.onended = () => {
 cancelAnimationFrame(animFrame);
 if (orb) { orb.setState('idle'); orb.setAudioLevel(0); }
 URL.revokeObjectURL(url);
 };
-} catch(e) { /* sem voz configurada */ }
+} catch { URL.revokeObjectURL(url); }
+} catch {}
 }
 async function typeText(text, speed = 40) {
 msgEl.innerHTML = '';
@@ -626,14 +627,16 @@ await typeText('Tentativa ' + tentativa + ' de 3... Gerando novo QR Code...');
 await typeText('Gerando QR Code...');
 }
 await sleep(500);
-return new Promise((resolve) => {
+// Método 1: SSE (streaming)
+try {
+const result = await new Promise((resolve) => {
 const instName = 'principal';
 const qrUrl = '/api/whatsapp/pair-qr?name=' + encodeURIComponent(instName) + '&phone=' + encodeURIComponent(phone.trim()) + '&label=Principal';
 let evtSource;
 try { evtSource = new EventSource(qrUrl); } catch { resolve(false); return; }
 let connected = false;
-let qrCount = 0;
 let gotQR = false;
+let qrCount = 0;
 evtSource.addEventListener('qr', (e) => {
 qrCount++;
 gotQR = true;
@@ -653,27 +656,57 @@ msgEl.innerHTML = '';
 msgEl.appendChild(document.createTextNode('Abre o WhatsApp no celular, vai em Aparelhos conectados, e escaneia o QR Code:'));
 } catch {}
 });
-evtSource.addEventListener('connected', () => {
-evtSource.close();
-connected = true;
-resolve(true);
-});
-evtSource.addEventListener('timeout', () => {
-evtSource.close();
-if (!connected) resolve(false);
-});
+evtSource.addEventListener('connected', () => { evtSource.close(); connected = true; resolve(true); });
+evtSource.addEventListener('timeout', () => { evtSource.close(); resolve(gotQR ? false : false); });
 evtSource.addEventListener('error', () => {
-evtSource.close();
-if (!connected) resolve(false);
+// Se nunca recebeu QR, tenta método 2 (código numérico)
+if (!gotQR && !connected) { evtSource.close(); resolve('fallback'); }
+else if (!connected) { evtSource.close(); resolve(false); }
 });
-// Timeout de 60s por tentativa
-setTimeout(() => {
-if (!connected) {
-try { evtSource.close(); } catch {}
-resolve(false);
+setTimeout(() => { if (!connected) { try { evtSource.close(); } catch {} resolve(gotQR ? false : 'fallback'); } }, 60000);
+});
+if (result === true) return true;
+if (result === 'fallback') {
+// Método 2: Código numérico (fallback)
+clearInput();
+msgEl.innerHTML = '';
+await typeText('QR Code falhou. Tentando código numérico...');
+await sleep(500);
+try {
+const r = await fetch('/api/whatsapp/pair', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ name: 'principal', phone: phone.trim(), label: 'Principal' })
+});
+const data = await r.json();
+if (data.success && data.code) {
+clearInput();
+const codeDiv = document.createElement('div');
+codeDiv.style.cssText = 'font-family:monospace;font-size:32px;letter-spacing:8px;color:#00e676;text-align:center;padding:20px;background:rgba(0,230,118,0.08);border:1px solid rgba(0,230,118,0.2);border-radius:12px;margin:12px 0;';
+codeDiv.textContent = data.code;
+inputArea.innerHTML = '';
+inputArea.appendChild(codeDiv);
+const statusEl = document.createElement('div');
+statusEl.style.cssText = 'text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;';
+inputArea.appendChild(statusEl);
+showInput();
+msgEl.innerHTML = '';
+msgEl.appendChild(document.createTextNode('Abre o WhatsApp > Aparelhos conectados > Conectar com número. Digita o código:'));
+// Polling
+for (let i = 0; i < 30; i++) {
+statusEl.textContent = (60 - i * 2) + 's restantes — tentativa ' + tentativa + '/3';
+await sleep(2000);
+try {
+const check = await fetch('/api/whatsapp/instances');
+const instData = await check.json();
+if (instData.instances?.find(x => x.name === 'principal' && x.status === 'connected')) return true;
+} catch {}
 }
-}, 60000);
-});
+}
+} catch {}
+}
+return false;
+} catch { return false; }
 }
 // Tenta até 3 vezes
 let connected = false;
