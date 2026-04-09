@@ -333,6 +333,85 @@ import { startProactiveMonitor } from './src/services/proactive.js';
 import { startAlertMonitor } from './src/services/alerts.js';
 import { startFolderWatcher } from './src/services/folder-watcher.js';
 
+// ================================================================
+// PRE-FLIGHT CHECKS (porta, versão Node, espaço em disco)
+// ================================================================
+async function preFlightChecks() {
+  const issues = [];
+
+  // Node version check
+  const nodeVersion = parseInt(process.versions.node.split('.')[0], 10);
+  if (nodeVersion < 18) {
+    issues.push(`Node.js v${process.versions.node} detectado. Requer v18+. Atualize: https://nodejs.org`);
+  }
+
+  // Disk space check (precisa de pelo menos 100MB)
+  try {
+    const os = await import('os');
+    const { statfsSync } = await import('fs');
+    if (statfsSync) {
+      const stats = statfsSync(__dirname);
+      const freeMB = Math.floor((stats.bavail * stats.bsize) / (1024 * 1024));
+      if (freeMB < 100) {
+        issues.push(`Espaco em disco baixo: ${freeMB}MB. Recomendado: pelo menos 100MB livres.`);
+      }
+    }
+  } catch {}
+
+  // Port check
+  const net = await import('net');
+  const portInUse = await new Promise((resolve) => {
+    const tester = net.default.createServer()
+      .once('error', (err) => {
+        if (err.code === 'EADDRINUSE') resolve(true);
+        else resolve(false);
+      })
+      .once('listening', () => {
+        tester.close();
+        resolve(false);
+      })
+      .listen(PORT, '0.0.0.0');
+  });
+
+  if (portInUse) {
+    log.server.warn({ port: PORT }, `Porta ${PORT} ja esta em uso!`);
+    console.log('');
+    console.log(`  \x1b[33m\x1b[1m  AVISO: Porta ${PORT} ja esta em uso!\x1b[0m`);
+    console.log('');
+
+    if (process.platform !== 'win32') {
+      // Tenta descobrir o PID e matar
+      try {
+        const { execSync } = await import('child_process');
+        const pid = execSync(`lsof -ti:${PORT}`, { encoding: 'utf-8' }).trim();
+        if (pid) {
+          console.log(`  \x1b[36m  Processo na porta ${PORT}: PID ${pid}\x1b[0m`);
+          console.log(`  \x1b[36m  Matando processo antigo...\x1b[0m`);
+          execSync(`kill ${pid}`);
+          // Espera liberar
+          await new Promise(r => setTimeout(r, 1500));
+          console.log(`  \x1b[32m  Porta ${PORT} liberada!\x1b[0m`);
+        }
+      } catch {
+        console.log(`  \x1b[31m  Nao conseguiu liberar a porta. Tente:\x1b[0m`);
+        console.log(`  \x1b[36m  lsof -ti:${PORT} | xargs kill -9\x1b[0m`);
+      }
+    } else {
+      console.log(`  \x1b[31m  No Windows, feche o outro programa usando a porta ${PORT}\x1b[0m`);
+      console.log(`  \x1b[36m  Ou mude a porta: PORT=3002 npm start\x1b[0m`);
+    }
+    console.log('');
+  }
+
+  // Log issues mas não impede boot
+  for (const issue of issues) {
+    log.server.warn(issue);
+    console.log(`  \x1b[33m  AVISO: ${issue}\x1b[0m`);
+  }
+}
+
+await preFlightChecks();
+
 server.listen(PORT, '0.0.0.0', async () => {
   log.server.info(`Iniciando ZAYA PLUS...`);
 

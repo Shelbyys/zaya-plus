@@ -617,6 +617,21 @@ await typeText('Agora vamos conectar teu WhatsApp!');
 await sleep(200);
 clearInput();
 const phone = await createTextInput('Digita teu número com DDD (ex: 5511999999999)', 'Conectar');
+
+// F9: Salva phone no setup ANTES de tentar conectar (assim o número não fica perdido se a conexão falhar)
+answers.phone = phone.trim();
+try {
+  await saveToBackend('/api/setup/save-identity', { name: adminName || '', phone: phone.trim() });
+} catch {}
+
+// Validação básica no frontend antes de chamar backend
+const phoneDigits = phone.replace(/\D/g, '');
+if (phoneDigits.length < 10) {
+  await typeText('Número inválido. Use formato: 5511999999999. Você poderá conectar depois pelo painel.');
+  await sleep(2000);
+  return;
+}
+
 async function tentarQR(tentativa) {
 clearInput();
 msgEl.innerHTML = '';
@@ -637,35 +652,70 @@ try { evtSource = new EventSource(qrUrl); } catch { resolve(false); return; }
 let connected = false;
 let gotQR = false;
 let qrCount = 0;
+let maxCount = 10; // F11: pega do backend dinamicamente
+let statusEl = null;
+
 evtSource.addEventListener('qr', (e) => {
 qrCount++;
 gotQR = true;
 try {
 const qrData = JSON.parse(e.data);
+maxCount = qrData.maxCount || maxCount; // F11: usa maxCount do backend
 inputArea.innerHTML = '';
 const qrImg = document.createElement('img');
 qrImg.src = qrData.qr;
-qrImg.style.cssText = 'max-width:280px;border-radius:12px;display:block;margin:0 auto;';
+// F18: CSS responsivo
+qrImg.style.cssText = 'width:100%;max-width:280px;border-radius:12px;display:block;margin:0 auto;';
 inputArea.appendChild(qrImg);
-const statusEl = document.createElement('div');
+statusEl = document.createElement('div');
 statusEl.style.cssText = 'text-align:center;font-size:11px;color:rgba(255,255,255,0.4);margin-top:8px;';
-statusEl.textContent = 'Escaneie com o WhatsApp (' + qrCount + '/8) — tentativa ' + tentativa + '/3';
+statusEl.textContent = 'Escaneie com o WhatsApp (' + qrCount + '/' + maxCount + ') — tentativa ' + tentativa + '/3';
 inputArea.appendChild(statusEl);
 showInput();
 msgEl.innerHTML = '';
 msgEl.appendChild(document.createTextNode('Abre o WhatsApp no celular, vai em Aparelhos conectados, e escaneia o QR Code:'));
 } catch {}
 });
+
+// F10: Feedback "conectando..." quando o backend detecta scan
+evtSource.addEventListener('scanning', (e) => {
+try {
+const data = JSON.parse(e.data);
+if (statusEl) {
+statusEl.textContent = data.message || 'Conectando...';
+statusEl.style.color = '#00e676';
+}
+msgEl.innerHTML = '';
+msgEl.appendChild(document.createTextNode('Quase lá! Finalizando conexão...'));
+} catch {}
+});
+
 evtSource.addEventListener('connected', () => { evtSource.close(); connected = true; resolve(true); });
 evtSource.addEventListener('timeout', () => { evtSource.close(); resolve(gotQR ? false : false); });
-evtSource.addEventListener('error', () => {
+evtSource.addEventListener('error', (e) => {
+// Tenta extrair mensagem do erro
+try {
+  const data = e.data ? JSON.parse(e.data) : null;
+  if (data?.code === 429) {
+    resolve('rate_limited');
+    return;
+  }
+} catch {}
 // Se nunca recebeu QR, tenta método 2 (código numérico)
 if (!gotQR && !connected) { evtSource.close(); resolve('fallback'); }
 else if (!connected) { evtSource.close(); resolve(false); }
 });
-setTimeout(() => { if (!connected) { try { evtSource.close(); } catch {} resolve(gotQR ? false : 'fallback'); } }, 60000);
+// F2: Timeout unificado em 120s (igual ao backend)
+setTimeout(() => { if (!connected) { try { evtSource.close(); } catch {} resolve(gotQR ? false : 'fallback'); } }, 120000);
 });
 if (result === true) return true;
+if (result === 'rate_limited') {
+clearInput();
+msgEl.innerHTML = '';
+await typeText('Muitas tentativas. Aguarde um minuto e tenta de novo.');
+await sleep(3000);
+return false;
+}
 if (result === 'fallback') {
 // Método 2: Código numérico (fallback)
 clearInput();
@@ -692,14 +742,20 @@ inputArea.appendChild(statusEl);
 showInput();
 msgEl.innerHTML = '';
 msgEl.appendChild(document.createTextNode('Abre o WhatsApp > Aparelhos conectados > Conectar com número. Digita o código:'));
-// Polling
-for (let i = 0; i < 30; i++) {
-statusEl.textContent = (60 - i * 2) + 's restantes — tentativa ' + tentativa + '/3';
-await sleep(2000);
+// Polling — checa status mais cedo (1.5s) e por mais tempo (até 90s)
+for (let i = 0; i < 60; i++) {
+statusEl.textContent = (90 - Math.floor(i * 1.5)) + 's restantes — tentativa ' + tentativa + '/3';
+await sleep(1500);
 try {
 const check = await fetch('/api/whatsapp/instances');
 const instData = await check.json();
-if (instData.instances?.find(x => x.name === 'principal' && x.status === 'connected')) return true;
+const inst = instData.instances?.find(x => x.name === 'principal');
+if (inst?.status === 'connected') return true;
+// F12: detecta needs_repairing
+if (inst?.status === 'needs_repairing') {
+  statusEl.textContent = 'Limite de tentativas atingido. Reset necessário.';
+  return 'needs_repairing';
+}
 } catch {}
 }
 }
@@ -711,8 +767,12 @@ return false;
 // Tenta até 3 vezes
 let connected = false;
 for (let t = 1; t <= 3; t++) {
-connected = await tentarQR(t);
-if (connected) break;
+const result = await tentarQR(t);
+if (result === true) { connected = true; break; }
+// F12: Se entrou em needs_repairing, reseta retries antes da próxima tentativa
+if (result === 'needs_repairing') {
+  try { await fetch('/api/whatsapp/reset-retries/principal', { method: 'POST' }); } catch {}
+}
 if (t < 3) {
 clearInput();
 msgEl.innerHTML = '';
@@ -725,8 +785,6 @@ msgEl.innerHTML = '';
 if (connected) {
 orb.setState('speaking');
 orb.setAudioLevel(0.5);
-answers.phone = phone.trim();
-await saveToBackend('/api/setup/save-identity', { name: adminName || '', phone: phone.trim() });
 await typeText('WhatsApp conectado! Já consigo mandar e receber mensagens.');
 await sleep(1500);
 } else {

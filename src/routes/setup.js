@@ -557,6 +557,53 @@ router.get('/env-template', (req, res) => {
   }
 });
 
+// ─── GET /version ──────────────────────────────────────────
+
+router.get('/version', async (req, res) => {
+  try {
+    const { execSync } = await import('child_process');
+    const cwd = ROOT_DIR;
+    const commit = execSync('git rev-parse HEAD', { cwd, encoding: 'utf-8' }).trim();
+    let tag = '';
+    try { tag = execSync('git describe --tags --abbrev=0 HEAD 2>/dev/null', { cwd, encoding: 'utf-8' }).trim(); } catch {}
+    const pkg = JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf-8'));
+    res.json({ version: tag || pkg.version, commit: commit.slice(0, 7), package: pkg.version });
+  } catch (e) {
+    res.json({ version: 'unknown', error: e.message });
+  }
+});
+
+// ─── GET /changelog ────────────────────────────────────────
+
+router.get('/changelog', async (req, res) => {
+  try {
+    const { execSync } = await import('child_process');
+    const cwd = ROOT_DIR;
+    const limit = parseInt(req.query.limit) || 20;
+
+    // Pega commits com tags
+    const gitLog = execSync(`git log --oneline --no-decorate -${limit}`, { cwd, encoding: 'utf-8', timeout: 10000 }).trim();
+    const commits = gitLog.split('\n').filter(Boolean).map(l => {
+      const [hash, ...msg] = l.split(' ');
+      return { hash: hash.slice(0, 7), msg: msg.join(' ') };
+    });
+
+    // Pega todas as tags com datas
+    let tags = [];
+    try {
+      const tagLog = execSync('git tag -l --sort=-version:refname --format="%(refname:short)|%(creatordate:short)"', { cwd, encoding: 'utf-8', timeout: 10000 }).trim();
+      tags = tagLog.split('\n').filter(Boolean).map(l => {
+        const [name, date] = l.split('|');
+        return { name, date };
+      });
+    } catch {}
+
+    res.json({ commits, tags });
+  } catch (e) {
+    res.json({ commits: [], tags: [], error: e.message });
+  }
+});
+
 // ─── GET /check-update ─────────────────────────────────────
 
 let _lastNotifiedUpdate = '';
@@ -579,11 +626,17 @@ router.get('/check-update', async (req, res) => {
     // Pega resumo dos commits novos
     let commits = [];
     try {
-      const log = execSync(`git log ${local}..${remote} --oneline --no-decorate -10`, { cwd, encoding: 'utf-8' }).trim();
-      commits = log.split('\n').filter(Boolean).map(l => {
+      const gitLog = execSync(`git log ${local}..${remote} --oneline --no-decorate -10`, { cwd, encoding: 'utf-8' }).trim();
+      commits = gitLog.split('\n').filter(Boolean).map(l => {
         const [hash, ...msg] = l.split(' ');
         return { hash: hash.slice(0, 7), msg: msg.join(' ') };
       });
+    } catch {}
+
+    // Verifica se há tags (versionamento semântico)
+    let latestTag = '';
+    try {
+      latestTag = execSync('git describe --tags --abbrev=0 origin/main 2>/dev/null', { cwd, encoding: 'utf-8' }).trim();
     } catch {}
 
     // Notifica TODOS os dashboards conectados via Socket.IO (uma vez por versão)
@@ -603,7 +656,7 @@ router.get('/check-update', async (req, res) => {
           const { sendWhatsApp } = await import('../services/messaging.js');
           const { ADMIN_JID } = await import('../config.js');
           if (ADMIN_JID) {
-            const msg = `*ZAYA PLUS — Atualizacao Disponivel*\n\n${commits.length} nova(s) mudanca(s):\n${commits.slice(0, 5).map(c => `• ${c.msg}`).join('\n')}\n\nAbra a Zaya e clique em ATUALIZAR AGORA, ou rode:\n\`cd ~/zaya-plus && git pull && npm start\``;
+            const msg = `*ZAYA PLUS — Atualizacao Disponivel*\n\n${latestTag ? `Versao: ${latestTag}\n` : ''}${commits.length} nova(s) mudanca(s):\n${commits.slice(0, 5).map(c => `• ${c.msg}`).join('\n')}\n\nAbra a Zaya e clique em ATUALIZAR AGORA, ou rode:\n\`cd ~/zaya-plus && git pull && npm start\``;
             await sendWhatsApp(ADMIN_JID, msg);
           }
         } catch {}
@@ -614,6 +667,7 @@ router.get('/check-update', async (req, res) => {
       hasUpdate: true,
       current: local.slice(0, 7),
       latest: remote.slice(0, 7),
+      latestTag,
       commits,
       count: commits.length,
     });
@@ -622,60 +676,195 @@ router.get('/check-update', async (req, res) => {
   }
 });
 
-// ─── POST /update ──────────────────────────────────────────
+// ─── Helpers: safe update + cross-platform restart ─────────
+
+function backupCriticalFiles(cwd) {
+  const backupDir = path.join(cwd, '.update-backup');
+  if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+
+  const filesToBackup = ['.env', '.license', '.machine-id', 'zaya.db', 'credentials.vault'];
+  const backed = [];
+  for (const f of filesToBackup) {
+    const src = path.join(cwd, f);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(backupDir, f));
+      backed.push(f);
+    }
+  }
+
+  // Backup whatsapp sessions
+  const waDir = path.join(cwd, 'whatsapp-sessions');
+  const waBackup = path.join(backupDir, 'whatsapp-sessions');
+  if (fs.existsSync(waDir)) {
+    if (fs.existsSync(waBackup)) fs.rmSync(waBackup, { recursive: true });
+    fs.cpSync(waDir, waBackup, { recursive: true });
+    backed.push('whatsapp-sessions/');
+  }
+
+  return { backupDir, backed };
+}
+
+function restoreCriticalFiles(cwd) {
+  const backupDir = path.join(cwd, '.update-backup');
+  if (!fs.existsSync(backupDir)) return [];
+
+  const restored = [];
+  const files = ['.env', '.license', '.machine-id', 'zaya.db', 'credentials.vault'];
+  for (const f of files) {
+    const src = path.join(backupDir, f);
+    if (fs.existsSync(src)) {
+      fs.copyFileSync(src, path.join(cwd, f));
+      restored.push(f);
+    }
+  }
+
+  // Restore whatsapp sessions
+  const waBackup = path.join(backupDir, 'whatsapp-sessions');
+  const waDir = path.join(cwd, 'whatsapp-sessions');
+  if (fs.existsSync(waBackup)) {
+    fs.cpSync(waBackup, waDir, { recursive: true });
+    restored.push('whatsapp-sessions/');
+  }
+
+  return restored;
+}
+
+async function crossPlatformRestart(cwd) {
+  const isWin = process.platform === 'win32';
+  const port = process.env.PORT || 3001;
+
+  const { spawn } = await import('child_process');
+
+  if (isWin) {
+    // Windows: usa cmd para reiniciar
+    const script = `ping -n 3 127.0.0.1 >nul && cd /d "${cwd}" && node server.js`;
+    const child = spawn('cmd', ['/c', script], {
+      cwd,
+      detached: true,
+      stdio: 'ignore',
+      env: { ...process.env },
+    });
+    child.unref();
+  } else {
+    // Unix: mata porta e reinicia
+    const script = [
+      'sleep 2',
+      `lsof -ti:${port} 2>/dev/null | xargs kill 2>/dev/null || true`,
+      'sleep 1',
+      `cd "${cwd}" && node server.js`,
+    ].join(' && ');
+    const child = spawn('bash', ['-c', script], {
+      cwd,
+      detached: true,
+      stdio: 'ignore',
+      env: { ...process.env },
+    });
+    child.unref();
+  }
+
+  setTimeout(() => process.exit(0), 500);
+}
+
+// ─── POST /update (safe) ──────────────────────────────────
 
 router.post('/update', async (req, res) => {
   try {
-    const { exec, spawn } = await import('child_process');
+    const { execSync } = await import('child_process');
     const cwd = ROOT_DIR;
 
-    res.json({ started: true, message: 'Atualizando... o servidor vai reiniciar em instantes.' });
+    // 1. Salva commit atual para rollback
+    const currentCommit = execSync('git rev-parse HEAD', { cwd, encoding: 'utf-8' }).trim();
+    const rollbackFile = path.join(cwd, '.update-rollback');
+    fs.writeFileSync(rollbackFile, JSON.stringify({
+      commit: currentCommit,
+      date: new Date().toISOString(),
+    }), 'utf-8');
 
-    setTimeout(() => {
-      const cmd = [
-        'git fetch origin main',
-        'git reset --hard origin/main',
-        'npm install --production --silent',
-      ].join(' && ');
+    // 2. Backup de arquivos criticos
+    const { backupDir, backed } = backupCriticalFiles(cwd);
 
-      exec(cmd, { cwd, timeout: 120000 }, (err) => {
-        if (err) {
-          console.error('Update falhou:', err.message);
-          return;
+    res.json({
+      started: true,
+      message: 'Atualizando com backup de seguranca...',
+      backed,
+      rollbackCommit: currentCommit.slice(0, 7),
+    });
+
+    setTimeout(async () => {
+      try {
+        // 3. Stash local changes (se houver)
+        try { execSync('git stash --include-untracked', { cwd, timeout: 15000, stdio: 'pipe' }); } catch {}
+
+        // 4. Pull das atualizações
+        execSync('git fetch origin main', { cwd, timeout: 30000, stdio: 'pipe' });
+        execSync('git reset --hard origin/main', { cwd, timeout: 15000, stdio: 'pipe' });
+
+        // 5. Restaura arquivos criticos
+        const restored = restoreCriticalFiles(cwd);
+        console.log('Update: arquivos restaurados:', restored.join(', '));
+
+        // 6. Instala dependencias
+        execSync('npm install --production --silent', { cwd, timeout: 120000, stdio: 'pipe' });
+
+        console.log('Update concluido! Reiniciando servidor...');
+
+        // 7. Restart cross-platform
+        await crossPlatformRestart(cwd);
+      } catch (err) {
+        console.error('Update falhou:', err.message);
+        // Tenta rollback
+        try {
+          execSync(`git reset --hard ${currentCommit}`, { cwd, timeout: 15000, stdio: 'pipe' });
+          restoreCriticalFiles(cwd);
+          console.log('Rollback automatico realizado para', currentCommit.slice(0, 7));
+        } catch (rbErr) {
+          console.error('Rollback tambem falhou:', rbErr.message);
         }
-        console.log('Update concluído! Reiniciando servidor...');
-
-        // Script que espera o processo antigo morrer, libera a porta, e inicia o novo
-        const restartScript = `sleep 2 && lsof -ti:${process.env.PORT || 3001} | xargs kill -9 2>/dev/null; sleep 1 && cd "${cwd}" && node server.js &`;
-        const child = spawn('bash', ['-c', restartScript], {
-          cwd,
-          detached: true,
-          stdio: 'ignore',
-          env: { ...process.env },
-        });
-        child.unref();
-        setTimeout(() => process.exit(0), 500);
-      });
+      }
     }, 500);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
 
-// ─── POST /create-tables ───────────────────────────────────
+// ─── POST /rollback ──────────────────────────────────────
 
-router.post('/create-tables', async (req, res) => {
+router.post('/rollback', async (req, res) => {
   try {
-    const { createSupabaseTables, getCreateTableSQL } = await import('../services/supabase.js');
-    const result = await createSupabaseTables();
-    if (!result.success) {
-      // Retorna o SQL para o usuário executar manualmente
-      return res.json({ success: false, sql: result.sql || getCreateTableSQL(), error: result.error });
+    const { execSync } = await import('child_process');
+    const cwd = ROOT_DIR;
+    const rollbackFile = path.join(cwd, '.update-rollback');
+
+    if (!fs.existsSync(rollbackFile)) {
+      return res.status(404).json({ error: 'Nenhum ponto de rollback encontrado. So funciona apos um update.' });
     }
-    res.json({ success: true, created: result.created });
+
+    const rollbackData = JSON.parse(fs.readFileSync(rollbackFile, 'utf-8'));
+    const targetCommit = rollbackData.commit;
+
+    // Backup antes do rollback
+    backupCriticalFiles(cwd);
+
+    // Rollback
+    execSync(`git reset --hard ${targetCommit}`, { cwd, timeout: 15000, stdio: 'pipe' });
+    restoreCriticalFiles(cwd);
+    execSync('npm install --production --silent', { cwd, timeout: 120000, stdio: 'pipe' });
+
+    // Remove rollback file (não pode fazer rollback do rollback)
+    fs.unlinkSync(rollbackFile);
+
+    res.json({
+      success: true,
+      message: `Rollback para ${targetCommit.slice(0, 7)} (${rollbackData.date})`,
+      commit: targetCommit.slice(0, 7),
+    });
+
+    // Restart
+    setTimeout(async () => await crossPlatformRestart(cwd), 1000);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
 });
+
 
 export default router;
