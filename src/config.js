@@ -56,7 +56,8 @@ export const ADMIN_JID = process.env.ADMIN_JID || '';
 export const SESSION_TIMEOUT = 60 * 60 * 1000; // 1 hora
 
 // --- External binaries (auto-detected) ---
-export const TMP_DIR = process.env.TMP_DIR || '/tmp/whatsapp-bot';
+// Usa o tmp do OS (Windows: %TEMP%, Mac/Linux: /tmp). Fix Cannot GET Windows.
+export const TMP_DIR = process.env.TMP_DIR || join(os.tmpdir(), 'zaya-plus');
 
 export const WHISPER_BIN = process.env.WHISPER_BIN || findBinary('whisper', [
   join(HOME, '.local', 'bin', 'whisper'),
