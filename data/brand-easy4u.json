@@ -1,0 +1,183 @@
+{
+  "brand": "Easy4u",
+  "instagram": "@suaeasy4u",
+  "ig_id": "17841476756797534",
+  "slogan": "IA simples. Resultados reais.",
+  "tagline": "soluções empresariais",
+  "bio": "Transformamos operações em sistemas inteligentes\nIA aplicada à gestão, atendimento e escala\nEmpresas organizadas crescem mais",
+
+  "identidade_visual": {
+    "paleta": {
+      "primaria": "#EF641D",
+      "secundaria": "#909090",
+      "fundo": "#FFFFFF",
+      "fundo_escuro": "#1A1A1A",
+      "destaque_texto": "#EF641D",
+      "texto_corpo": "#333333",
+      "texto_claro": "#909090"
+    },
+    "logo": {
+      "icone": "Hexágono duplo entrelaçado laranja (#EF641D)",
+      "texto": "EASY (cinza #909090) + 4U (laranja #EF641D)",
+      "subtexto": "soluções empresariais (cinza claro)",
+      "vertical": "/Volumes/KINGSTON/ARQUIVOS IDV EASY4U/PNG/02.png",
+      "horizontal": "/Volumes/KINGSTON/ARQUIVOS IDV EASY4U/PNG/04.png",
+      "branca": "/Volumes/KINGSTON/ARQUIVOS IDV EASY4U/PNG/05.png",
+      "selo_circular": "/Volumes/KINGSTON/ARQUIVOS IDV EASY4U/PNG/06.png",
+      "gradiente": "/Volumes/KINGSTON/ARQUIVOS IDV EASY4U/PNG/09.png"
+    },
+    "pattern": "/Volumes/KINGSTON/ARQUIVOS IDV EASY4U/PATTERN/PATTERN.png",
+    "fontes": {
+      "titulo": "Sans-serif bold (Montserrat, Helvetica, Inter)",
+      "corpo": "Sans-serif regular",
+      "estilo": "Negrito com itálico nas palavras-chave em laranja"
+    }
+  },
+
+  "estilo_visual_posts": {
+    "layout": "CLEAN — fundo sólido (preto #0A0A0A ou branco #FFFFFF) com textura diagonal sutil quase invisível. SEM elementos visuais pesados, SEM imagens de fundo geradas por IA. Foco 100% no texto.",
+    "texto_posicao": "Centro-esquerda, alinhado à esquerda, com margem ~90px",
+    "titulo_estilo": "Fonte grande bold (52px), branco no fundo escuro ou preto (#1A1A1A) no fundo claro. Palavra-chave em laranja #EF641D.",
+    "subtexto_estilo": "Fonte regular (28px), cor cinza #909090. Complementa o título.",
+    "acento_visual": "Linha vertical laranja fina (4px) à esquerda do título, ~200px de altura",
+    "logo_posicao": "Canto inferior esquerdo — logo horizontal (PNG/04.png), ~250px largura",
+    "selo_circular_uso": "Canto superior direito (PNG/06.png), 70px, marca d'água sutil",
+    "slogan_posicao": "Acima da logo, itálico, cinza escuro, 18px — 'IA simples. Resultados reais.'",
+    "textura": "Linhas diagonais com opacidade 2-4%, cor laranja (dark) ou cinza (light)",
+    "formato_padrao": "1080x1080 (1:1 quadrado para feed)",
+    "quando_usar_imagem_ia": "APENAS se o Sr. Alisson enviar uma imagem de referência ou pedir explicitamente fundo visual. Caso contrário, SEMPRE usar fundo sólido clean.",
+    "regra_fundo": "Padrão = fundo sólido preto. Se pedir 'fundo branco' ou 'versão clara' = fundo branco."
+  },
+
+  "estilo_copywriting": {
+    "tom": "Direto, provocativo, educativo. Visionário silencioso.",
+    "estrutura_caption": [
+      "Frase de impacto (gancho provocativo)",
+      "Desenvolvimento com → bullets apontando problemas",
+      "Virada: o que muda com Easy4u",
+      "Sem CTA agressivo — posicionamento por autoridade"
+    ],
+    "palavras_frequentes": ["empresa", "estrutura", "sistema", "inteligente", "automação", "operação", "escala", "processos", "IA"],
+    "palavras_proibidas": ["barato", "grátis", "promoção", "desconto", "compre agora"],
+    "formato_texto_imagem": "Frase curta + destaque em laranja. Máximo 3 linhas na imagem.",
+    "exemplos_frases": [
+      "Sua empresa não precisa de mais clientes. Precisa de estrutura.",
+      "Empresas inteligentes resolvem com IA.",
+      "A Easy4u organiza sua operação e transforma bagunça em sistema.",
+      "O que trava o crescimento não é demanda. É desorganização."
+    ]
+  },
+
+  "categorias_conteudo": [
+    {
+      "tipo": "Provocação/Dor",
+      "descricao": "Expõe o problema que o público tem (desorganização, dependência de pessoas, escala)",
+      "exemplo": "Sua empresa não precisa de mais clientes. Precisa de estrutura.",
+      "frequencia": "3x/semana"
+    },
+    {
+      "tipo": "Posicionamento/Autoridade",
+      "descricao": "Mostra como a Easy4u resolve, sem vender direto",
+      "exemplo": "A Easy4u nasce com um objetivo claro: Transformar operações desorganizadas em sistemas inteligentes.",
+      "frequencia": "2x/semana"
+    },
+    {
+      "tipo": "Educativo/IA",
+      "descricao": "Ensina algo sobre IA aplicada a negócios",
+      "exemplo": "3 processos que toda empresa deveria automatizar hoje",
+      "frequencia": "2x/semana"
+    },
+    {
+      "tipo": "Cases/Resultados",
+      "descricao": "Resultados reais de clientes ou demonstrações",
+      "exemplo": "De 40 msgs/dia sem resposta → 100% atendidas em 2 min",
+      "frequencia": "1x/semana"
+    },
+    {
+      "tipo": "Bastidores/Cultura",
+      "descricao": "Equipe, dia a dia, valores da Easy4u",
+      "exemplo": "Por trás de cada sistema inteligente, tem uma equipe que entende de gente.",
+      "frequencia": "1x/semana"
+    }
+  ],
+
+  "estrategia": {
+    "objetivo_curto_prazo": "Sair de 159 → 1.000 seguidores em 60 dias",
+    "pilares": ["Consistência (1 post/dia)", "Reels curtos (15-30s)", "Carrosséis educativos", "Stories diários"],
+    "hashtags_padrao": ["#easy4u", "#iapraempresas", "#automacao", "#inteligenciaartificial", "#gestaoempresarial", "#tecnologia", "#processos", "#atendimentointeligente", "#solucoesempresariais"],
+    "horarios_ideais": ["08:00", "12:00", "18:00", "20:00"],
+    "cta_padrao": "Link na bio | @suaeasy4u",
+    "posicionamento": "Não vende ferramenta, vende infraestrutura. Não promete milagre, mostra lógica."
+  },
+
+  "estilos": {
+    "clean": {
+      "descricao": "Fundo sólido preto ou branco, textura sutil, foco total no texto. Minimalista.",
+      "fundo": "Sólido #0A0A0A (dark) ou #FFFFFF (light)",
+      "elementos": "Linha vertical laranja, texto bold, zero imagens de fundo",
+      "quando_usar": "Padrão. Quando não especificar estilo ou pedir 'post simples'.",
+      "dall_e_prompt": null
+    },
+    "minimalista": {
+      "descricao": "Fundo escuro com objeto 3D temático grande. Texto bold no topo, muito espaço negativo. Objeto ocupa centro-inferior. Moody, cinematic.",
+      "quando_usar": "Quando pedir 'estilo minimalista', 'post com imagem', posts sobre tema específico.",
+      "dall_e_prompt_template": "Dark dramatic moody photograph of [OBJETO TEMÁTICO] with orange (#EF641D) glowing edges and rim lighting, on dark reflective surface, black background, cinematic lighting, shallow depth of field. No text, no logos, no people. 8K."
+    },
+    "chat": {
+      "descricao": "Objeto 3D grande no lado DIREITO, texto dentro de chat bubble/card no lado ESQUERDO. Estilo conversacional, como se a marca estivesse fazendo uma pergunta ao leitor.",
+      "quando_usar": "Quando pedir 'estilo chat', 'balão', 'conversa', ou posts com pergunta pro público.",
+      "dall_e_prompt_template": "Dark premium 3D render of [OBJETO TEMÁTICO] positioned on the RIGHT side taking 60% of frame, with glowing orange (#EF641D) light. LEFT side is empty dark black space. Dark background (#0A0A0A) with subtle grid texture. Cinematic rim lighting. No text, no logos, no people. 8K."
+    },
+    "pergunta": {
+      "descricao": "Fundo preto sólido ultra clean com textura de grid sutil. Card central glass morphism com pergunta provocativa. Ícone ? laranja acima do card.",
+      "quando_usar": "Quando pedir 'estilo pergunta', 'caixa de pergunta', 'enquete', ou posts que fazem uma pergunta ao público.",
+      "dall_e_prompt_template": null,
+      "nota": "SEM DALL-E — usar fundo sólido preto (#0A0A0A) com grid SVG sutil. Nunca ondas abstratas."
+    },
+    "premium": {
+      "descricao": "Fundo escuro com UM objeto 3D temático grande e clean (celular, laptop, cubo de vidro) ou pessoa IA profissional. Glass morphism card pra texto. Spotlight laranja. NUNCA objetos soltos espalhados.",
+      "quando_usar": "Quando pedir 'estilo premium', 'estilo 3D', ou posts de produto/lançamento.",
+      "dall_e_prompt_template": "Dark premium 3D render, black background (#0A0A0A). [UM ÚNICO OBJETO TEMÁTICO: ex smartphone, laptop, glass cube] with orange (#EF641D) rim lighting and subtle glow. Clean, minimal, single subject centered. Cinematic spotlight from top. Reflective dark surface. No floating objects, no scattered elements, no abstract waves. No text, no logos. 8K."
+    },
+
+    "pessoa": {
+      "descricao": "Pessoa IA hiper-realista interagindo com tecnologia, no contexto do tema. Texto na parte inferior com fundo escuro. Estilo editorial/comercial cinematográfico.",
+      "quando_usar": "Quando pedir 'estilo pessoa', 'com pessoa', 'estilo editorial', ou posts que mostrem o público-alvo usando o produto.",
+      "dall_e_prompt_template": "Hyper realistic cinematic portrait photograph (9:16 vertical). [PESSOA: ex. young professional, business owner, entrepreneur] interacting with [CONTEXTO TECNOLÓGICO: ex. holographic WhatsApp chat interface, floating digital screens, AI dashboard]. Person in UPPER 60% of frame, LOWER 40% is dark gradient for text. Orange (#EF641D) and blue accent lighting. Dark moody background. Professional attire. Editorial commercial photography style. Ultra realistic, 8K, shallow depth of field."
+    },
+    "editorial": {
+      "descricao": "Tipografia grande como protagonista integrada à imagem. Pessoa ou objeto centralizado, texto no topo (fontes mistas: serif italic + sans bold + laranja destaque). Header sutil com EASY4U, subtexto no rodapé. Visual de anúncio/campanha profissional.",
+      "quando_usar": "Quando pedir 'estilo editorial', 'estilo campanha', 'estilo anúncio', ou posts com visual de propaganda profissional.",
+      "dall_e_prompt_template": null,
+      "nota": "SEMPRE NanoBanana. Pessoa sentada/em pé + elementos flutuantes (celulares, telas). Fundo escuro com névoa. Upper 30% vazio pro título."
+    },
+    "fundos_proibidos": [
+      "Ondas/linhas abstratas orgânicas (wallpaper genérico)",
+      "Objetos 3D flutuantes espalhados (esferas, hexágonos soltos)",
+      "Qualquer coisa que pareça papel de parede de celular",
+      "Gradientes coloridos exagerados"
+    ],
+    "fundos_permitidos": [
+      "Fundo sólido preto/branco (PREFERIDO pra estilo clean)",
+      "Objeto 3D ÚNICO temático relevante ao assunto",
+      "Pessoas geradas por IA em contexto profissional",
+      "Abstrato ULTRA CLEAN: gradiente suave, grid sutil, spotlight"
+    ],
+
+    "regra_ouro_fundo": "O fundo SEMPRE deve ter relação DIRETA com o assunto da frase. NUNCA fundo genérico desconectado do texto.",
+
+    "regra_legibilidade": "NUNCA colocar texto por cima de imagem/objeto sem contraste. O texto DEVE estar em área com overlay escuro 80%+ ou em área completamente vazia da imagem. No prompt DALL-E, pedir que o objeto fique numa metade (ex: inferior/direita) e a outra metade seja vazia/escura pra texto. Ou usar glass card sob o texto.",
+
+    "regra_logos": "VARIAR as logos entre posts. Opções: selo circular (PNG/06.png) no canto, ícone gradiente (PNG/08.png) no rodapé, logo horizontal (PNG/04.png) quando tiver espaço, logo branca (PNG/05.png) em fundos escuros. Alternar a cada post.",
+
+    "regra_marca_no_ambiente": "PRIORIZAR cenas SEM logo na parede. Só incluir quando for NECESSÁRIO pro contexto (ex: post sobre a empresa, sobre o escritório). Se incluir, usar SOMENTE o nome 'Easy4u' em texto (sem ícone/símbolo) e sempre DESFOCADO no fundo (bokeh/out of focus).",
+
+    "logo_parede_prompt": "In the far background, very blurred and out of focus (bokeh), on the wall there is a subtle text 'Easy4u' in gray and orange letters. The text is NOT the main subject, it is just a background detail, barely readable, naturally defocused.",
+
+    "regra_gerador": "SEMPRE usar NanoBanana (Gemini) pra gerar imagens. NUNCA DALL-E pra pessoas. DALL-E só pra fundos abstratos simples (sem pessoas). Pessoas devem ser ULTRA REALISTAS, indistinguíveis de foto real.",
+
+    "regra_qualidade": "TODAS as imagens Easy4u devem ser geradas na MÁXIMA qualidade possível. Imagens: 1080x1080 (feed), 1080x1350 (4:5), 1080x1920 (story) como MÍNIMO — usar quality HD no DALL-E e pedir '8K ultra high resolution' no NanoBanana. Vídeos: 1080p mínimo, kling-pro (não std), duração 10s padrão. Sempre 'hd' no DALL-E, sempre '8K' no prompt NanoBanana.",
+
+    "regra_telas_dispositivos": "Quando a imagem tiver celular/tablet/laptop com tela visível: PRIORIZAR tela desfocada ou brilho genérico (mais seguro). Se tiver UI/ícones visíveis, pedir no prompt 'ultra realistic phone screen, photorealistic UI, crisp sharp icons, real iOS/Android interface' pra ficar o mais real possível. Se o resultado sair com anomalias, regerar ou desfocar a tela."
+  }
+}

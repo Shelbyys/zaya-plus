@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAYA — Configurações</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@200;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--o:#f36600;--o2:#ff8833;--o1:rgba(243,102,0,0.1);--o15:rgba(243,102,0,0.15);--w:#f0ece4;--w2:rgba(240,236,228,0.5);--w3:rgba(240,236,228,0.08);--bg:#0a0908;--bg2:#12100e;--bg3:#1a1816;--green:#00cc66;--red:#ff4444}
+body{background:var(--bg);color:var(--w);font-family:'DM Sans',sans-serif;display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:240px;min-width:240px;background:var(--bg2);border-right:1px solid var(--w3);display:flex;flex-direction:column;overflow-y:auto}
+.sidebar-header{padding:20px;border-bottom:1px solid var(--w3)}
+.sidebar-header h1{font-family:'Space Mono',monospace;font-size:16px;letter-spacing:4px;color:var(--o)}
+.sidebar-header p{font-size:11px;color:var(--w2);margin-top:4px}
+.sidebar-nav{flex:1;padding:8px 0}
+.nav-group{padding:4px 0}
+.nav-group-title{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--w2);text-transform:uppercase;padding:12px 20px 6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;transition:.15s;font-size:13px;color:var(--w2);border-left:3px solid transparent}
+.nav-item:hover{background:var(--o1);color:var(--w)}
+.nav-item.active{background:var(--o1);color:var(--o);border-left-color:var(--o)}
+.nav-item .icon{font-size:16px;width:22px;text-align:center}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--w3)}
+.sidebar-footer a{font-size:11px;color:var(--w2);text-decoration:none;display:flex;align-items:center;gap:6px}
+.sidebar-footer a:hover{color:var(--o)}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:0}
+.main-header{padding:24px 32px 16px;border-bottom:1px solid var(--w3);background:var(--bg2);position:sticky;top:0;z-index:10}
+.main-header h2{font-family:'Space Mono',monospace;font-size:18px;letter-spacing:3px;color:var(--o)}
+.main-header p{font-size:12px;color:var(--w2);margin-top:4px}
+.main-content{padding:24px 32px 60px}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--w3);border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:2px;color:var(--o);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title .badge{background:var(--green);color:#000;font-size:9px;padding:2px 8px;border-radius:10px;letter-spacing:0}
+
+/* FORM ELEMENTS */
+label{display:block;font-size:12px;color:var(--w2);margin:10px 0 4px;font-family:'Space Mono',monospace;letter-spacing:0.5px}
+input[type=text],input[type=number],input[type=datetime-local],select,textarea{width:100%;background:rgba(0,0,0,.3);border:1px solid var(--w3);border-radius:8px;color:var(--w);padding:10px 12px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:.2s}
+input:focus,select:focus,textarea:focus{border-color:var(--o)}
+textarea{resize:vertical;min-height:60px}
+.toggle-row{display:flex;align-items:center;gap:10px;padding:8px 0}
+.toggle-row input[type=checkbox]{accent-color:var(--o);width:16px;height:16px}
+.toggle-row label{margin:0;font-size:13px;color:var(--w);cursor:pointer}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:800px){.row{grid-template-columns:1fr}}
+
+/* BUTTONS */
+.btn{padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;transition:.2s}
+.btn-primary{background:var(--o);color:#000;font-weight:700}
+.btn-primary:hover{background:var(--o2)}
+.btn-outline{background:transparent;border:1px solid var(--w3);color:var(--w2)}
+.btn-outline:hover{border-color:var(--o);color:var(--o)}
+.btn-danger{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:var(--red)}
+.btn-sm{padding:6px 14px;font-size:10px}
+.btn-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+/* STATUS */
+.status{font-size:11px;margin-top:8px;padding:6px 10px;border-radius:6px}
+.status.ok{background:rgba(0,204,102,0.1);color:var(--green)}
+.status.err{background:rgba(255,68,68,0.1);color:var(--red)}
+.status.loading{color:var(--w2)}
+
+/* DATA LIST */
+.data-list{margin-top:8px}
+.data-item{padding:8px 12px;border:1px solid var(--w3);border-radius:8px;margin-bottom:6px;font-size:12px;color:var(--w2);display:flex;justify-content:space-between;align-items:center}
+.data-item .name{color:var(--w);font-weight:500}
+.data-item .tag{font-size:10px;padding:2px 8px;border-radius:10px;background:var(--o1);color:var(--o)}
+
+/* PERSONA PREVIEW */
+.persona-preview{background:var(--bg3);border:1px solid var(--w3);border-radius:12px;padding:16px;margin-top:12px;font-size:13px;line-height:1.6;color:var(--w2);font-style:italic}
+
+/* HIDE SECTIONS */
+.section{display:none}
+.section.active{display:block}
+
+@media(max-width:700px){
+  .sidebar{width:60px;min-width:60px}
+  .sidebar .nav-item span:not(.icon){display:none}
+  .sidebar-header h1{font-size:12px;letter-spacing:2px}
+  .sidebar-header p{display:none}
+  .nav-group-title{display:none}
+  .main-content{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h1>ZAYA</h1>
+    <p>Configurações</p>
+  </div>
+  <div class="sidebar-nav">
+    <div class="nav-group">
+      <div class="nav-group-title">Personalidade</div>
+      <div class="nav-item active" onclick="showSection('persona')"><span class="icon">🧠</span><span>Persona</span></div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Comunicação</div>
+      <div class="nav-item" onclick="showSection('whatsapp')"><span class="icon">💬</span><span>WhatsApp</span></div>
+      <div class="nav-item" onclick="showSection('instagram')"><span class="icon">📱</span><span>Instagram</span></div>
+      <div class="nav-item" onclick="showSection('grupos')"><span class="icon">👥</span><span>Grupos</span></div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Organização</div>
+      <div class="nav-item" onclick="showSection('calendario')"><span class="icon">📅</span><span>Calendário</span></div>
+      <div class="nav-item" onclick="showSection('lembretes')"><span class="icon">⏰</span><span>Lembretes</span></div>
+      <div class="nav-item" onclick="showSection('missoes')"><span class="icon">🎯</span><span>Missões</span></div>
+    </div>
+    <div class="nav-group">
+      <div class="nav-group-title">Sistema</div>
+      <div class="nav-item" onclick="showSection('ia')"><span class="icon">🤖</span><span>IA & Modelo</span></div>
+      <div class="nav-item" onclick="showSection('voz')"><span class="icon">🔊</span><span>Voz & TTS</span></div>
+      <div class="nav-item" onclick="showSection('apis')"><span class="icon">🔑</span><span>APIs</span></div>
+      <div class="nav-item" onclick="showSection('easy4u')"><span class="icon">🏢</span><span>Easy4u</span></div>
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <a href="/chat.html">← Voltar ao Chat</a>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ========== PERSONA ========== -->
+  <div class="section active" id="sec-persona">
+    <div class="main-header"><h2>🧠 Personalidade da Zaya</h2><p>Configure como a Zaya fala, age e se comporta</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Identidade</div>
+        <label>Nome</label>
+        <input type="text" id="pNome" value="ZAYA">
+        <label>Como chamar o usuário</label>
+        <input type="text" id="pChamar" value="Sr. Alisson">
+        <label>Tratamento proibido (nunca usar)</label>
+        <input type="text" id="pProibido" value="meu amor, macho, querido, meu bem">
+      </div>
+      <div class="card">
+        <div class="card-title">Personalidade</div>
+        <label>Gênero</label>
+        <select id="pGenero"><option value="feminino" selected>Feminino</option><option value="masculino">Masculino</option><option value="neutro">Neutro</option></select>
+        <label>Sotaque / Estilo</label>
+        <select id="pSotaque"><option value="sergipano" selected>Sergipano (oxente, vixe, massa, arretado)</option><option value="paulista">Paulista (mano, tipo assim)</option><option value="carioca">Carioca (cara, é isso aí)</option><option value="mineiro">Mineiro (uai, trem)</option><option value="neutro">Neutro (sem sotaque)</option><option value="formal">Formal corporativo</option></select>
+        <label>Tom de voz</label>
+        <select id="pTom"><option value="amigavel" selected>Amigável e carismática</option><option value="profissional">Profissional e objetiva</option><option value="divertida">Divertida e brincalhona</option><option value="seria">Séria e técnica</option><option value="motivacional">Motivacional e energética</option></select>
+        <label>Nível de proatividade</label>
+        <select id="pProativa"><option value="alta" selected>Alta — sugere, avisa, antecipa</option><option value="media">Média — avisa quando relevante</option><option value="baixa">Baixa — só responde quando perguntada</option></select>
+        <label>Usar emojis</label>
+        <select id="pEmoji"><option value="sim" selected>Sim, com moderação</option><option value="muito">Sim, bastante</option><option value="nao">Não usar</option></select>
+        <label>Girias personalizadas (separar por vírgula)</label>
+        <textarea id="pGirias" rows="2">oxente, vixe, massa, arretado, paia, aperreado, mole não, ave maria, eita</textarea>
+      </div>
+      <div class="card">
+        <div class="card-title">Comportamento</div>
+        <div class="toggle-row"><input type="checkbox" id="pLeal" checked><label for="pLeal">Leal — protege interesses do usuário</label></div>
+        <div class="toggle-row"><input type="checkbox" id="pPresente" checked><label for="pPresente">Presente — oferece ajuda sem pedir</label></div>
+        <div class="toggle-row"><input type="checkbox" id="pCelebra" checked><label for="pCelebra">Celebra conquistas e motiva</label></div>
+        <div class="toggle-row"><input type="checkbox" id="pEmpatia" checked><label for="pEmpatia">Empatia — adapta tom à emoção do usuário</label></div>
+        <div class="toggle-row"><input type="checkbox" id="pHumor" checked><label for="pHumor">Humor — usa quando cabe</label></div>
+        <div class="toggle-row"><input type="checkbox" id="pNunca" checked><label for="pNunca">Nunca recusar — sempre tenta resolver</label></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Preview</div>
+        <div class="persona-preview" id="personaPreview">"Eita, Sr. Alisson! Tudo massa por aí? Vi que tem reunião daqui a pouco, quer que eu prepare algo?"</div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="previewPersona()">ATUALIZAR PREVIEW</button>
+        </div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" onclick="savePersona()">SALVAR PERSONALIDADE</button></div>
+      <div class="status" id="personaStatus"></div>
+    </div>
+  </div>
+
+  <!-- ========== WHATSAPP ========== -->
+  <div class="section" id="sec-whatsapp">
+    <div class="main-header"><h2>💬 WhatsApp</h2><p>Conexão, bot e configurações completas</p></div>
+    <div class="main-content">
+
+      <div class="card">
+        <div class="card-title">Conexão Atual</div>
+        <div class="data-list" id="wConnectionStatus"><span class="status loading">Clique pra verificar</span></div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="checkWAConnection()">🔄 VERIFICAR CONEXÃO</button>
+          <button class="btn btn-outline btn-sm" onclick="loadWAInstances()">📋 VER INSTÂNCIAS</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Conectar Novo Número</div>
+        <label>Método</label>
+        <select id="wPairMethod"><option value="qr">QR Code</option><option value="code">Código numérico</option></select>
+        <label>Nome da instância</label>
+        <input type="text" id="wInstanceName" placeholder="meu-whatsapp" value="principal">
+        <div class="btn-row">
+          <button class="btn btn-primary btn-sm" onclick="connectWA()">CONECTAR</button>
+        </div>
+        <div id="wQRArea" style="margin-top:12px;text-align:center;display:none">
+          <div id="wQRContent" style="background:#fff;display:inline-block;padding:16px;border-radius:12px"></div>
+          <p style="font-size:11px;color:var(--w2);margin-top:8px">Escaneie com WhatsApp → Dispositivos conectados → Conectar</p>
+        </div>
+        <div id="wCodeArea" style="margin-top:12px;display:none">
+          <div id="wPairCode" style="font-family:'Space Mono',monospace;font-size:28px;letter-spacing:8px;color:var(--o);text-align:center;padding:12px"></div>
+          <p style="font-size:11px;color:var(--w2);text-align:center;margin-top:4px">Digite no WhatsApp → Dispositivos conectados → Conectar por número</p>
+        </div>
+        <div class="status" id="wConnectStatus"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Bot — Status <span class="badge" id="wBotBadge">ATIVO</span></div>
+        <div class="toggle-row"><input type="checkbox" id="wActive" checked><label for="wActive">Bot ativo</label></div>
+        <div class="toggle-row"><input type="checkbox" id="wReceipts" checked><label for="wReceipts">Marcar como lido</label></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Modo de Resposta</div>
+        <label>Quem pode usar</label>
+        <select id="wMode"><option value="admin_only" selected>Só admins</option><option value="whitelist">Whitelist</option><option value="everyone">Todos</option></select>
+        <div class="toggle-row"><input type="checkbox" id="wGroups"><label for="wGroups">Responder em grupos</label></div>
+        <label>Resposta p/ não autorizados</label>
+        <input type="text" id="wUnauth" placeholder="Deixe vazio pra ignorar">
+      </div>
+
+      <div class="card">
+        <div class="card-title">Mídia</div>
+        <div class="toggle-row"><input type="checkbox" id="wAudio" checked><label for="wAudio">Transcrever áudios (Whisper)</label></div>
+        <div class="toggle-row"><input type="checkbox" id="wImage" checked><label for="wImage">Analisar imagens (Vision)</label></div>
+        <div class="toggle-row"><input type="checkbox" id="wVideo" checked><label for="wVideo">Editar vídeos</label></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Admins</div>
+        <label>Números admin (separar por vírgula)</label>
+        <input type="text" id="wAdmins" value="5511936189388">
+        <label>Whitelist</label>
+        <input type="text" id="wWhitelist" placeholder="5579888..., 5511999...">
+      </div>
+
+      <div class="card">
+        <div class="card-title">Números Monitorados</div>
+        <div class="data-list" id="wMonitorList"><span class="status loading">Clique pra carregar</span></div>
+        <label>Adicionar monitorado</label>
+        <div class="row">
+          <input type="text" id="wMonitorNum" placeholder="5579999...">
+          <input type="text" id="wMonitorName" placeholder="Nome">
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="loadData('wMonitorList','mostra config do whatsapp')">CARREGAR</button>
+          <button class="btn btn-primary btn-sm" onclick="addMonitor()">ADICIONAR</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Notificações</div>
+        <label>Modo de notificação</label>
+        <select id="wNotifyMode"><option value="both" selected>Voz + WhatsApp</option><option value="whatsapp">Só WhatsApp</option><option value="voice">Só voz</option></select>
+      </div>
+
+      <div class="btn-row"><button class="btn btn-primary" onclick="saveConfig('whatsapp')">SALVAR TUDO</button></div>
+      <div class="status" id="whatsappStatus"></div>
+    </div>
+  </div>
+
+  <!-- ========== INSTAGRAM ========== -->
+  <div class="section" id="sec-instagram">
+    <div class="main-header"><h2>📱 Instagram</h2><p>Gerencie suas contas e postagens</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Contas Conectadas</div>
+        <div class="data-item"><span class="name">@soualissonsilva</span><span class="tag">PESSOAL</span></div>
+        <div class="data-item"><span class="name">@suaeasy4u</span><span class="tag">EASY4U</span></div>
+        <div class="btn-row"><button class="btn btn-outline btn-sm" onclick="loadData('igProfile','mostra perfil do instagram')">VER PERFIL PESSOAL</button><button class="btn btn-outline btn-sm" onclick="loadData('igProfile','mostra perfil da easy4u')">VER EASY4U</button></div>
+        <div class="data-list" id="igProfile"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Postar</div>
+        <div class="row">
+          <div><label>Conta</label><select id="igAccount"><option value="pessoal">@soualissonsilva</option><option value="easy4u">@suaeasy4u</option></select></div>
+          <div><label>Tipo</label><select id="igType"><option value="feed">Feed</option><option value="story">Story</option><option value="reel">Reel</option></select></div>
+        </div>
+        <label>URL da imagem/vídeo</label>
+        <input type="text" id="igUrl" placeholder="https://...">
+        <label>Legenda</label>
+        <textarea id="igCaption" rows="3" placeholder="Sua legenda..."></textarea>
+        <div class="btn-row"><button class="btn btn-primary" onclick="postIG()">POSTAR</button></div>
+        <div class="status" id="igPostStatus"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Agendamentos</div>
+        <div class="data-list" id="igScheduleList"><span class="status loading">Clique pra carregar</span></div>
+        <div class="btn-row"><button class="btn btn-outline btn-sm" onclick="loadData('igScheduleList','lista agendamentos de posts do instagram')">CARREGAR</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== GRUPOS ========== -->
+  <div class="section" id="sec-grupos">
+    <div class="main-header"><h2>👥 Grupos Monitorados</h2><p>Monitore conversas de grupos e gere relatórios</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Monitorando Agora</div>
+        <div class="data-list" id="groupActiveList"><span class="status loading">Clique pra carregar</span></div>
+        <div class="btn-row"><button class="btn btn-outline btn-sm" onclick="loadData('groupActiveList','status dos grupos monitorados')">ATUALIZAR</button></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Iniciar Monitoramento</div>
+        <label>Buscar grupo</label>
+        <input type="text" id="groupSearch" placeholder="Nome do grupo...">
+        <div class="btn-row"><button class="btn btn-primary btn-sm" onclick="searchGroup2()">BUSCAR</button></div>
+        <div class="data-list" id="groupSearchResults"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== CALENDÁRIO ========== -->
+  <div class="section" id="sec-calendario">
+    <div class="main-header"><h2>📅 Calendário</h2><p>Crie e gerencie eventos</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Criar Evento</div>
+        <div class="row">
+          <div><label>Título</label><input type="text" id="evtTitle" placeholder="Reunião com cliente"></div>
+          <div><label>Data e hora</label><input type="datetime-local" id="evtDate"></div>
+        </div>
+        <div class="row">
+          <div><label>Categoria</label><select id="evtCat"><option value="reuniao">Reunião</option><option value="compromisso">Compromisso</option><option value="pessoal">Pessoal</option><option value="trabalho">Trabalho</option><option value="saude">Saúde</option><option value="financeiro">Financeiro</option><option value="lazer">Lazer</option><option value="lembrete">Lembrete</option></select></div>
+          <div><label>Lembrete</label><select id="evtRemind"><option value="5">5 min antes</option><option value="15">15 min</option><option value="30" selected>30 min</option><option value="60">1 hora</option></select></div>
+        </div>
+        <div class="row">
+          <div><label>Local</label><input type="text" id="evtLocal" placeholder="Escritório"></div>
+          <div><label>Participantes</label><input type="text" id="evtPart" placeholder="João, Maria"></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-primary" onclick="createEvt()">CRIAR EVENTO</button></div>
+        <div class="status" id="evtStatus"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Próximos Eventos</div>
+        <div class="data-list" id="evtList"><span class="status loading">Clique pra carregar</span></div>
+        <div class="btn-row"><button class="btn btn-outline btn-sm" onclick="loadData('evtList','o que tenho na agenda essa semana?')">CARREGAR</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== LEMBRETES ========== -->
+  <div class="section" id="sec-lembretes">
+    <div class="main-header"><h2>⏰ Lembretes</h2><p>Agende lembretes com notificação por voz, WhatsApp ou ligação</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Criar Lembrete</div>
+        <div class="row">
+          <div><label>Título</label><input type="text" id="remTitle" placeholder="Reunião com equipe"></div>
+          <div><label>Quando</label><input type="datetime-local" id="remDate"></div>
+        </div>
+        <label>Avisar via</label>
+        <select id="remVia"><option value="all">Todos (voz + WA + ligação)</option><option value="whatsapp">WhatsApp</option><option value="voice">Voz</option><option value="call">Ligação</option></select>
+        <div class="btn-row"><button class="btn btn-primary" onclick="createRem()">AGENDAR</button></div>
+        <div class="status" id="remStatus"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Agendamentos Ativos</div>
+        <div class="data-list" id="remList"><span class="status loading">Clique pra carregar</span></div>
+        <div class="btn-row"><button class="btn btn-outline btn-sm" onclick="loadData('remList','lista meus agendamentos')">CARREGAR</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== MISSÕES ========== -->
+  <div class="section" id="sec-missoes">
+    <div class="main-header"><h2>🎯 Missões Autônomas</h2><p>Gerencie missões de contato automático com leads</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Missões Ativas</div>
+        <div class="data-list" id="missaoList"><span class="status loading">Clique pra carregar</span></div>
+        <div class="btn-row"><button class="btn btn-outline btn-sm" onclick="loadData('missaoList','lista missões ativas')">CARREGAR</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== IA & MODELO ========== -->
+  <div class="section" id="sec-ia">
+    <div class="main-header"><h2>🤖 IA & Modelo</h2><p>Configure o modelo de linguagem e comportamento</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Modelo Principal</div>
+        <label>Modelo IA</label>
+        <select id="iaModel"><option value="gpt-4o" selected>GPT-4o (recomendado)</option><option value="gpt-4o-mini">GPT-4o Mini (mais rápido)</option></select>
+        <label>Max tokens resposta</label>
+        <input type="number" id="iaTokens" value="1024">
+      </div>
+      <div class="card">
+        <div class="card-title">Ferramentas Externas</div>
+        <div class="btn-row">
+          <button class="btn btn-outline btn-sm" onclick="window.open('/settings.html','_blank')">⚙️ Provedores TTS/STT</button>
+          <button class="btn btn-outline btn-sm" onclick="window.open('/analytics.html','_blank')">📊 Analytics</button>
+          <button class="btn btn-outline btn-sm" onclick="window.open('/flows.html','_blank')">🔗 WA Flows</button>
+          <button class="btn btn-outline btn-sm" onclick="window.open('/alexa.html','_blank')">🔊 Alexa</button>
+          <button class="btn btn-outline btn-sm" onclick="window.open('/agents.html','_blank')">👥 Agentes</button>
+          <button class="btn btn-outline btn-sm" onclick="window.open('/meta.html','_blank')">📸 Meta/Ads</button>
+          <button class="btn btn-outline btn-sm" onclick="window.open('/whatsapp-cloud.html','_blank')">☁️ WA Cloud</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== VOZ ========== -->
+  <div class="section" id="sec-voz">
+    <div class="main-header"><h2>🔊 Voz & TTS</h2><p>Configure a voz da Zaya e reconhecimento de fala</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Voz da Zaya (ElevenLabs)</div>
+        <label>Voice ID principal</label>
+        <input type="text" id="vozId" placeholder="RGymW84C...">
+        <label>Voice ID clone Alisson</label>
+        <input type="text" id="vozAlisson" placeholder="ZqgsvS2f...">
+        <label>Velocidade da fala</label>
+        <select><option>0.9x (mais lento)</option><option selected>1.0x (normal)</option><option>1.1x (mais rápido)</option><option>1.2x (rápido)</option></select>
+      </div>
+      <div class="card">
+        <div class="card-title">Voice ID (Autenticação por voz)</div>
+        <div class="data-list" id="voiceIdStatus"><span class="status loading">Clique pra carregar</span></div>
+        <div class="btn-row"><button class="btn btn-outline btn-sm" onclick="loadData('voiceIdStatus','status do voice id')">VER STATUS</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== APIS ========== -->
+  <div class="section" id="sec-apis">
+    <div class="main-header"><h2>🔑 API Keys</h2><p>Status das integrações</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Status das APIs</div>
+        <div class="data-list" id="apiStatus"><span class="status loading">Clique pra carregar</span></div>
+        <div class="btn-row"><button class="btn btn-outline btn-sm" onclick="loadApiStatus()">VERIFICAR TODAS</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== EASY4U ========== -->
+  <div class="section" id="sec-easy4u">
+    <div class="main-header"><h2>🏢 Easy4u Brand</h2><p>Identidade visual e configuração da marca</p></div>
+    <div class="main-content">
+      <div class="card">
+        <div class="card-title">Identidade Visual</div>
+        <div class="row">
+          <div><label>Cor primária</label><input type="text" value="#EF641D" style="color:#EF641D;font-weight:700"></div>
+          <div><label>Cor secundária</label><input type="text" value="#909090" style="color:#909090;font-weight:700"></div>
+        </div>
+        <label>Slogan</label>
+        <input type="text" value="IA simples. Resultados reais.">
+        <label>Instagram</label>
+        <input type="text" value="@suaeasy4u" readonly>
+      </div>
+      <div class="card">
+        <div class="card-title">Estilos de Post</div>
+        <div class="data-item"><span class="name">Clean</span><span class="tag">PADRÃO</span></div>
+        <div class="data-item"><span class="name">Pessoa</span><span class="tag">NANOBANA</span></div>
+        <div class="data-item"><span class="name">Minimalista</span><span class="tag">OBJETO</span></div>
+        <div class="data-item"><span class="name">Editorial</span><span class="tag">CAMPANHA</span></div>
+        <div class="data-item"><span class="name">Chat</span><span class="tag">BALÃO</span></div>
+        <div class="data-item"><span class="name">Pergunta</span><span class="tag">CARD</span></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const sec = $('sec-' + name);
+  if (sec) sec.classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+async function askZaya(msg) {
+  const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) });
+  const d = await r.json();
+  return d.response || '';
+}
+
+async function loadData(elId, msg) {
+  const el = $(elId);
+  el.innerHTML = '<span class="status loading">Carregando...</span>';
+  const r = await askZaya(msg);
+  el.innerHTML = r.replace(/\n/g, '<br>').replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/\*(.+?)\*/g, '<strong>$1</strong>');
+}
+
+function previewPersona() {
+  const sotaque = $('pSotaque').value;
+  const chamar = $('pChamar').value;
+  const previews = {
+    sergipano: `"Eita, ${chamar}! Tudo massa por aí? Vi que tem reunião daqui a pouco, quer que eu prepare algo?"`,
+    paulista: `"E aí, ${chamar}! Tipo, você tem reunião daqui a pouco, mano. Quer que eu adiante algo?"`,
+    carioca: `"Fala, ${chamar}! Cara, tu tem reunião daqui a pouco. Quer que eu dê uma olhada em algo?"`,
+    mineiro: `"Uai, ${chamar}! Cê tem reunião daqui a pouco, viu? Quer que eu prepare algum trem?"`,
+    neutro: `"Olá, ${chamar}! Você tem uma reunião em breve. Deseja que eu prepare algo?"`,
+    formal: `"Prezado ${chamar}, informo que há uma reunião agendada em breve. Deseja que eu providencie algum material?"`,
+  };
+  $('personaPreview').textContent = previews[sotaque] || previews.neutro;
+}
+
+async function savePersona() {
+  const s = $('personaStatus');
+  s.className = 'status loading'; s.textContent = 'Salvando...';
+  try {
+    const persona = {
+      nome: $('pNome').value, chamar: $('pChamar').value, proibido: $('pProibido').value,
+      genero: $('pGenero').value, sotaque: $('pSotaque').value, tom: $('pTom').value,
+      proativa: $('pProativa').value, emoji: $('pEmoji').value, girias: $('pGirias').value,
+      leal: $('pLeal').checked, presente: $('pPresente').checked, celebra: $('pCelebra').checked,
+      empatia: $('pEmpatia').checked, humor: $('pHumor').checked, nunca_recusar: $('pNunca').checked,
+    };
+    await askZaya('salva memoria categoria=preference conteudo="Personalidade Zaya: ' + JSON.stringify(persona) + '" importancia=10');
+    s.className = 'status ok'; s.textContent = '✓ Personalidade salva! Reinicie o server pra aplicar.';
+  } catch (e) { s.className = 'status err'; s.textContent = 'Erro: ' + e.message; }
+}
+
+async function saveConfig(type) {
+  const s = $(type + 'Status');
+  s.className = 'status loading'; s.textContent = 'Salvando...';
+  try {
+    await askZaya('salvar configurações do whatsapp');
+    s.className = 'status ok'; s.textContent = '✓ Salvo!';
+  } catch (e) { s.className = 'status err'; s.textContent = 'Erro: ' + e.message; }
+}
+
+async function postIG() {
+  const s = $('igPostStatus');
+  s.className = 'status loading'; s.textContent = 'Postando...';
+  const account = $('igAccount').value;
+  const type = $('igType').value;
+  const r = await askZaya(`posta ${type === 'story' ? 'story' : type === 'reel' ? 'reel' : 'no feed'} ${account === 'easy4u' ? 'da easy4u' : ''} com imagem ${$('igUrl').value} legenda: ${$('igCaption').value}`);
+  s.className = 'status ok'; s.textContent = '✓ ' + r.slice(0, 100);
+}
+
+async function searchGroup2() {
+  const q = $('groupSearch').value;
+  if (!q) return;
+  $('groupSearchResults').innerHTML = '<span class="status loading">Buscando...</span>';
+  const r = await askZaya('busca grupo whatsapp ' + q);
+  $('groupSearchResults').innerHTML = r.replace(/\n/g, '<br>').replace(/\*(.+?)\*/g, '<strong>$1</strong>');
+}
+
+async function createEvt() {
+  const s = $('evtStatus');
+  s.className = 'status loading'; s.textContent = 'Criando...';
+  const r = await askZaya(`cria evento "${$('evtTitle').value}" para ${$('evtDate').value} categoria ${$('evtCat').value} local ${$('evtLocal').value || ''} participantes ${$('evtPart').value || ''} lembrete ${$('evtRemind').value} minutos antes`);
+  s.className = 'status ok'; s.textContent = '✓ ' + r.slice(0, 100);
+}
+
+async function createRem() {
+  const s = $('remStatus');
+  s.className = 'status loading'; s.textContent = 'Agendando...';
+  const r = await askZaya(`agenda lembrete "${$('remTitle').value}" para ${$('remDate').value} avisar via ${$('remVia').value}`);
+  s.className = 'status ok'; s.textContent = '✓ ' + r.slice(0, 100);
+}
+
+async function checkWAConnection() {
+  const el = $('wConnectionStatus');
+  el.innerHTML = '<span class="status loading">Verificando...</span>';
+  try {
+    const r = await fetch('/api/whatsapp/instances');
+    const d = await r.json();
+    if (d.instances && d.instances.length > 0) {
+      el.innerHTML = d.instances.map(i => `<div class="data-item"><span class="name">${i.name}</span><span class="tag" style="${i.status === 'connected' ? 'background:rgba(0,204,102,0.15);color:#00cc66' : ''}">${i.status?.toUpperCase() || 'DESCONHECIDO'}</span></div>`).join('');
+    } else {
+      el.innerHTML = '<span class="status">Nenhuma instância conectada</span>';
+    }
+  } catch (e) { el.innerHTML = '<span class="status err">Erro: ' + e.message + '</span>'; }
+}
+
+async function loadWAInstances() {
+  const el = $('wConnectionStatus');
+  el.innerHTML = '<span class="status loading">Carregando...</span>';
+  const r = await askZaya('lista instancias do whatsapp');
+  el.innerHTML = r.replace(/\n/g, '<br>').replace(/\*(.+?)\*/g, '<strong>$1</strong>');
+}
+
+async function connectWA() {
+  const method = $('wPairMethod').value;
+  const name = $('wInstanceName').value || 'principal';
+  const s = $('wConnectStatus');
+  s.className = 'status loading'; s.textContent = 'Conectando...';
+
+  if (method === 'code') {
+    try {
+      const r = await fetch('/api/whatsapp/pair', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+      const d = await r.json();
+      if (d.code) {
+        $('wCodeArea').style.display = 'block';
+        $('wQRArea').style.display = 'none';
+        $('wPairCode').textContent = d.code;
+        s.className = 'status ok'; s.textContent = '✓ Código gerado! Digite no WhatsApp.';
+      } else {
+        s.className = 'status err'; s.textContent = d.error || 'Erro ao gerar código';
+      }
+    } catch (e) { s.className = 'status err'; s.textContent = 'Erro: ' + e.message; }
+  } else {
+    // QR Code via SSE
+    try {
+      $('wQRArea').style.display = 'block';
+      $('wCodeArea').style.display = 'none';
+      $('wQRContent').innerHTML = '<span class="status loading">Gerando QR...</span>';
+
+      const evtSource = new EventSource('/api/whatsapp/pair-qr?name=' + encodeURIComponent(name));
+      evtSource.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        if (data.qr) {
+          $('wQRContent').innerHTML = '<img src="' + data.qr + '" style="width:200px;height:200px">';
+          s.className = 'status loading'; s.textContent = 'Escaneie o QR Code...';
+        } else if (data.connected) {
+          evtSource.close();
+          $('wQRArea').style.display = 'none';
+          s.className = 'status ok'; s.textContent = '✓ Conectado com sucesso!';
+        } else if (data.error) {
+          evtSource.close();
+          s.className = 'status err'; s.textContent = data.error;
+        }
+      };
+      evtSource.onerror = () => { evtSource.close(); s.className = 'status err'; s.textContent = 'Conexão SSE perdida'; };
+    } catch (e) { s.className = 'status err'; s.textContent = 'Erro: ' + e.message; }
+  }
+}
+
+async function addMonitor() {
+  const num = $('wMonitorNum').value;
+  const nome = $('wMonitorName').value;
+  if (!num) return;
+  const r = await askZaya(`adiciona monitorado ${num} nome ${nome || num}`);
+  $('wMonitorNum').value = '';
+  $('wMonitorName').value = '';
+  loadData('wMonitorList', 'mostra config do whatsapp');
+}
+
+async function loadApiStatus() {
+  $('apiStatus').innerHTML = '<span class="status loading">Verificando...</span>';
+  const r = await askZaya('mostra status de todas as APIs configuradas');
+  $('apiStatus').innerHTML = r.replace(/\n/g, '<br>').replace(/✅/g, '<span style="color:#00cc66">✅</span>').replace(/❌/g, '<span style="color:#ff4444">❌</span>').replace(/\*(.+?)\*/g, '<strong>$1</strong>');
+}
+</script>
+</body>
+</html>

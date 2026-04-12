@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0d0b09">
+<title>Z.A.Y.A. — Chat</title>
+<link rel="icon" type="image/png" href="logo.png">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@200;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--o:#f36600;--o2:#ff8833;--w:#f0ece4;--w2:rgba(240,236,228,0.5);--w3:rgba(240,236,228,0.12);--bg:#0d0b09;--bg2:#141210;--bg3:#1a1816;--green:#00cc66;--red:#ff4444;--yellow:#ffaa00}
+html,body{width:100%;height:100%;background:var(--bg);font-family:'DM Sans',sans-serif;color:var(--w);overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh}
+
+.orb-wrap{display:flex;align-items:center;justify-content:center;padding:30px 0 10px;flex-shrink:0;position:relative}
+#orbCanvas{width:280px;height:280px;background:transparent !important;border:none !important;border-radius:0 !important}
+
+/* HUD Panel — Iron Man style */
+.hud-panel{
+  position:absolute;right:calc(50% + 150px);top:50%;
+  transform:translateY(-50%) scaleX(0);transform-origin:right center;
+  width:145px;pointer-events:none;z-index:15;
+  opacity:0;transition:all .8s cubic-bezier(.4,0,.2,1);
+  animation:hudFloat 4s ease-in-out infinite paused;
+}
+.hud-panel.show{opacity:1;transform:translateY(-50%) scaleX(1);animation-play-state:running}
+@keyframes hudFloat{
+  0%,100%{margin-top:0}
+  50%{margin-top:-6px}
+}
+.hud-inner{
+  background:linear-gradient(135deg,rgba(243,102,0,0.03) 0%,rgba(0,0,0,0.35) 100%);
+  border:1px solid rgba(243,102,0,0.12);border-right:2px solid rgba(243,102,0,0.35);
+  border-radius:10px 2px 2px 10px;padding:10px 12px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:0 0 30px rgba(243,102,0,0.04),0 8px 32px rgba(0,0,0,0.3),inset 0 0 20px rgba(243,102,0,0.02);
+  position:relative;overflow:hidden;
+}
+.hud-inner::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(270deg,rgba(243,102,0,0.5),transparent 60%);
+}
+.hud-inner::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(270deg,rgba(243,102,0,0.25),transparent 40%);
+}
+.hud-scan{
+  position:absolute;top:0;left:0;right:0;height:100%;pointer-events:none;
+  background:linear-gradient(180deg,transparent 0%,rgba(243,102,0,0.025) 50%,transparent 100%);
+  animation:hudScan 4s ease-in-out infinite;
+}
+@keyframes hudScan{0%,100%{transform:translateY(-100%)}50%{transform:translateY(100%)}}
+.hud-title{
+  font-family:'Space Mono',monospace;font-size:7px;letter-spacing:2.5px;
+  color:rgba(243,102,0,0.45);text-transform:uppercase;margin-bottom:7px;
+  display:flex;align-items:center;gap:5px;
+}
+.hud-title::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--o);box-shadow:0 0 6px var(--o);animation:pulse 2s infinite}
+.hud-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:2.5px 0;border-bottom:1px solid rgba(255,255,255,0.025);
+  font-family:'Space Mono',monospace;font-size:8px;
+}
+.hud-row:last-child{border-bottom:none}
+.hud-row .hud-name{color:rgba(240,236,228,0.35);letter-spacing:0.5px}
+.hud-row .hud-status{display:flex;align-items:center;gap:4px}
+.hud-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.hud-dot.on{background:#00cc66;box-shadow:0 0 6px rgba(0,204,102,0.5)}
+.hud-dot.off{background:#ff4444;box-shadow:0 0 6px rgba(255,68,68,0.4)}
+.hud-dot.warn{background:#ffaa00;box-shadow:0 0 6px rgba(255,170,0,0.4)}
+/* Left panel connector (orange, staircase right) */
+.hud-panel .hud-connector{
+  display:block;position:absolute;right:-12px;top:50%;width:12px;height:1px;
+  background:rgba(243,102,0,0.25);
+}
+.hud-panel .hud-connector::before{
+  content:'';position:absolute;right:-8px;top:-6px;width:1px;height:13px;
+  background:rgba(243,102,0,0.2);
+}
+.hud-panel .hud-connector::after{
+  content:'';position:absolute;right:-18px;top:-6px;width:10px;height:1px;
+  background:linear-gradient(90deg,rgba(243,102,0,0.2),rgba(243,102,0,0.08));
+}
+/* Right panels connector (left side, step) */
+.hud-right .hud-r-inner::before{
+  background:linear-gradient(90deg,rgba(0,204,102,0.5),transparent 60%);
+}
+#hudRight::before{
+  content:'';position:absolute;left:-12px;top:50%;width:12px;height:1px;
+  background:rgba(0,204,102,0.25);pointer-events:none;
+}
+#hudWeather::before{
+  content:'';position:absolute;left:-14px;top:45%;width:14px;height:1px;
+  background:rgba(255,200,50,0.25);pointer-events:none;
+}
+#hudWeather::after{
+  content:'';position:absolute;left:-14px;top:45%;width:1px;height:12px;
+  background:rgba(255,200,50,0.15);pointer-events:none;
+}
+#hudBiz::before{
+  content:'';position:absolute;left:-12px;top:55%;width:12px;height:1px;
+  background:rgba(68,138,255,0.25);pointer-events:none;
+}
+#hudBiz::after{
+  content:'';position:absolute;left:-12px;top:45%;width:1px;height:calc(10% + 1px);
+  background:rgba(68,138,255,0.15);pointer-events:none;
+}
+/* Agenda connector (purple, horizontal line to API panel) */
+#hudAgenda::before{
+  content:'';position:absolute;right:-10px;top:50%;width:10px;height:1px;
+  background:rgba(200,120,255,0.3);pointer-events:none;
+}
+#hudAgenda::after{
+  content:'';position:absolute;right:-14px;top:calc(50% - 2px);width:5px;height:5px;
+  border-radius:50%;background:rgba(200,120,255,0.4);box-shadow:0 0 6px rgba(200,120,255,0.3);pointer-events:none;
+}
+
+/* Connector lines — built into each panel */
+.hud-conn{position:absolute;pointer-events:none;opacity:0;transition:opacity .8s}
+.hud-conn.show{opacity:1}
+.hud-conn-h{height:1px;top:50%}
+.hud-conn-h::after{content:'';position:absolute;width:4px;height:4px;border-radius:50%;top:-1.5px}
+.hud-conn-v{width:1px}
+.hud-conn-v::after{content:'';position:absolute;width:4px;height:4px;border-radius:50%;left:-1.5px}
+.hud-conn-step{position:absolute;pointer-events:none}
+.hud-conn-step span{position:absolute;display:block;background:inherit}
+/* HUD Right — Status Panel */
+.hud-right{
+  position:absolute;left:calc(50% + 155px);top:50%;
+  transform:translateY(-50%) scaleX(0);transform-origin:left center;
+  width:155px;pointer-events:none;z-index:15;
+  opacity:0;transition:all .8s cubic-bezier(.4,0,.2,1);
+  animation:hudFloat 4s ease-in-out infinite paused;
+}
+.hud-right.show{opacity:1;transform:translateY(-50%) scaleX(1);animation-play-state:running}
+.hud-r-inner{
+  background:linear-gradient(135deg,rgba(0,0,0,0.35) 0%,rgba(0,204,102,0.03) 100%);
+  border:1px solid rgba(0,204,102,0.12);border-left:2px solid rgba(0,204,102,0.35);
+  border-radius:2px 10px 10px 2px;padding:10px 11px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:0 0 25px rgba(0,204,102,0.04),0 8px 32px rgba(0,0,0,0.3),inset 0 0 15px rgba(0,204,102,0.02);
+  position:relative;overflow:hidden;
+}
+.hud-r-inner::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,rgba(0,204,102,0.5),transparent 60%)}
+.hud-r-inner::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,rgba(0,204,102,0.25),transparent 40%)}
+.hud-r-scan{position:absolute;top:0;left:0;right:0;height:100%;pointer-events:none;background:linear-gradient(180deg,transparent 0%,rgba(0,204,102,0.02) 50%,transparent 100%);animation:hudScan 4.5s ease-in-out infinite}
+.hud-r-title{font-family:'Space Mono',monospace;font-size:7px;letter-spacing:2.5px;color:rgba(0,204,102,0.45);text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.hud-r-title::before{content:'';width:4px;height:4px;border-radius:50%;background:#00cc66;box-shadow:0 0 6px #00cc66;animation:pulse 2s infinite}
+.hud-r-row{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-family:'Space Mono',monospace;font-size:8px}
+.hud-r-row .r-label{color:rgba(0,204,102,0.35);letter-spacing:0.5px;font-size:7px}
+.hud-r-row .r-val{color:#00cc66;font-weight:700;font-size:9px}
+.hud-r-bar{height:3px;background:rgba(0,204,102,0.1);border-radius:2px;margin:2px 0 5px;overflow:hidden}
+.hud-r-bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#00cc66,#00ff88);transition:width .8s ease;box-shadow:0 0 4px rgba(0,204,102,0.4)}
+.hud-r-action{font-family:'Space Mono',monospace;font-size:6.5px;color:rgba(0,204,102,0.3);margin-top:6px;padding-top:5px;border-top:1px solid rgba(0,204,102,0.06);line-height:1.4;word-break:break-word}
+
+/* Agenda sub-panel — connected to LEFT of API panel */
+.hud-agenda{
+  position:absolute;right:calc(50% + 305px);top:50%;
+  transform:translateY(-50%) scaleX(0);transform-origin:right center;
+  width:130px;pointer-events:none;z-index:16;
+  opacity:0;transition:all .6s cubic-bezier(.4,0,.2,1);
+}
+.hud-agenda.show{opacity:1;transform:translateY(-50%) scaleX(1)}
+.hud-agenda .hud-r-inner{background:linear-gradient(135deg,rgba(0,0,0,0.35),rgba(200,120,255,0.03));border-color:rgba(200,120,255,0.12);border-right:2px solid rgba(200,120,255,0.35);border-radius:10px 2px 2px 10px;padding:8px 10px}
+.hud-agenda .hud-r-inner::before{background:linear-gradient(270deg,rgba(200,120,255,0.5),transparent 60%)}
+.hud-agenda .hud-r-title{color:rgba(200,120,255,0.45)}
+.hud-agenda .hud-r-title::before{background:#c878ff;box-shadow:0 0 6px #c878ff}
+.hud-agenda .r-val{color:#c878ff}
+.hud-agenda .r-label{color:rgba(200,120,255,0.35)}
+
+/* HUD Weather Panel */
+#hudWeather .hud-r-inner{background:linear-gradient(135deg,rgba(0,0,0,0.35),rgba(255,200,50,0.03));border-color:rgba(255,200,50,0.12);border-left-color:rgba(255,200,50,0.35)}
+#hudWeather .hud-r-inner::before{background:linear-gradient(90deg,rgba(255,200,50,0.5),transparent 60%)}
+#hudWeather .hud-r-inner::after{background:linear-gradient(90deg,rgba(255,200,50,0.25),transparent 40%)}
+#hudWeather .hud-r-title{color:rgba(255,200,50,0.45)}
+#hudWeather .hud-r-title::before{background:#ffc832;box-shadow:0 0 6px #ffc832}
+#hudWeather .r-val{color:#ffc832}
+#hudWeather .r-label{color:rgba(255,200,50,0.35)}
+.weather-icon{font-size:22px;text-align:center;margin:4px 0;line-height:1;position:relative;display:inline-block}
+.weather-icon.sun{animation:wSpin 8s linear infinite}
+.weather-icon.moon{animation:wFloat 3s ease-in-out infinite}
+.weather-icon.rain{animation:wShake .3s ease-in-out infinite}
+.weather-icon.cloud{animation:wFloat 4s ease-in-out infinite}
+.weather-icon.storm{animation:wFlash 1.5s ease-in-out infinite}
+@keyframes wSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+@keyframes wFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes wShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-1px)}75%{transform:translateX(1px)}}
+@keyframes wFlash{0%,100%{opacity:1}50%{opacity:.5}}
+.weather-drops{position:absolute;top:100%;left:0;right:0;height:12px;overflow:hidden;pointer-events:none}
+.weather-drop{position:absolute;width:1px;height:4px;background:linear-gradient(180deg,rgba(100,180,255,0.6),transparent);animation:wDrop .6s linear infinite;border-radius:1px}
+@keyframes wDrop{0%{top:-4px;opacity:1}100%{top:12px;opacity:0}}
+
+#hudBiz .r-val{color:#448aff}
+#hudBiz .r-label{color:rgba(68,138,255,0.35)}
+#hudBiz .hud-r-title::before{background:#448aff;box-shadow:0 0 6px #448aff}
+@media(max-width:600px){.hud-panel,.hud-line-wrap,.hud-right,.hud-rline-wrap{display:none}}
+
+/* Balões flutuantes */
+.orb-hints{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+
+.hint-bubble{
+  position:absolute;
+  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:0.5px;
+  color:rgba(240,236,228,0.55);
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.06);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  padding:6px 14px;border-radius:20px;white-space:nowrap;
+  opacity:0;
+  animation:hintFloat var(--dur) ease-in-out var(--delay) infinite;
+}
+@keyframes hintFloat{
+  0%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0.6)}
+  12%{opacity:1;transform:translate(var(--mx),var(--my)) scale(1)}
+  75%{opacity:0.7;transform:translate(var(--mx),var(--my)) scale(1)}
+  100%{opacity:0;transform:translate(0,0) scale(0.2)}
+}
+@keyframes hintSpin{
+  0%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0.6) rotate(0deg)}
+  12%{opacity:1;transform:translate(var(--mx),var(--my)) scale(1) rotate(0deg)}
+  75%{opacity:0.7;transform:translate(var(--mx),var(--my)) scale(1) rotate(0deg)}
+  100%{opacity:0;transform:translate(0,0) scale(0.1) rotate(360deg)}
+}
+@keyframes hintVibrate{
+  0%{opacity:0;transform:translate(var(--sx),var(--sy)) scale(0.6)}
+  12%{opacity:1;transform:translate(var(--mx),var(--my)) scale(1)}
+  70%{opacity:0.7;transform:translate(var(--mx),var(--my)) scale(1)}
+  75%{opacity:0.6;transform:translate(calc(var(--mx) + 3px),var(--my)) scale(1)}
+  77%{opacity:0.5;transform:translate(calc(var(--mx) - 3px),var(--my)) scale(1)}
+  79%{opacity:0.4;transform:translate(calc(var(--mx) + 2px),var(--my)) scale(0.95)}
+  82%{opacity:0.3;transform:translate(var(--mx),var(--my)) scale(0.9)}
+  100%{opacity:0;transform:translate(0,0) scale(0.15)}
+}
+.status-bar{display:flex;align-items:center;justify-content:center;gap:8px;padding:2px 0 8px;flex-shrink:0}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--o);box-shadow:0 0 8px var(--o);animation:pulse 2s infinite}
+.dot.processing{background:var(--yellow);box-shadow:0 0 12px var(--yellow);animation:pulse .8s infinite}
+.dot.speaking{background:var(--green);box-shadow:0 0 12px var(--green)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+#statusLabel{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--w2);text-transform:uppercase}
+.mode-btn{font-family:'Space Mono',monospace;font-size:8px;letter-spacing:1px;background:transparent;border:1px solid var(--w3);color:var(--w2);padding:4px 12px;cursor:pointer;border-radius:4px;text-decoration:none;transition:.2s}
+.mode-btn:hover{border-color:var(--o);color:var(--o)}
+
+.chat-area{flex:1;overflow-y:auto;padding:12px 16px;display:flex;flex-direction:column;gap:6px;scroll-behavior:smooth}
+.chat-area::-webkit-scrollbar{width:3px}
+.chat-area::-webkit-scrollbar-thumb{background:var(--w3);border-radius:2px}
+
+.msg{
+  max-width:75%;padding:10px 14px;line-height:1.55;font-size:13.5px;word-wrap:break-word;
+  position:relative;
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  animation:msgIn .3s cubic-bezier(.4,0,.2,1);
+}
+.msg.user{
+  align-self:flex-end;
+  background:linear-gradient(135deg,rgba(243,102,0,0.12) 0%,rgba(243,102,0,0.06) 100%);
+  border:1px solid rgba(243,102,0,0.18);
+  border-radius:18px 18px 4px 18px;
+  box-shadow:0 2px 12px rgba(243,102,0,0.08),inset 0 1px 0 rgba(255,255,255,0.04);
+}
+.msg.ai{
+  align-self:flex-start;
+  background:linear-gradient(135deg,rgba(255,255,255,0.06) 0%,rgba(255,255,255,0.02) 100%);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:18px 18px 18px 4px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.15),inset 0 1px 0 rgba(255,255,255,0.03);
+}
+.msg.user::after{
+  content:'';position:absolute;bottom:0;right:-6px;width:12px;height:12px;
+  background:linear-gradient(135deg,rgba(243,102,0,0.12),rgba(243,102,0,0.06));
+  border-right:1px solid rgba(243,102,0,0.18);border-bottom:1px solid rgba(243,102,0,0.18);
+  clip-path:polygon(0 0,100% 0,100% 100%);
+}
+.msg.ai::after{
+  content:'';position:absolute;bottom:0;left:-6px;width:12px;height:12px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));
+  border-left:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);
+  clip-path:polygon(100% 0,0 0,0 100%);
+}
+.msg.system{
+  align-self:center;color:var(--w2);font-size:10px;font-family:'Space Mono',monospace;
+  padding:3px 12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);
+  border-radius:12px;backdrop-filter:blur(8px);box-shadow:none;
+}
+.msg.system::after{display:none}
+.msg a{color:var(--o2);text-decoration:none;border-bottom:1px solid rgba(255,136,51,0.3);transition:.2s}
+.msg a:hover{border-bottom-color:var(--o2)}
+.msg strong{color:var(--w);font-weight:600}
+.msg img{max-width:250px;max-height:300px;border-radius:10px;margin:8px 0 4px;cursor:pointer;object-fit:cover;border:1px solid rgba(255,255,255,0.06)}
+.msg video{max-width:280px;max-height:300px;border-radius:10px;margin:8px 0 4px;border:1px solid rgba(255,255,255,0.06)}
+.msg audio{width:100%;max-width:280px;margin:8px 0 4px;border-radius:20px}
+.msg .file-card{
+  display:inline-flex;align-items:center;gap:6px;padding:7px 14px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;margin:4px 2px;cursor:pointer;font-size:12px;color:var(--w2);
+  text-decoration:none;transition:all .2s;backdrop-filter:blur(8px);
+}
+.msg .file-card:hover{border-color:var(--o);background:rgba(243,102,0,0.06);color:var(--o2);transform:translateY(-1px)}
+.msg-meta{display:flex;justify-content:flex-end;align-items:center;gap:6px;margin-top:4px}
+.msg-time{font-size:9px;color:rgba(240,236,228,0.3);font-family:'Space Mono',monospace;letter-spacing:0.5px}
+.msg.user .msg-time{color:rgba(243,102,0,0.4)}
+@keyframes msgIn{
+  0%{opacity:0;transform:translateY(8px) scale(0.97)}
+  60%{opacity:1;transform:translateY(-2px) scale(1.005)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+
+.typing{display:none;align-self:flex-start;padding:10px 18px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:18px 18px 18px 4px;margin:0 16px;backdrop-filter:blur(12px)}
+.typing.show{display:flex;gap:5px;align-items:center}
+.typing span{width:6px;height:6px;background:var(--o);border-radius:50%;animation:td 1.4s infinite}
+.typing span:nth-child(2){animation-delay:.2s}
+.typing span:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,80%,100%{opacity:.25;transform:scale(.7)}40%{opacity:1;transform:scale(1.3)}}
+
+.previews{display:flex;gap:6px;padding:4px 16px;flex-wrap:wrap}
+.preview-item{position:relative;width:56px;height:56px;border-radius:8px;overflow:hidden;border:1px solid var(--w3)}
+.preview-item img,.preview-item video{width:100%;height:100%;object-fit:cover}
+.preview-item .remove{position:absolute;top:1px;right:1px;width:16px;height:16px;background:var(--red);border:none;border-radius:50%;color:#fff;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.preview-item .file-tag{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg3);font-size:9px;color:var(--w2)}
+
+.input-bar{display:flex;align-items:flex-end;gap:6px;padding:10px 12px;border-top:1px solid var(--w3);background:var(--bg2)}
+.input-bar textarea{flex:1;background:rgba(0,0,0,.4);border:1px solid var(--w3);border-radius:12px;color:var(--w);padding:10px 12px;font-family:'DM Sans',sans-serif;font-size:14px;resize:none;min-height:42px;max-height:100px;outline:none;line-height:1.4}
+.input-bar textarea:focus{border-color:var(--o)}
+.input-bar textarea::placeholder{color:var(--w2)}
+.btn{width:40px;height:40px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
+.btn-send{background:var(--o);color:#000}
+.btn-send:hover{background:var(--o2)}
+.btn-attach{background:transparent;border:1px solid var(--w3);color:var(--w2)}
+.btn-attach:hover{border-color:var(--o);color:var(--o)}
+.btn-mic{background:transparent;border:1px solid var(--w3);color:var(--w2)}
+.btn-mic:hover{border-color:var(--o);color:var(--o)}
+.btn-mic.recording{background:var(--red);border-color:var(--red);color:#fff;animation:pulse .8s infinite}
+
+.lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:1000;align-items:center;justify-content:center;cursor:pointer}
+.lightbox.show{display:flex}
+.lightbox img{max-width:95%;max-height:90vh;border-radius:8px}
+
+/* Config Menu (expandable) */
+.config-menu{
+  position:fixed;bottom:70px;left:50%;transform:translateX(-50%) scale(0.9);
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:500px;
+  opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.4,0,.2,1);z-index:1500;
+}
+.config-menu.show{opacity:1;transform:translateX(-50%) scale(1);pointer-events:auto}
+.config-menu .cfg-item{
+  display:flex;align-items:center;gap:6px;
+  padding:10px 18px;border-radius:14px;cursor:pointer;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--w2);
+  transition:all .2s;
+}
+.config-menu .cfg-item:hover{border-color:var(--o);color:var(--o);background:rgba(243,102,0,0.08);transform:translateY(-2px)}
+.config-menu .cfg-item .cfg-icon{font-size:16px}
+
+/* Config Modal */
+.config-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.config-overlay.show{display:flex}
+.config-modal{background:var(--bg2);border:1px solid var(--w3);border-radius:16px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto;padding:24px;animation:fadeIn .3s}
+.config-modal h2{font-family:'Space Mono',monospace;font-size:14px;letter-spacing:3px;color:var(--o);margin-bottom:16px;text-transform:uppercase}
+.config-modal .close-btn{position:absolute;top:16px;right:20px;background:none;border:none;color:var(--w2);font-size:20px;cursor:pointer}
+.config-modal label{display:block;font-size:12px;color:var(--w2);margin:12px 0 4px;font-family:'Space Mono',monospace;letter-spacing:1px}
+.config-modal input,.config-modal select,.config-modal textarea{width:100%;background:rgba(0,0,0,.4);border:1px solid var(--w3);border-radius:8px;color:var(--w);padding:8px 12px;font-size:13px;outline:none;font-family:'DM Sans',sans-serif}
+.config-modal input:focus,.config-modal select:focus{border-color:var(--o)}
+.config-modal .toggle{display:flex;align-items:center;gap:10px;margin:8px 0}
+.config-modal .toggle input[type=checkbox]{width:auto;accent-color:var(--o)}
+.config-modal .cfg-section{background:rgba(0,0,0,.25);border:1px solid var(--w3);border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.config-modal .cfg-section-title{display:block;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--o);text-transform:uppercase;margin-bottom:8px}
+.config-modal .config-btn{background:var(--o);color:#000;border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:12px;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:1px;width:100%}
+.config-modal .config-btn:hover{background:var(--o2)}
+.config-modal .config-btn-sm{background:rgba(243,102,0,0.1);color:var(--o);border:1px solid rgba(243,102,0,0.3);padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;margin:4px 4px 4px 0;display:inline-block}
+.config-modal .config-btn-sm:hover{background:rgba(243,102,0,0.2)}
+.config-modal .status-ok{color:var(--green);font-size:11px;margin-top:8px}
+.config-modal .status-err{color:var(--red);font-size:11px;margin-top:8px}
+
+@media(max-width:600px){
+  .orb-wrap{padding:16px 0 4px}
+  #orbCanvas{width:160px;height:160px}
+  .hint-bubble{font-size:8px;padding:4px 10px}
+  .status-bar{flex-wrap:wrap;gap:4px;padding:2px 8px 6px}
+  .mode-btn{font-size:7px;padding:3px 8px;letter-spacing:0.5px}
+  #statusLabel{font-size:8px;letter-spacing:1px}
+  .chat-area{padding:6px 10px;gap:6px}
+  .msg{max-width:88%;font-size:13px;padding:8px 12px}
+  .msg.user{border-radius:16px 16px 4px 16px}
+  .msg.ai{border-radius:16px 16px 16px 4px}
+  .msg img{max-width:200px;max-height:250px}
+  .msg video{max-width:220px;max-height:250px}
+  .msg audio{max-width:220px}
+  .input-bar{padding:6px 8px;gap:4px}
+  .input-bar textarea{font-size:14px;padding:8px 10px;min-height:38px;border-radius:10px}
+  .btn{width:36px;height:36px}
+  .config-menu{max-width:340px;gap:6px;bottom:60px}
+  .config-menu .cfg-item{padding:8px 12px;font-size:9px}
+  .config-modal{width:95%;max-height:85vh;padding:18px}
+  .lightbox img{max-width:98%;max-height:85vh}
+  .preview-item{width:44px;height:44px}
+  .previews{padding:2px 10px}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="orb-wrap">
+    <canvas id="orbCanvas" width="280" height="280"></canvas>
+    <div class="orb-hints" id="orbHints"></div>
+    <!-- Connectors are now built into each panel via CSS -->
+    <div class="hud-agenda" id="hudAgenda">
+      <div class="hud-r-inner">
+        <div class="hud-r-scan" style="background:linear-gradient(180deg,transparent,rgba(200,120,255,0.02),transparent)"></div>
+        <div class="hud-r-title">Agenda Hoje</div>
+        <div id="hrAgendaContent">
+          <div class="hud-r-row"><span class="r-label">CARREGANDO</span><span class="r-val" style="color:#c878ff">...</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="hud-right" id="hudWeather">
+      <div class="hud-r-inner">
+        <div class="hud-r-scan" style="background:linear-gradient(180deg,transparent,rgba(255,200,50,0.02),transparent)"></div>
+        <div class="hud-r-title">Clima</div>
+        <div id="hrWeatherContent" style="text-align:center">
+          <div class="hud-r-row"><span class="r-label">CARREGANDO</span><span class="r-val" style="color:#ffc832">...</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="hud-right" id="hudBiz" style="border-color:rgba(100,140,255,0.12)">
+      <div class="hud-r-inner" style="background:linear-gradient(135deg,rgba(0,0,0,0.35),rgba(68,138,255,0.03));border-color:rgba(68,138,255,0.12);border-left-color:rgba(68,138,255,0.35)">
+        <div class="hud-r-scan" style="background:linear-gradient(180deg,transparent,rgba(68,138,255,0.02),transparent)"></div>
+        <div class="hud-r-title" style="color:rgba(68,138,255,0.45)">Dashboard</div>
+        <div id="hrBizContent">
+          <div class="hud-r-row"><span class="r-label">CARREGANDO</span><span class="r-val" style="color:#448aff">...</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="hud-right" id="hudRight">
+      <div class="hud-r-inner">
+        <div class="hud-r-scan"></div>
+        <div class="hud-r-title">Runtime</div>
+        <div class="hud-r-row"><span class="r-label">CPU</span><span class="r-val" id="hrCpu">0%</span></div>
+        <div class="hud-r-bar"><div class="hud-r-bar-fill" id="hrCpuBar" style="width:0%"></div></div>
+        <div class="hud-r-row"><span class="r-label">IDLE</span><span class="r-val" id="hrIdle">0%</span></div>
+        <div class="hud-r-bar"><div class="hud-r-bar-fill" id="hrIdleBar" style="width:0%"></div></div>
+        <div class="hud-r-row"><span class="r-label">MODO</span><span class="r-val" id="hrMode">IDLE</span></div>
+        <div class="hud-r-action" id="hrAction">Aguardando...</div>
+      </div>
+    </div>
+    <div class="hud-panel" id="hudPanel">
+      <div class="hud-connector"></div>
+      <div class="hud-inner">
+        <div class="hud-scan"></div>
+        <div class="hud-title">System Status</div>
+        <div id="hudRows"></div>
+      </div>
+    </div>
+  </div>
+  <div class="status-bar">
+    <div class="dot" id="statusDot"></div>
+    <span id="statusLabel">ONLINE</span>
+    <button class="mode-btn" id="btnVoiceMode" onclick="toggleVoiceMode()">🎙️ MODO VOZ</button>
+    <button class="mode-btn" id="btnConfig" onclick="toggleConfigMenu()">⚙️ CONFIG</button>
+    <button class="mode-btn" onclick="window.open('/meta.html','_blank')">📸 META</button>
+    <a href="/dashboard" class="mode-btn">← DASHBOARD</a>
+  </div>
+
+  <div class="chat-area" id="chatArea"></div>
+  <div class="typing" id="typing"><span></span><span></span><span></span></div>
+
+  <div class="previews" id="previews"></div>
+  <div class="input-bar">
+    <button class="btn btn-attach" id="btnAttach" title="Anexar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg></button>
+    <textarea id="chatInput" placeholder="Digite sua mensagem..." rows="1"></textarea>
+    <button class="btn btn-mic" id="btnMic" title="Gravar áudio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/></svg></button>
+    <button class="btn btn-send" id="btnSend" title="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+  </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="this.classList.remove('show')"><img id="lbImg" src=""></div>
+
+<!-- Config Menu -->
+<div class="config-menu" id="configMenu">
+  <div class="cfg-item" onclick="openConfig('whatsapp')"><span class="cfg-icon">💬</span>WhatsApp</div>
+  <div class="cfg-item" onclick="openConfig('instagram')"><span class="cfg-icon">📱</span>Instagram</div>
+  <div class="cfg-item" onclick="openConfig('calendario')"><span class="cfg-icon">📅</span>Calendário</div>
+  <div class="cfg-item" onclick="openConfig('agenda')"><span class="cfg-icon">⏰</span>Lembretes</div>
+  <div class="cfg-item" onclick="openConfig('grupos')"><span class="cfg-icon">👥</span>Grupos</div>
+  <div class="cfg-item" onclick="openConfig('missoes')"><span class="cfg-icon">🤖</span>Missões</div>
+  <div class="cfg-item" onclick="openConfig('providers')"><span class="cfg-icon">⚡</span>IA & Tools</div>
+  <div class="cfg-item" onclick="window.open('/config.html','_blank')" style="border-color:var(--o);color:var(--o)"><span class="cfg-icon">🔧</span>Avançadas</div>
+</div>
+
+<!-- Config Modal -->
+<div class="config-overlay" id="configOverlay" onclick="if(event.target===this)closeConfig()">
+  <div class="config-modal" id="configModal"></div>
+</div>
+<input type="file" id="fileInput" multiple accept="image/*,video/*,audio/*,.pdf,.pptx,.docx,.xlsx" style="display:none">
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/orb.js"></script>
+<script>
+const socket = io();
+const $ = id => document.getElementById(id);
+const chatArea = $('chatArea');
+const chatInput = $('chatInput');
+const orb = new JarvisOrb('orbCanvas');
+let busy = false, recording = false, mediaRecorder = null, audioChunks = [], pendingFiles = [], pendingServerFiles = [];
+
+chatInput.addEventListener('input', () => { chatInput.style.height = 'auto'; chatInput.style.height = Math.min(chatInput.scrollHeight, 100) + 'px'; });
+
+// Sons
+function playSound(url, vol) {
+  try { const a = new Audio(url); a.volume = vol || 0.5; a.play().catch(() => {}); } catch {}
+}
+
+function addMsg(content, type = 'ai') {
+  const div = document.createElement('div');
+  div.className = `msg ${type}`;
+  const time = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const rendered = renderContent(content);
+  if (type === 'system') {
+    div.innerHTML = rendered;
+  } else {
+    div.innerHTML = `<div class="msg-body">${rendered}</div><div class="msg-meta"><span class="msg-time">${time}</span></div>`;
+  }
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  div.querySelectorAll('img').forEach(img => img.addEventListener('click', () => { $('lbImg').src = img.src; $('lightbox').classList.add('show'); }));
+  return div;
+}
+
+function renderContent(text) {
+  if (!text) return '';
+
+  // 1. Strip ALL HTML tags (IA manda HTML cru às vezes)
+  text = text.replace(/<[^>]+>/g, '');
+
+  // 2. Escape
+  text = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  // 3. Bold/Italic/Code
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.+?)\*/g, '<strong>$1</strong>');
+  text = text.replace(/_(.+?)_/g, '<em>$1</em>');
+  text = text.replace(/`(.+?)`/g, '<code style="background:rgba(0,0,0,.4);padding:2px 5px;border-radius:3px;font-size:12px">$1</code>');
+
+  // Placeholder system — protege HTML já processado de ser re-processado
+  const placeholders = [];
+  function ph(html) { const id = `\x00PH${placeholders.length}\x00`; placeholders.push(html); return id; }
+
+  // 4. Markdown links [texto](url) → inline media ou botão
+  text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, (_, label, url) => {
+    const ext = url.split('.').pop().split('?')[0].toLowerCase();
+    if (['jpg','jpeg','png','gif','webp'].includes(ext)) return ph(`<img src="${url}" loading="lazy" onerror="this.style.display='none'" onclick="document.getElementById('lbImg').src=this.src;document.getElementById('lightbox').classList.add('show')">`);
+    if (['mp4','mov','webm'].includes(ext)) return ph(`<video controls preload="metadata" src="${url}"></video>`);
+    if (['mp3','wav','ogg'].includes(ext)) return ph(`<audio controls src="${url}"></audio>`);
+    return ph(`<a href="${url}" target="_blank" class="file-card">📎 ${label}</a>`);
+  });
+
+  // 5. Markdown links com path local [texto](/tmp/...) → botão com /files/
+  text = text.replace(/\[([^\]]+)\]\((\/tmp\/[^\)]+)\)/g, (_, label, path) => {
+    const servePath = path.replace('/tmp/', '/files/');
+    return ph(`<a href="${servePath}" target="_blank" class="file-card">📎 ${label}</a>`);
+  });
+
+  // 6. URLs soltas (https://...) → renderiza inline ou botão
+  text = text.replace(/(https?:\/\/[^\s\)\]"<>]+)/g, url => {
+    url = url.replace(/[.,;:!?\)]+$/, '');
+    const ext = url.split('.').pop().split('?')[0].toLowerCase();
+    if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+      return ph(`<img src="${url}" loading="lazy" onerror="this.style.display='none'" onclick="document.getElementById('lbImg').src=this.src;document.getElementById('lightbox').classList.add('show')">`);
+    }
+    if (['mp4','mov','webm'].includes(ext)) {
+      return ph(`<video controls preload="metadata" src="${url}"></video>`);
+    }
+    if (['mp3','wav','ogg'].includes(ext)) {
+      return ph(`<audio controls src="${url}"></audio>`);
+    }
+    const icons = { pdf:'📄 PDF', pptx:'📊 Slides', docx:'📝 Documento', html:'🌐 Página' };
+    const label = icons[ext] || '🔗 Link';
+    return ph(`<a href="${url}" target="_blank" class="file-card">${label}</a>`);
+  });
+
+  // 7. Paths locais soltos (/tmp/...) → botão com /files/
+  text = text.replace(/(\/tmp\/[^\s\)\]"<>]+\.(jpg|jpeg|png|gif|mp4|mp3|wav|pdf|pptx|mov|webm))/gi, (path) => {
+    const servePath = path.replace('/tmp/', '/files/');
+    const ext = path.split('.').pop().toLowerCase();
+    const icons = { jpg:'🖼️ Imagem', jpeg:'🖼️ Imagem', png:'🖼️ Imagem', mp4:'🎬 Vídeo', mp3:'🎵 Áudio', pdf:'📄 PDF', pptx:'📊 Slides' };
+    const label = icons[ext] || '📎 Arquivo';
+    return ph(`<a href="${servePath}" target="_blank" class="file-card">${label}</a>`);
+  });
+
+  // 8. Newlines
+  text = text.replace(/\n/g, '<br>');
+
+  // 9. Restore placeholders
+  for (let i = 0; i < placeholders.length; i++) {
+    text = text.replace(`\x00PH${i}\x00`, placeholders[i]);
+  }
+
+  return text;
+}
+
+function setStatus(s) {
+  $('statusDot').className = 'dot ' + s;
+  $('statusLabel').textContent = s === 'processing' ? 'PROCESSANDO...' : s === 'speaking' ? 'RESPONDENDO' : 'ONLINE';
+  orb.setState(s === 'idle' ? 'idle' : s);
+}
+
+// === SEND ===
+async function send() {
+  const text = chatInput.value.trim();
+  if (!text && pendingFiles.length === 0) return;
+  if (busy) return;
+  busy = true;
+  chatInput.value = ''; chatInput.style.height = 'auto';
+  let fullMsg = text;
+
+  // Upload files
+  for (const f of pendingFiles) {
+    try {
+      const fd = new FormData(); fd.append('file', f.file);
+      const r = await fetch('/api/upload-file', { method: 'POST', body: fd });
+      const d = await r.json();
+      if (d.path) {
+        if (f.file.type.startsWith('image/')) {
+          const reader = new FileReader();
+          const b64 = await new Promise(res => { reader.onload = () => res(reader.result); reader.readAsDataURL(f.file); });
+          const vr = await fetch('/api/vision', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ image: b64, message: 'Descreva: cena, objetos, cores. JSON.' }) });
+          const vd = await vr.json();
+          fullMsg += `\n\n[IMAGEM ENVIADA - análise: ${vd.response || ''}]\n[Path: ${d.path}]${d.url ? '\n[URL: ' + d.url + ']' : ''}`;
+        } else {
+          fullMsg += `\n\n[Arquivo "${f.file.name}" salvo em: ${d.path}]${d.url ? '\n[URL: ' + d.url + ']' : ''}`;
+        }
+      }
+    } catch (e) { fullMsg += `\n\n[Arquivo: ${f.file.name} (upload falhou)]`; }
+  }
+  pendingFiles = []; renderPreviews();
+
+  if (text) addMsg(text, 'user');
+  // Mostra previews dos anexos na conversa
+  for (const f of pendingFiles) {
+    if (f.preview) {
+      const div = document.createElement('div');
+      div.className = 'msg user';
+      const img = document.createElement('img');
+      img.src = f.preview;
+      img.style.cssText = 'max-width:200px;border-radius:8px';
+      div.appendChild(img);
+      chatArea.appendChild(div);
+    } else {
+      addMsg('📎 ' + f.name, 'user');
+    }
+  }
+  playSound('zaya-send.mp3', 0.3);
+  $('typing').classList.add('show');
+  setStatus('processing');
+
+  try {
+    const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: fullMsg, stream: true }) });
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buf = '', finalResponse = '', eventName = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += decoder.decode(value, { stream: true });
+      const lines = buf.split('\n'); buf = lines.pop() || '';
+      for (const line of lines) {
+        if (line.startsWith('event: ')) eventName = line.slice(7).trim();
+        else if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.slice(6));
+            if (eventName === 'stage') {
+              if (data.stage === 'executing') $('statusLabel').textContent = (data.text || '').slice(0, 50);
+              else if (data.stage === 'done') { finalResponse = data.text; if (data.files) pendingServerFiles = data.files; }
+            } else if (eventName === 'result') { finalResponse = data.response; if (data.files) pendingServerFiles = data.files; }
+          } catch {} eventName = '';
+        }
+      }
+    }
+    $('typing').classList.remove('show');
+    if (finalResponse) { playSound('zaya-activate.mp3', 0.2); addMsg(finalResponse, 'ai'); }
+    // Renderiza arquivos gerados inline (URLs do Supabase)
+    if (pendingServerFiles.length > 0) {
+      for (const f of pendingServerFiles) {
+        if (!f.url || !f.url.startsWith('http')) continue; // Pula URLs inválidas
+        const ext = f.name.split('.').pop().toLowerCase();
+        const div = document.createElement('div');
+        div.className = 'msg ai';
+        div.style.padding = '6px';
+        if (['mp4','mov','webm'].includes(ext)) {
+          const vid = document.createElement('video');
+          vid.controls = true; vid.preload = 'metadata';
+          vid.style.cssText = 'max-width:280px;max-height:300px;border-radius:8px';
+          vid.src = f.url;
+          div.appendChild(vid);
+          const dl = document.createElement('a');
+          dl.href = f.url; dl.target = '_blank'; dl.className = 'file-card';
+          dl.textContent = '🎬 Baixar vídeo'; dl.style.marginTop = '6px';
+          div.appendChild(dl);
+        } else if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+          const img = document.createElement('img');
+          img.src = f.url; img.loading = 'lazy';
+          img.style.cssText = 'max-width:250px;max-height:300px;border-radius:8px;cursor:pointer;object-fit:cover';
+          img.onclick = () => { $('lbImg').src = img.src; $('lightbox').classList.add('show'); };
+          img.onerror = () => { img.style.display = 'none'; };
+          div.appendChild(img);
+        } else if (['mp3','wav','ogg'].includes(ext)) {
+          const aud = document.createElement('audio');
+          aud.controls = true; aud.src = f.url; aud.style.width = '100%';
+          div.appendChild(aud);
+        } else {
+          const a = document.createElement('a');
+          a.className = 'file-card'; a.href = f.url; a.target = '_blank';
+          a.textContent = '📄 ' + f.name;
+          div.appendChild(a);
+        }
+        chatArea.appendChild(div);
+      }
+      chatArea.scrollTop = chatArea.scrollHeight;
+      pendingServerFiles = [];
+    }
+  } catch (e) { $('typing').classList.remove('show'); addMsg('Erro: ' + e.message, 'ai'); }
+  busy = false; setStatus('idle');
+}
+
+// === AUDIO RECORDING ===
+async function toggleMic() {
+  if (recording) { stopRec(); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    audioChunks = [];
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      if (blob.size < 1000) { setStatus('idle'); return; }
+      busy = true; $('typing').classList.add('show'); setStatus('processing');
+      try {
+        const reader = new FileReader();
+        const b64 = await new Promise(res => { reader.onload = () => res(reader.result); reader.readAsDataURL(blob); });
+        const tr = await fetch('/api/transcribe', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ audio: b64 }) });
+        const td = await tr.json();
+        if (!td.text) { $('typing').classList.remove('show'); addMsg('Não entendi o áudio.', 'system'); busy = false; setStatus('idle'); return; }
+        addMsg('🎤 ' + td.text, 'user');
+        const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: td.text, stream: true }) });
+        const rdr = res.body.getReader(); const dec = new TextDecoder();
+        let buf2 = '', final2 = '', ev2 = '';
+        while (true) { const { done, value } = await rdr.read(); if (done) break; buf2 += dec.decode(value, { stream: true }); const ls = buf2.split('\n'); buf2 = ls.pop() || '';
+          for (const l of ls) { if (l.startsWith('event: ')) ev2 = l.slice(7).trim(); else if (l.startsWith('data: ')) { try { const d = JSON.parse(l.slice(6)); if (ev2==='stage'&&d.stage==='done') final2=d.text; else if (ev2==='result') final2=d.response; } catch {} ev2=''; } } }
+        $('typing').classList.remove('show');
+        if (final2) addMsg(final2, 'ai');
+      } catch (e) { $('typing').classList.remove('show'); addMsg('Erro: ' + e.message, 'ai'); }
+      busy = false; setStatus('idle');
+    };
+    mediaRecorder.start(); recording = true;
+    playSound('zaya-activate.mp3', 0.4);
+    $('btnMic').classList.add('recording'); setStatus('listening');
+  } catch (e) { addMsg('Microfone indisponível: ' + e.message, 'system'); }
+}
+function stopRec() { if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop(); recording = false; $('btnMic').classList.remove('recording'); }
+
+// === FILES ===
+function handleFiles(files) {
+  for (const file of files) {
+    if (pendingFiles.length >= 5) break;
+    const item = { file, name: file.name };
+    if (file.type.startsWith('image/')) { const r = new FileReader(); r.onload = () => { item.preview = r.result; renderPreviews(); }; r.readAsDataURL(file); }
+    pendingFiles.push(item);
+  }
+  renderPreviews();
+}
+function renderPreviews() {
+  $('previews').innerHTML = pendingFiles.map((f, i) => {
+    const thumb = f.preview ? `<img src="${f.preview}">` : `<div class="file-tag">${f.name.split('.').pop()}</div>`;
+    return `<div class="preview-item">${thumb}<button class="remove" onclick="pendingFiles.splice(${i},1);renderPreviews()">×</button></div>`;
+  }).join('');
+}
+
+// === EVENTS ===
+$('btnSend').addEventListener('click', send);
+$('btnMic').addEventListener('click', toggleMic);
+$('btnAttach').addEventListener('click', () => $('fileInput').click());
+$('fileInput').addEventListener('change', e => { handleFiles(e.target.files); $('fileInput').value = ''; });
+chatInput.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+chatInput.addEventListener('paste', e => { const items = e.clipboardData?.items; if (!items) return; for (const item of items) { if (item.type.startsWith('image/')) { e.preventDefault(); handleFiles([item.getAsFile()]); } } });
+chatArea.addEventListener('dragover', e => { e.preventDefault(); chatArea.style.border = '2px dashed var(--o)'; });
+chatArea.addEventListener('dragleave', () => chatArea.style.border = 'none');
+chatArea.addEventListener('drop', e => { e.preventDefault(); chatArea.style.border = 'none'; if (e.dataTransfer.files.length) handleFiles(e.dataTransfer.files); });
+
+socket.on('zaya-executing', d => $('statusLabel').textContent = (d.text || '').slice(0, 50));
+socket.on('zaya-proactive', d => {
+  addMsg(d.text, 'ai');
+  if (d.speak) ZayaNotify.push(d.text);
+  else ZayaNotify.showBubble(d.text);
+});
+socket.on('new-message', d => addMsg(`📋 ${d.title}`, 'system'));
+socket.on('incoming-notification', d => {
+  addMsg(`🔔 ${d.title}\n${d.text || ''}`, 'system');
+  const fullText = `${d.title}. ${d.text || ''}`;
+  if (d.speak) ZayaNotify.push(fullText);
+  else ZayaNotify.showBubble(d.title);
+});
+
+// === NOTIFICATION SYSTEM: balão na orb + fila de fala ===
+const ZayaNotify = {
+  queue: [],
+  speaking: false,
+  bubbleEl: null,
+  bubbleTimer: null,
+
+  init() {
+    const wrap = document.querySelector('.orb-wrap');
+    if (!wrap) return;
+    const el = document.createElement('div');
+    el.id = 'notifyBubble';
+    el.style.cssText = 'position:absolute;top:12px;left:50%;transform:translateX(-50%) scale(0.8);opacity:0;pointer-events:none;z-index:20;max-width:320px;padding:10px 18px;border-radius:16px;background:rgba(243,102,0,0.92);color:#fff;font-family:"DM Sans",sans-serif;font-size:12px;font-weight:500;line-height:1.4;text-align:center;backdrop-filter:blur(10px);border:1px solid rgba(255,150,50,0.4);box-shadow:0 4px 24px rgba(243,102,0,0.35),0 0 40px rgba(243,102,0,0.1);transition:all .4s cubic-bezier(.4,0,.2,1);white-space:normal;word-wrap:break-word;';
+    wrap.appendChild(el);
+    this.bubbleEl = el;
+  },
+
+  showBubble(text) {
+    if (!this.bubbleEl) this.init();
+    if (!this.bubbleEl) return;
+    clearTimeout(this.bubbleTimer);
+    this.bubbleEl.textContent = text.slice(0, 120);
+    this.bubbleEl.style.opacity = '1';
+    this.bubbleEl.style.transform = 'translateX(-50%) scale(1)';
+    playSound('zaya-notify.mp3', 0.5);
+    this.bubbleTimer = setTimeout(() => {
+      this.bubbleEl.style.opacity = '0';
+      this.bubbleEl.style.transform = 'translateX(-50%) scale(0.8)';
+    }, 5000);
+  },
+
+  push(text) {
+    this.queue.push(text);
+    if (!this.speaking) this.processQueue();
+  },
+
+  async processQueue() {
+    if (this.queue.length === 0) { this.speaking = false; return; }
+    this.speaking = true;
+    const text = this.queue.shift();
+
+    this.showBubble(text);
+
+    try {
+      const res = await fetch('/api/speak', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: text.slice(0, 300) }) });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        await new Promise(resolve => {
+          const a = new Audio(url);
+          a.playbackRate = 1.1;
+          const timeout = setTimeout(() => { URL.revokeObjectURL(url); resolve(); }, 30000);
+          a.onended = () => { clearTimeout(timeout); URL.revokeObjectURL(url); resolve(); };
+          a.onerror = () => { clearTimeout(timeout); URL.revokeObjectURL(url); resolve(); };
+          a.play().catch(() => { clearTimeout(timeout); URL.revokeObjectURL(url); resolve(); });
+        });
+      }
+    } catch {}
+
+    await new Promise(r => setTimeout(r, 800));
+    this.processQueue();
+  },
+};
+ZayaNotify.init();
+
+// === WAKE WORD "ZAYA" — escuta em segundo plano ===
+let wakeWordActive = false;
+let wakeRecognition = null;
+
+function startWakeWord() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) return;
+  if (wakeWordActive || voiceMode) return;
+
+  wakeRecognition = new SR();
+  wakeRecognition.lang = 'pt-BR';
+  wakeRecognition.continuous = true;
+  wakeRecognition.interimResults = true;
+
+  wakeRecognition.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const text = e.results[i][0].transcript.toLowerCase().trim();
+      if (/zaya|zaia|zahia|zaía|zaila|saia/.test(text) && !voiceMode) {
+        stopWakeWord();
+        addMsg('🎙️ Zaya ativada por voz!', 'system');
+        toggleVoiceMode();
+        return;
+      }
+    }
+  };
+
+  wakeRecognition.onend = () => {
+    if (wakeWordActive && !voiceMode) {
+      try { wakeRecognition.start(); } catch {}
+    }
+  };
+
+  wakeRecognition.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') {
+      if (wakeWordActive && !voiceMode) {
+        try { wakeRecognition.start(); } catch {}
+      }
+      return;
+    }
+  };
+
+  try {
+    wakeRecognition.start();
+    wakeWordActive = true;
+    $('statusLabel').textContent = 'ESCUTANDO "ZAYA"...';
+    console.log('Wake word ativo — diga "Zaya" para ativar');
+  } catch {}
+}
+
+function stopWakeWord() {
+  wakeWordActive = false;
+  if (wakeRecognition) {
+    try { wakeRecognition.stop(); } catch {}
+    wakeRecognition = null;
+  }
+}
+
+// Auto-inicia wake word após 2s (se navegador permitir mic)
+setTimeout(() => {
+  startWakeWord();
+}, 2000);
+
+// === MODO VOZ (transcrição em tempo real + TTS) ===
+let voiceMode = false;
+let recognition = null;
+let currentAudio = null;
+let liveTranscriptDiv = null;
+
+function toggleVoiceMode() {
+  voiceMode = !voiceMode;
+  const btn = $('btnVoiceMode');
+  if (voiceMode) {
+    stopWakeWord();
+    btn.textContent = '⏹️ PARAR VOZ';
+    btn.style.borderColor = '#ff4444';
+    btn.style.color = '#ff4444';
+    playSound('zaya-activate.mp3', 0.5);
+    startVoiceRecognition();
+  } else {
+    btn.textContent = '🎙️ MODO VOZ';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    stopVoiceRecognition();
+    playSound('zaya-deactivate.mp3', 0.5);
+    setStatus('idle');
+    // Reinicia wake word após 2s
+    setTimeout(() => startWakeWord(), 2000);
+  }
+}
+
+function startVoiceRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { addMsg('Navegador não suporta reconhecimento de voz.', 'system'); voiceMode = false; return; }
+
+  recognition = new SR();
+  recognition.lang = 'pt-BR';
+  recognition.continuous = true;
+  recognition.interimResults = true;
+
+  let finalText = '';
+
+  recognition.onstart = () => {
+    setStatus('listening');
+    orb.setState('listening');
+    // Cria div de transcrição ao vivo
+    liveTranscriptDiv = document.createElement('div');
+    liveTranscriptDiv.className = 'msg user';
+    liveTranscriptDiv.style.opacity = '0.6';
+    liveTranscriptDiv.textContent = '🎤 ...';
+    chatArea.appendChild(liveTranscriptDiv);
+    chatArea.scrollTop = chatArea.scrollHeight;
+  };
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    finalText = '';
+    for (let i = 0; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        finalText += e.results[i][0].transcript;
+      } else {
+        interim += e.results[i][0].transcript;
+      }
+    }
+    // Atualiza a mesma linha ao vivo
+    if (liveTranscriptDiv) {
+      liveTranscriptDiv.textContent = '🎤 ' + (finalText || interim || '...');
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+  };
+
+  recognition.onend = async () => {
+    if (!voiceMode) return;
+
+    const text = finalText.trim();
+
+    // Finaliza a div de transcrição
+    if (liveTranscriptDiv) {
+      if (text) {
+        liveTranscriptDiv.style.opacity = '1';
+        liveTranscriptDiv.textContent = '🎤 ' + text;
+      } else {
+        liveTranscriptDiv.remove();
+      }
+      liveTranscriptDiv = null;
+    }
+
+    if (!text || text.length < 2) {
+      // Nada falado — volta a escutar
+      if (voiceMode) recognition.start();
+      return;
+    }
+
+    playSound('zaya-send.mp3', 0.3);
+    setStatus('processing');
+    orb.setState('processing');
+    $('typing').classList.add('show');
+    $('statusLabel').textContent = 'PENSANDO...';
+
+    try {
+      // Processa com IA (streaming pra ter feedback)
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, stream: true }),
+      });
+      const reader = res.body.getReader();
+      const dec = new TextDecoder();
+      let buf = '', finalResp = '', ev = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buf += dec.decode(value, { stream: true });
+        const lines = buf.split('\n'); buf = lines.pop() || '';
+        for (const l of lines) {
+          if (l.startsWith('event: ')) ev = l.slice(7).trim();
+          else if (l.startsWith('data: ')) {
+            try {
+              const d = JSON.parse(l.slice(6));
+              if (ev === 'stage') {
+                if (d.stage === 'executing') $('statusLabel').textContent = (d.text || 'Executando...').slice(0, 40);
+                else if (d.stage === 'done') finalResp = d.text;
+              } else if (ev === 'result') finalResp = d.response;
+            } catch {} ev = '';
+          }
+        }
+      }
+      $('typing').classList.remove('show');
+      const data = { response: finalResp };
+
+      if (data.response) {
+        addMsg(data.response, 'ai');
+        playSound('zaya-activate.mp3', 0.2);
+        $('statusLabel').textContent = 'RESPONDENDO...';
+
+        // TTS — fala a resposta
+        if (data.response.length < 500 && !data.response.includes('http')) {
+          try {
+            setStatus('speaking');
+            orb.setState('speaking');
+            const ttsRes = await fetch('/api/speak', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: data.response.slice(0, 500) }),
+            });
+            if (ttsRes.ok) {
+              const ttsBlob = await ttsRes.blob();
+              const ttsUrl = URL.createObjectURL(ttsBlob);
+              await new Promise(resolve => {
+                const a = new Audio(ttsUrl);
+                a.playbackRate = 1.1;
+                currentAudio = a;
+                const t = setTimeout(() => { currentAudio = null; URL.revokeObjectURL(ttsUrl); resolve(); }, 30000);
+                a.onended = () => { clearTimeout(t); currentAudio = null; URL.revokeObjectURL(ttsUrl); resolve(); };
+                a.onerror = () => { clearTimeout(t); currentAudio = null; URL.revokeObjectURL(ttsUrl); resolve(); };
+                a.play().catch(() => { clearTimeout(t); currentAudio = null; URL.revokeObjectURL(ttsUrl); resolve(); });
+              });
+            }
+          } catch {}
+        }
+      }
+    } catch (e) {
+      $('typing').classList.remove('show');
+      addMsg('Erro: ' + e.message, 'system');
+    }
+
+    setStatus('idle');
+    orb.setState('idle');
+
+    // Volta a escutar
+    if (voiceMode) {
+      await new Promise(r => setTimeout(r, 400));
+      recognition.start();
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') {
+      // Normal — volta a escutar
+      if (voiceMode) { try { recognition.start(); } catch {} }
+      return;
+    }
+    addMsg('Erro voz: ' + e.error, 'system');
+  };
+
+  recognition.start();
+}
+
+function stopVoiceRecognition() {
+  voiceMode = false;
+  if (recognition) { try { recognition.stop(); } catch {} recognition = null; }
+  if (currentAudio) { try { currentAudio.pause(); } catch {} currentAudio = null; }
+  if (liveTranscriptDiv) { liveTranscriptDiv.remove(); liveTranscriptDiv = null; }
+}
+
+// === CONFIG MENU ===
+let configMenuOpen = false;
+function toggleConfigMenu() {
+  configMenuOpen = !configMenuOpen;
+  const menu = $('configMenu');
+  const btn = $('btnConfig');
+  if (configMenuOpen) {
+    menu.classList.add('show');
+    btn.style.borderColor = 'var(--o)';
+    btn.style.color = 'var(--o)';
+    playSound('zaya-activate.mp3', 0.15);
+  } else {
+    menu.classList.remove('show');
+    btn.style.borderColor = '';
+    btn.style.color = '';
+  }
+}
+// Fecha menu ao clicar fora
+document.addEventListener('click', e => {
+  if (configMenuOpen && !e.target.closest('.config-menu') && !e.target.closest('#btnConfig')) {
+    toggleConfigMenu();
+  }
+});
+
+// === CONFIG POPUPS ===
+const configTemplates = {
+  whatsapp: {
+    html: `<h2>💬 WhatsApp Bot</h2>
+      <div class="cfg-section"><span class="cfg-section-title">Status</span>
+        <div class="toggle"><input type="checkbox" id="cfgBotActive" checked><label>Bot ativo</label></div>
+        <div class="toggle"><input type="checkbox" id="cfgAutoLogin" checked><label>Auto-login admin</label></div>
+        <div class="toggle"><input type="checkbox" id="cfgReceipts" checked><label>Marcar como lido</label></div>
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Resposta</span>
+        <label>Modo</label>
+        <select id="cfgReplyMode"><option value="admin_only">Só admins</option><option value="whitelist">Whitelist</option><option value="everyone">Todos</option></select>
+        <div class="toggle"><input type="checkbox" id="cfgGroups"><label>Responder em grupos</label></div>
+        <label>Resposta p/ não autorizados</label>
+        <input type="text" id="cfgUnauth" placeholder="Deixe vazio pra ignorar">
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Mídia</span>
+        <div class="toggle"><input type="checkbox" id="cfgTranscribe" checked><label>Transcrever áudios</label></div>
+        <div class="toggle"><input type="checkbox" id="cfgImages" checked><label>Analisar imagens</label></div>
+        <div class="toggle"><input type="checkbox" id="cfgVideos" checked><label>Editar vídeos</label></div>
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Admins</span>
+        <label>Números admin</label>
+        <input type="text" id="cfgAdmins" placeholder="5511999..., 5579888...">
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Monitorados</span>
+        <button class="config-btn-sm" onclick="loadMonitorados()">VER MONITORADOS</button>
+        <div id="cfgMonitorados" style="margin-top:8px;font-size:11px;color:var(--w2)"></div>
+      </div>
+      <button class="config-btn" onclick="saveWhatsAppConfig()">SALVAR</button>
+      <div id="cfgStatus"></div>`,
+  },
+  instagram: {
+    html: `<h2>📱 Instagram</h2>
+      <div class="cfg-section"><span class="cfg-section-title">Conta</span>
+        <select id="cfgIgAccount"><option value="pessoal">@soualissonsilva</option><option value="easy4u">@suaeasy4u (Easy4u)</option></select>
+        <button class="config-btn-sm" onclick="loadIgProfile()">VER PERFIL</button>
+        <div id="cfgIgResult" style="margin-top:8px;font-size:11px;color:var(--w2)"></div>
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Postar</span>
+        <label>Imagem (URL)</label>
+        <input type="text" id="cfgIgUrl" placeholder="https://...jpg">
+        <label>Legenda</label>
+        <textarea id="cfgIgCaption" rows="2" placeholder="Sua legenda..."></textarea>
+        <label>Tipo</label>
+        <select id="cfgIgType"><option value="feed">Feed</option><option value="story">Story</option><option value="reel">Reel</option></select>
+        <button class="config-btn" onclick="postIg()">POSTAR</button>
+        <div id="cfgIgPostStatus"></div>
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Agendamentos IG</span>
+        <button class="config-btn-sm" onclick="loadIgSchedule()">VER AGENDADOS</button>
+        <div id="cfgIgSchedule" style="margin-top:8px;font-size:11px;color:var(--w2)"></div>
+      </div>`,
+  },
+  calendario: {
+    html: `<h2>📅 Calendário</h2>
+      <div class="cfg-section"><span class="cfg-section-title">Criar Evento</span>
+        <label>Título</label>
+        <input type="text" id="cfgEvtTitle" placeholder="Reunião com cliente">
+        <label>Data e hora</label>
+        <input type="datetime-local" id="cfgEvtDate">
+        <label>Categoria</label>
+        <select id="cfgEvtCat"><option value="reuniao">Reunião</option><option value="compromisso">Compromisso</option><option value="pessoal">Pessoal</option><option value="trabalho">Trabalho</option><option value="saude">Saúde</option><option value="financeiro">Financeiro</option><option value="lazer">Lazer</option><option value="lembrete">Lembrete</option></select>
+        <label>Local</label>
+        <input type="text" id="cfgEvtLocal" placeholder="Escritório">
+        <label>Participantes</label>
+        <input type="text" id="cfgEvtPart" placeholder="João, Maria">
+        <label>Lembrete (min antes)</label>
+        <select id="cfgEvtRemind"><option value="5">5 min</option><option value="15">15 min</option><option value="30" selected>30 min</option><option value="60">1 hora</option></select>
+        <button class="config-btn" onclick="createEvent()">CRIAR EVENTO</button>
+        <div id="cfgEvtStatus"></div>
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Próximos Eventos</span>
+        <button class="config-btn-sm" onclick="loadEvents()">CARREGAR</button>
+        <div id="cfgEventList" style="margin-top:8px;font-size:11px;color:var(--w2)"></div>
+      </div>`,
+  },
+  agenda: {
+    html: `<h2>⏰ Lembretes & Agendamentos</h2>
+      <div class="cfg-section"><span class="cfg-section-title">Criar Lembrete</span>
+        <label>Título</label>
+        <input type="text" id="cfgRemTitle" placeholder="Reunião com equipe">
+        <label>Quando</label>
+        <input type="datetime-local" id="cfgRemDate">
+        <label>Avisar via</label>
+        <select id="cfgRemVia"><option value="all">Todos (voz + WA + ligação)</option><option value="whatsapp">WhatsApp</option><option value="voice">Voz</option><option value="call">Ligação</option></select>
+        <button class="config-btn" onclick="createReminder()">AGENDAR</button>
+        <div id="cfgRemStatus"></div>
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Agendamentos Ativos</span>
+        <button class="config-btn-sm" onclick="loadSchedules()">CARREGAR</button>
+        <div id="cfgScheduleList" style="margin-top:8px;font-size:11px;color:var(--w2)"></div>
+      </div>`,
+  },
+  grupos: {
+    html: `<h2>👥 Grupos Monitorados</h2>
+      <div class="cfg-section"><span class="cfg-section-title">Monitorando</span>
+        <button class="config-btn-sm" onclick="loadGroupStatus()">ATUALIZAR</button>
+        <div id="cfgGroupList" style="margin-top:8px;font-size:11px;color:var(--w2)"></div>
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Iniciar Monitoramento</span>
+        <label>Buscar grupo</label>
+        <input type="text" id="cfgGroupSearch" placeholder="Nome do grupo...">
+        <button class="config-btn-sm" onclick="searchGroup()">BUSCAR</button>
+        <div id="cfgGroupResults" style="margin-top:8px;font-size:11px;color:var(--w2)"></div>
+      </div>`,
+  },
+  missoes: {
+    html: `<h2>🤖 Missões Autônomas</h2>
+      <div class="cfg-section"><span class="cfg-section-title">Missões Ativas</span>
+        <button class="config-btn-sm" onclick="loadMissoes()">CARREGAR</button>
+        <div id="cfgMissaoList" style="margin-top:8px;font-size:11px;color:var(--w2)"></div>
+      </div>`,
+  },
+  providers: {
+    html: `<h2>🤖 Provedores & IA</h2>
+      <div class="cfg-section"><span class="cfg-section-title">Modelo IA</span>
+        <label>Modelo principal</label>
+        <select id="cfgAiModel"><option value="gpt-4o">GPT-4o</option><option value="gpt-4o-mini">GPT-4o Mini</option></select>
+      </div>
+      <div class="cfg-section"><span class="cfg-section-title">Ações Rápidas</span>
+        <button class="config-btn-sm" onclick="window.open('/settings.html','_blank')">⚙️ Config Completa</button>
+        <button class="config-btn-sm" onclick="window.open('/analytics.html','_blank')">📊 Analytics</button>
+        <button class="config-btn-sm" onclick="window.open('/meta.html','_blank')">📸 Meta/Ads</button>
+        <button class="config-btn-sm" onclick="window.open('/whatsapp-cloud.html','_blank')">☁️ WA Cloud</button>
+        <button class="config-btn-sm" onclick="window.open('/flows.html','_blank')">🔗 Flows</button>
+        <button class="config-btn-sm" onclick="window.open('/alexa.html','_blank')">🔊 Alexa</button>
+        <button class="config-btn-sm" onclick="window.open('/agents.html','_blank')">👥 Agentes</button>
+      </div>`,
+  },
+};
+
+function openConfig(type) {
+  if (configMenuOpen) toggleConfigMenu();
+  const tpl = configTemplates[type];
+  if (!tpl) { window.open('/' + type + '.html', '_blank'); return; }
+  $('configModal').innerHTML = `<button class="close-btn" onclick="closeConfig()" style="float:right;background:none;border:none;color:var(--w2);font-size:20px;cursor:pointer">✕</button>` + tpl.html;
+  $('configOverlay').classList.add('show');
+}
+
+function closeConfig() { $('configOverlay').classList.remove('show'); }
+
+async function saveWhatsAppConfig() {
+  const s = $('cfgStatus');
+  s.className = ''; s.textContent = 'Salvando...';
+  try {
+    const msg = `configurar_whatsapp acao=alterar botActive=${$('cfgBotActive').checked} replyMode=${$('cfgReplyMode').value} transcribeAudio=${$('cfgTranscribe').checked} analyzeImages=${$('cfgImages').checked} editVideos=${$('cfgVideos').checked} replyGroups=${$('cfgGroups').checked}`;
+    await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) });
+    s.className = 'status-ok'; s.textContent = '✓ Salvo!';
+  } catch (e) { s.className = 'status-err'; s.textContent = 'Erro: ' + e.message; }
+}
+
+async function createEvent() {
+  const s = $('cfgEvtStatus');
+  s.textContent = 'Criando...';
+  try {
+    const msg = `cria evento "${$('cfgEvtTitle').value}" para ${$('cfgEvtDate').value} categoria ${$('cfgEvtCat').value} ${$('cfgEvtLocal').value ? 'local ' + $('cfgEvtLocal').value : ''}`;
+    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) });
+    const d = await r.json();
+    s.className = 'status-ok'; s.textContent = '✓ ' + (d.response || 'Evento criado!').slice(0, 100);
+  } catch (e) { s.className = 'status-err'; s.textContent = 'Erro: ' + e.message; }
+}
+
+async function loadIgProfile() {
+  const account = $('cfgIgAccount').value;
+  $('cfgIgResult').textContent = 'Carregando...';
+  try {
+    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `mostra perfil do instagram ${account === 'easy4u' ? 'da easy4u' : ''}` }) });
+    const d = await r.json();
+    $('cfgIgResult').innerHTML = renderContent(d.response || 'Sem dados');
+  } catch (e) { $('cfgIgResult').textContent = 'Erro: ' + e.message; }
+}
+
+async function postIg() {
+  const s = $('cfgIgPostStatus');
+  s.textContent = 'Postando...';
+  try {
+    const account = $('cfgIgAccount').value;
+    const type = $('cfgIgType').value;
+    const msg = `posta ${type === 'story' ? 'story' : 'no feed'} ${account === 'easy4u' ? 'da easy4u' : 'pessoal'} com imagem ${$('cfgIgUrl').value} legenda: ${$('cfgIgCaption').value}`;
+    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) });
+    const d = await r.json();
+    s.className = 'status-ok'; s.textContent = '✓ ' + (d.response || 'Postado!').slice(0, 100);
+  } catch (e) { s.className = 'status-err'; s.textContent = 'Erro: ' + e.message; }
+}
+
+async function loadSchedules() {
+  $('cfgScheduleList').textContent = 'Carregando...';
+  try {
+    const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'lista meus agendamentos' }) });
+    const d = await r.json();
+    $('cfgScheduleList').innerHTML = renderContent(d.response || 'Nenhum agendamento');
+  } catch (e) { $('cfgScheduleList').textContent = 'Erro: ' + e.message; }
+}
+
+async function askZaya(msg) {
+  const r = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) });
+  const d = await r.json();
+  return d.response || '';
+}
+
+async function loadMonitorados() {
+  $('cfgMonitorados').textContent = 'Carregando...';
+  $('cfgMonitorados').innerHTML = renderContent(await askZaya('mostra config do whatsapp'));
+}
+
+async function loadIgSchedule() {
+  $('cfgIgSchedule').textContent = 'Carregando...';
+  $('cfgIgSchedule').innerHTML = renderContent(await askZaya('lista agendamentos de posts do instagram'));
+}
+
+async function loadEvents() {
+  $('cfgEventList').textContent = 'Carregando...';
+  $('cfgEventList').innerHTML = renderContent(await askZaya('o que tenho na agenda essa semana?'));
+}
+
+async function createReminder() {
+  const s = $('cfgRemStatus');
+  s.textContent = 'Agendando...';
+  const r = await askZaya(`agenda lembrete "${$('cfgRemTitle').value}" para ${$('cfgRemDate').value} avisar via ${$('cfgRemVia').value}`);
+  s.className = 'status-ok'; s.textContent = '✓ ' + r.slice(0, 80);
+}
+
+async function loadGroupStatus() {
+  $('cfgGroupList').textContent = 'Carregando...';
+  $('cfgGroupList').innerHTML = renderContent(await askZaya('status dos grupos monitorados'));
+}
+
+async function searchGroup() {
+  const q = $('cfgGroupSearch').value;
+  if (!q) return;
+  $('cfgGroupResults').textContent = 'Buscando...';
+  $('cfgGroupResults').innerHTML = renderContent(await askZaya(`busca grupo whatsapp ${q}`));
+}
+
+async function loadMissoes() {
+  $('cfgMissaoList').textContent = 'Carregando...';
+  $('cfgMissaoList').innerHTML = renderContent(await askZaya('lista missões ativas'));
+}
+
+socket.on('zaya-config', data => { if (data.type && configTemplates[data.type]) openConfig(data.type); });
+
+// === BALÕES FLUTUANTES (sugestões ao redor do orb) ===
+const hints = [
+  'Crie um vídeo pra mim',
+  'Que tal um post da Easy4u?',
+  'Pesquise empresas em SP',
+  'Como tá minha agenda?',
+  'Gere uma imagem minha',
+  'Quem mandou msg hoje?',
+  'Busca modelos no Pinterest',
+  'Crie slides profissionais',
+  'Quanto tá o dólar?',
+  'Poste no Instagram',
+  'Monitore um grupo',
+  'Gere uma música',
+  'Traduza um texto',
+  'Leia meus emails',
+  'Crie um site landing page',
+  'Agende um lembrete',
+];
+
+function spawnHints() {
+  const container = $('orbHints');
+  if (!container) return;
+  container.innerHTML = '';
+
+  // Posições FIXAS alternadas: esquerda acima, direita abaixo, etc.
+  // Sempre 1 esquerda acima + 1 direita abaixo + 1 esquerda abaixo + 1 direita acima + 1 centro
+  const positions = [
+    { sx: '-160px', sy: '-50px', mx: '-135px', my: '-35px', top: '38%', left: '50%' },   // ESQUERDA ACIMA
+    { sx: '160px', sy: '50px', mx: '135px', my: '35px', top: '62%', left: '50%' },       // DIREITA ABAIXO
+    { sx: '-150px', sy: '55px', mx: '-125px', my: '40px', top: '63%', left: '50%' },     // ESQUERDA ABAIXO
+    { sx: '155px', sy: '-55px', mx: '130px', my: '-40px', top: '37%', left: '50%' },     // DIREITA ACIMA
+    { sx: '-50px', sy: '-90px', mx: '-30px', my: '-75px', top: '28%', left: '50%' },     // CENTRO TOPO
+  ];
+
+  const animations = ['hintFloat', 'hintFloat', 'hintFloat', 'hintSpin', 'hintVibrate'];
+
+  const shuffled = [...hints].sort(() => Math.random() - 0.5).slice(0, 5);
+
+  shuffled.forEach((text, i) => {
+    const pos = positions[i % positions.length];
+    const anim = animations[i % animations.length];
+    const bubble = document.createElement('div');
+    bubble.className = 'hint-bubble';
+    bubble.textContent = text;
+    bubble.style.top = pos.top;
+    bubble.style.left = pos.left;
+    bubble.style.setProperty('--sx', pos.sx);
+    bubble.style.setProperty('--sy', pos.sy);
+    bubble.style.setProperty('--mx', pos.mx);
+    bubble.style.setProperty('--my', pos.my);
+    bubble.style.setProperty('--dur', (8 + Math.random() * 4) + 's');
+    bubble.style.setProperty('--delay', (i * 2.2) + 's');
+    bubble.style.animationName = anim;
+
+    // ~30% laranjas
+    if (Math.random() > 0.7) {
+      bubble.style.color = 'rgba(243,102,0,0.65)';
+      bubble.style.borderColor = 'rgba(243,102,0,0.12)';
+      bubble.style.background = 'rgba(243,102,0,0.05)';
+    }
+
+    container.appendChild(bubble);
+  });
+}
+
+// Renova os balões a cada 25s
+spawnHints();
+setInterval(spawnHints, 25000);
+
+// Esconde balões quando tá processando
+const origSetStatus = setStatus;
+setStatus = function(s) {
+  origSetStatus(s);
+  const hints = $('orbHints');
+  if (hints) hints.style.display = (s === 'idle' || !s) ? 'block' : 'none';
+};
+
+// === HUD PANEL — Iron Man style API status ===
+const HUD = {
+  panel: null,
+  rows: null,
+  apis: [
+    { key: 'openai', name: 'OpenAI', check: () => fetch('/api/chat', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{"message":"ping","stream":false}' }).then(r => r.ok ? 'on' : 'off').catch(() => 'off') },
+    { key: 'supabase', name: 'Supabase', check: () => fetch('/api/supabase/status').then(r => r.ok ? 'on' : 'off').catch(() => 'off') },
+    { key: 'whatsapp', name: 'WhatsApp', check: () => fetch('/webhook/whatsapp/status').then(r => r.json()).then(d => d.connected ? 'on' : 'warn').catch(() => 'off') },
+    { key: 'meta', name: 'Meta/IG', check: () => Promise.resolve('on') },
+    { key: 'elevenlabs', name: 'ElevenLabs', check: () => Promise.resolve('on') },
+    { key: 'freepik', name: 'Freepik', check: () => Promise.resolve('on') },
+    { key: 'google', name: 'Google AI', check: () => Promise.resolve('on') },
+    { key: 'apify', name: 'Apify', check: () => Promise.resolve('on') },
+    { key: 'socket', name: 'Socket.IO', check: () => Promise.resolve(socket.connected ? 'on' : 'off') },
+    { key: 'wake', name: 'Wake Word', check: () => Promise.resolve(wakeWordActive ? 'on' : 'off') },
+  ],
+  cache: {},
+
+  init() {
+    this.panel = $('hudPanel');
+    this.rows = $('hudRows');
+    if (!this.panel || !this.rows) return;
+    this.render();
+    this.startCycle();
+  },
+
+  render() {
+    this.rows.innerHTML = this.apis.map(a => {
+      const s = this.cache[a.key] || 'on';
+      return `<div class="hud-row"><span class="hud-name">${a.name}</span><span class="hud-status"><span class="hud-dot ${s}"></span></span></div>`;
+    }).join('');
+  },
+
+  async checkAll() {
+    for (const a of this.apis) {
+      try { this.cache[a.key] = await a.check(); } catch { this.cache[a.key] = 'off'; }
+    }
+    this.render();
+  },
+
+  showLeft() {
+    if (!this.panel) return;
+    this.panel.classList.add('show');
+  },
+  hideLeft() {
+    if (!this.panel) return;
+    this.panel.classList.remove('show');
+    this.hideAgenda();
+  },
+  showRight() {
+    $('hudRight')?.classList.add('show');
+    this.updateRight();
+  },
+  hideRight() {
+    $('hudRight')?.classList.remove('show');
+  },
+
+  updateRight() {
+    const cpu = busy ? Math.floor(40 + Math.random() * 50) : Math.floor(Math.random() * 8);
+    const idle = 100 - cpu;
+    const mode = voiceMode ? 'VOZ ATIVA' : busy ? 'PROCESSANDO' : wakeWordActive ? 'ESCUTANDO' : 'DORMINDO';
+    let action = 'Aguardando...';
+    if (voiceMode) action = 'Mic ativo! Fale com a Zaya.';
+    else if (busy) action = $('statusLabel')?.textContent || 'Processando...';
+    else if (wakeWordActive) action = 'Diga "Zaya" para ativar.';
+    const cpuEl = $('hrCpu'); if (cpuEl) cpuEl.textContent = cpu + '%';
+    const idleEl = $('hrIdle'); if (idleEl) idleEl.textContent = idle + '%';
+    const modeEl = $('hrMode'); if (modeEl) modeEl.textContent = mode;
+    const actionEl = $('hrAction'); if (actionEl) actionEl.textContent = action;
+    const cpuBar = $('hrCpuBar'); if (cpuBar) cpuBar.style.width = cpu + '%';
+    const idleBar = $('hrIdleBar'); if (idleBar) idleBar.style.width = idle + '%';
+  },
+
+  async updateBiz() {
+    const el = $('hrBizContent');
+    if (!el) return;
+    try {
+      const [msgRes, calRes] = await Promise.allSettled([
+        fetch('/api/messages').then(r => r.json()).catch(() => []),
+        fetch('/api/calendar/today').then(r => r.json()).catch(() => []),
+      ]);
+      const msgs = msgRes.status === 'fulfilled' ? (msgRes.value?.length || msgRes.value?.count || 0) : '?';
+      const events = calRes.status === 'fulfilled' ? (Array.isArray(calRes.value) ? calRes.value.length : calRes.value?.count || 0) : '?';
+      const now = new Date();
+      const uptime = Math.floor((now - window._hudStart) / 60000);
+      const time = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+      el.innerHTML = `
+        <div class="hud-r-row"><span class="r-label">HORA</span><span class="r-val">${time}</span></div>
+        <div class="hud-r-row"><span class="r-label">UPTIME</span><span class="r-val">${uptime}m</span></div>
+        <div class="hud-r-row"><span class="r-label">MSGS</span><span class="r-val">${msgs}</span></div>
+        <div class="hud-r-row"><span class="r-label">AGENDA</span><span class="r-val">${events} hoje</span></div>
+        <div class="hud-r-row"><span class="r-label">SOCKET</span><span class="r-val">${socket.connected ? 'ON' : 'OFF'}</span></div>
+      `;
+    } catch {
+      el.innerHTML = '<div class="hud-r-row"><span class="r-label">STATUS</span><span class="r-val">OK</span></div>';
+    }
+  },
+
+  showBiz() {
+    $('hudBiz')?.classList.add('show');
+    this.updateBiz();
+  },
+  hideBiz() {
+    $('hudBiz')?.classList.remove('show');
+  },
+
+  weatherCache: null,
+  weatherTime: 0,
+
+  getWeatherIcon(code, isNight) {
+    const c = parseInt(code);
+    if ([113].includes(c)) return isNight ? { emoji: '🌙', cls: 'moon' } : { emoji: '☀️', cls: 'sun' };
+    if ([116].includes(c)) return isNight ? { emoji: '🌤️', cls: 'cloud' } : { emoji: '⛅', cls: 'cloud' };
+    if ([119, 122].includes(c)) return { emoji: '☁️', cls: 'cloud' };
+    if ([143, 248, 260].includes(c)) return { emoji: '🌫️', cls: 'cloud' };
+    if ([176, 263, 266, 293, 296, 353].includes(c)) return { emoji: '🌦️', cls: 'rain' };
+    if ([299, 302, 305, 308, 356, 359].includes(c)) return { emoji: '🌧️', cls: 'rain' };
+    if ([200, 386, 389, 392, 395].includes(c)) return { emoji: '⛈️', cls: 'storm' };
+    if ([179, 182, 185, 227, 230, 281, 284, 311, 314, 317, 320, 323, 326, 329, 332, 335, 338, 350, 362, 365, 368, 371, 374, 377].includes(c)) return { emoji: '🌨️', cls: 'rain' };
+    return { emoji: '🌤️', cls: 'cloud' };
+  },
+
+  weatherCity: '',
+
+  async updateWeather() {
+    const el = $('hrWeatherContent');
+    if (!el) return;
+
+    if (!this.weatherCache || Date.now() - this.weatherTime > 600000) {
+      try {
+        // Detecta localização real via IP (geolocation)
+        if (!this.weatherCity) {
+          try {
+            const geo = await fetch('https://ipapi.co/json/').then(r => r.json());
+            this.weatherCity = geo.city || 'Aracaju';
+          } catch {
+            // Fallback: tenta geolocation do navegador
+            try {
+              const pos = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+              });
+              const geo2 = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${pos.coords.latitude}&lon=${pos.coords.longitude}&format=json`).then(r => r.json());
+              this.weatherCity = geo2.address?.city || geo2.address?.town || 'Aracaju';
+            } catch { this.weatherCity = 'Aracaju'; }
+          }
+        }
+        const res = await fetch(`https://wttr.in/${encodeURIComponent(this.weatherCity)}?format=j1`);
+        this.weatherCache = await res.json();
+        this.weatherTime = Date.now();
+      } catch { return; }
+    }
+
+    const w = this.weatherCache;
+    const cur = w.current_condition?.[0];
+    if (!cur) return;
+    const city = this.weatherCity;
+
+    const hour = new Date().getHours();
+    const isNight = hour < 6 || hour >= 18;
+    const icon = this.getWeatherIcon(cur.weatherCode, isNight);
+
+    const condMap = {
+      'Sunny': 'Ensolarado', 'Clear': 'Limpo', 'Partly cloudy': 'Parc. nublado',
+      'Cloudy': 'Nublado', 'Overcast': 'Encoberto', 'Mist': 'Névoa', 'Fog': 'Neblina',
+      'Patchy rain nearby': 'Chuva leve', 'Light rain': 'Chuva leve', 'Heavy rain': 'Chuva forte',
+      'Thundery outbreaks possible': 'Trovoada', 'Light drizzle': 'Garoa',
+      'Moderate rain': 'Chuva moderada', 'Moderate or heavy rain shower': 'Pancada',
+    };
+    const cond = condMap[cur.weatherDesc?.[0]?.value] || cur.weatherDesc?.[0]?.value || '';
+
+    const rainDrops = icon.cls === 'rain' || icon.cls === 'storm'
+      ? `<div class="weather-drops">${[0,1,2,3,4].map(i => `<div class="weather-drop" style="left:${15+i*18}%;animation-delay:${i*0.12}s"></div>`).join('')}</div>`
+      : '';
+
+    const forecast = w.weather?.[1];
+    const tmrw = forecast ? `${forecast.mintempC}°-${forecast.maxtempC}°` : '';
+
+    el.innerHTML = `
+      <div style="font-size:6px;color:rgba(255,200,50,0.3);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">📍 ${city}</div>
+      <div style="position:relative;display:inline-block"><span class="weather-icon ${icon.cls}">${icon.emoji}</span>${rainDrops}</div>
+      <div style="font-family:'Space Mono',monospace;font-size:16px;font-weight:800;color:#ffc832;margin:2px 0">${cur.temp_C}°C</div>
+      <div style="font-size:7px;color:rgba(255,200,50,0.4);margin-bottom:4px">${cond}</div>
+      <div class="hud-r-row"><span class="r-label">SENSAÇÃO</span><span class="r-val" style="color:#ffc832">${cur.FeelsLikeC}°</span></div>
+      <div class="hud-r-row"><span class="r-label">UMIDADE</span><span class="r-val" style="color:#ffc832">${cur.humidity}%</span></div>
+      <div class="hud-r-row"><span class="r-label">VENTO</span><span class="r-val" style="color:#ffc832">${cur.windspeedKmph}km/h</span></div>
+      ${tmrw ? `<div class="hud-r-row"><span class="r-label">AMANHÃ</span><span class="r-val" style="color:#ffc832">${tmrw}</span></div>` : ''}
+    `;
+  },
+
+  showWeather() {
+    $('hudWeather')?.classList.add('show');
+    this.updateWeather();
+  },
+  hideWeather() {
+    $('hudWeather')?.classList.remove('show');
+  },
+
+  async updateAgenda() {
+    const el = $('hrAgendaContent');
+    if (!el) return;
+    try {
+      const res = await fetch('/api/calendar/today');
+      const events = await res.json();
+      if (!events?.length) {
+        el.innerHTML = '<div class="hud-r-row"><span class="r-label" style="color:rgba(200,120,255,0.3)">Sem eventos hoje</span></div>';
+        return;
+      }
+      el.innerHTML = events.slice(0, 4).map(e => {
+        const time = e.time || e.hora || '';
+        const title = (e.title || e.titulo || '').slice(0, 22);
+        return `<div class="hud-r-row"><span class="r-label">${time}</span><span class="r-val" style="color:#c878ff;font-size:7px">${title}</span></div>`;
+      }).join('');
+    } catch {
+      el.innerHTML = '<div class="hud-r-row"><span class="r-label" style="color:rgba(200,120,255,0.3)">Offline</span></div>';
+    }
+  },
+
+  showAgenda() {
+    $('hudAgenda')?.classList.add('show');
+    this.updateAgenda();
+  },
+  hideAgenda() {
+    $('hudAgenda')?.classList.remove('show');
+  },
+
+  async startCycle() {
+    window._hudStart = new Date();
+    await this.checkAll();
+
+    const patterns = [
+      { left: true, right: false, biz: false, weather: false, agenda: true },
+      { left: false, right: true, biz: false, weather: false, agenda: false },
+      { left: true, right: true, biz: false, weather: false, agenda: false },
+      { left: false, right: false, biz: false, weather: true, agenda: false },
+      { left: true, right: false, biz: false, weather: false, agenda: true },
+      { left: false, right: false, biz: true, weather: false, agenda: false },
+      { left: false, right: true, biz: false, weather: false, agenda: false },
+      { left: true, right: false, biz: false, weather: true, agenda: false },
+      { left: false, right: true, biz: false, weather: false, agenda: false },
+      { left: true, right: true, biz: false, weather: false, agenda: true },
+    ];
+    let idx = 0;
+
+    const cycle = async () => {
+      await this.checkAll();
+      const p = patterns[idx % patterns.length];
+      idx++;
+
+      if (p.left) this.showLeft(); else this.hideLeft();
+      if (p.right) this.showRight(); else this.hideRight();
+      if (p.biz) this.showBiz(); else this.hideBiz();
+      if (p.weather) this.showWeather(); else this.hideWeather();
+
+      // Agenda aparece 2.5s depois do left (segunda conexão)
+      if (p.agenda && p.left) {
+        setTimeout(() => this.showAgenda(), 2500);
+      }
+
+      setTimeout(() => {
+        this.hideLeft(); this.hideRight(); this.hideBiz(); this.hideWeather(); this.hideAgenda();
+        setTimeout(cycle, 12000);
+      }, 7000);
+    };
+    setTimeout(cycle, 4000);
+  },
+};
+HUD.init();
+
+chatInput.focus();
+</script>
+</body>
+</html>

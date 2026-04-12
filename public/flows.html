@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZAYA — WhatsApp Flows Builder</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#e0e0e0;height:100vh;overflow:hidden;display:flex;flex-direction:column;}
+
+/* TOP BAR */
+.top-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 20px;background:#0d0d14;border-bottom:1px solid #1e1e2e;z-index:50;flex-shrink:0;}
+.top-bar h1{color:#f36600;font-size:20px;font-weight:800;letter-spacing:2px;}
+.top-bar h1 span{font-size:12px;color:#555;font-weight:400;letter-spacing:0;margin-left:8px;}
+.top-links{display:flex;gap:8px;align-items:center;}
+.top-links a{color:#888;font-size:11px;text-decoration:none;letter-spacing:1px;padding:6px 12px;border:1px solid #1e1e2e;border-radius:6px;transition:all .2s;}
+.top-links a:hover{color:#f36600;border-color:#f36600;}
+
+/* LAYOUT */
+.app-layout{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar{width:280px;min-width:280px;background:#0d0d14;border-right:1px solid #1e1e2e;display:flex;flex-direction:column;z-index:40;overflow:hidden;}
+.sidebar-tabs{display:flex;border-bottom:1px solid #1e1e2e;}
+.sidebar-tab{flex:1;padding:10px;text-align:center;font-size:11px;font-weight:600;letter-spacing:1px;color:#555;cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+.sidebar-tab:hover{color:#888;}
+.sidebar-tab.active{color:#f36600;border-bottom-color:#f36600;}
+.sidebar-panel{display:none;flex:1;overflow-y:auto;padding:12px;}
+.sidebar-panel.active{display:flex;flex-direction:column;gap:8px;}
+
+/* Node palette */
+.node-palette-item{padding:12px;background:#12121a;border:1px solid #1e1e2e;border-radius:8px;cursor:grab;transition:all .2s;user-select:none;}
+.node-palette-item:hover{border-color:#f36600;transform:translateX(4px);}
+.node-palette-item:active{cursor:grabbing;}
+.node-palette-item .icon{font-size:20px;margin-bottom:4px;}
+.node-palette-item .name{font-weight:600;font-size:13px;}
+.node-palette-item .desc{color:#555;font-size:11px;margin-top:2px;line-height:1.4;}
+
+/* Properties panel */
+.prop-group{margin-bottom:14px;}
+.prop-group label{display:block;font-size:10px;color:#888;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
+.prop-group input,.prop-group textarea,.prop-group select{width:100%;padding:8px 10px;background:#1a1a25;border:1px solid #2a2a3a;border-radius:6px;color:#e0e0e0;font-size:13px;outline:none;font-family:inherit;}
+.prop-group input:focus,.prop-group textarea:focus,.prop-group select:focus{border-color:#f36600;}
+.prop-group textarea{resize:vertical;min-height:60px;}
+.prop-title{font-size:14px;font-weight:700;color:#f36600;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #1e1e2e;}
+
+/* Option rows */
+.option-row{display:flex;gap:6px;align-items:center;margin-bottom:6px;}
+.option-row input{flex:1;margin:0;padding:6px 8px;font-size:12px;}
+.option-row .btn-icon{width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:#1e1e2e;border:none;color:#ff4757;border-radius:4px;cursor:pointer;font-size:14px;flex-shrink:0;}
+.option-row .btn-icon:hover{background:#2a1515;}
+.btn-add-option{width:100%;padding:6px;background:transparent;border:1px dashed #2a2a3a;border-radius:6px;color:#888;font-size:11px;cursor:pointer;transition:all .2s;}
+.btn-add-option:hover{border-color:#f36600;color:#f36600;}
+
+/* CANVAS AREA */
+.canvas-area{flex:1;position:relative;overflow:hidden;background:#08080d;}
+.canvas-bg{position:absolute;inset:0;background-image:radial-gradient(circle,#1a1a25 1px,transparent 1px);background-size:24px 24px;}
+
+/* Canvas SVG (connections) */
+#connectionsSVG{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:5;}
+#connectionsSVG path{fill:none;stroke:#f36600;stroke-width:2.5;opacity:0.6;transition:opacity .2s;}
+#connectionsSVG path:hover{opacity:1;stroke-width:3;}
+#connectionsSVG .temp-line{stroke:#f36600;stroke-width:2;stroke-dasharray:6 4;opacity:0.5;}
+
+/* FLOW NODES */
+.flow-node{position:absolute;min-width:200px;max-width:280px;background:#12121a;border:1.5px solid #1e1e2e;border-radius:10px;z-index:10;cursor:move;box-shadow:0 4px 20px rgba(0,0,0,0.3);transition:box-shadow .2s,border-color .2s;}
+.flow-node:hover{border-color:#333;box-shadow:0 6px 30px rgba(0,0,0,0.5);}
+.flow-node.selected{border-color:#f36600;box-shadow:0 0 20px rgba(243,102,0,0.2);}
+.flow-node.dragging{opacity:0.85;z-index:20;cursor:grabbing;}
+
+.node-header{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #1e1e2e;border-radius:10px 10px 0 0;cursor:move;}
+.node-header .node-icon{font-size:16px;}
+.node-header .node-title{font-size:12px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.node-header .node-delete{width:20px;height:20px;display:flex;align-items:center;justify-content:center;border:none;background:transparent;color:#555;cursor:pointer;border-radius:4px;font-size:14px;}
+.node-header .node-delete:hover{color:#ff4757;background:rgba(255,71,87,0.1);}
+
+.node-body{padding:10px 14px;font-size:12px;color:#999;line-height:1.5;}
+.node-body .preview-text{max-height:60px;overflow:hidden;word-break:break-word;}
+
+/* Node type colors */
+.flow-node.type-start .node-header{background:rgba(37,211,102,0.1);color:#25d366;}
+.flow-node.type-message .node-header{background:rgba(68,138,255,0.1);color:#448aff;}
+.flow-node.type-question .node-header{background:rgba(255,215,64,0.1);color:#ffd740;}
+.flow-node.type-options .node-header{background:rgba(108,92,231,0.1);color:#6c5ce7;}
+.flow-node.type-condition .node-header{background:rgba(255,152,0,0.1);color:#ff9800;}
+.flow-node.type-action .node-header{background:rgba(243,102,0,0.1);color:#f36600;}
+.flow-node.type-end .node-header{background:rgba(255,71,87,0.1);color:#ff4757;}
+.flow-node.type-delay .node-header{background:rgba(0,195,255,0.1);color:#00c3ff;}
+.flow-node.type-api .node-header{background:rgba(156,39,176,0.1);color:#ce93d8;}
+
+/* Ports */
+.port{width:14px;height:14px;border-radius:50%;background:#1e1e2e;border:2px solid #333;position:absolute;cursor:crosshair;z-index:15;transition:all .15s;}
+.port:hover,.port.active{background:#f36600;border-color:#f36600;transform:scale(1.3);}
+.port-in{top:-7px;left:50%;transform:translateX(-50%);}
+.port-in:hover,.port-in.active{transform:translateX(-50%) scale(1.3);}
+.port-out{bottom:-7px;left:50%;transform:translateX(-50%);}
+.port-out:hover,.port-out.active{transform:translateX(-50%) scale(1.3);}
+
+/* Option ports */
+.port-option{right:-7px;top:50%;transform:translateY(-50%);}
+.port-option:hover,.port-option.active{transform:translateY(-50%) scale(1.3);}
+.node-options-list{padding:0 14px 10px;}
+.node-option-item{display:flex;align-items:center;gap:6px;padding:5px 8px;background:#1a1a25;border-radius:5px;font-size:11px;color:#ccc;margin-bottom:4px;position:relative;}
+.node-option-item .opt-label{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* Toolbar */
+.canvas-toolbar{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:30;background:#12121a;border:1px solid #1e1e2e;border-radius:10px;padding:6px 10px;}
+.toolbar-btn{padding:8px 14px;border:none;background:transparent;color:#888;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;transition:all .2s;display:flex;align-items:center;gap:6px;}
+.toolbar-btn:hover{background:#1e1e2e;color:#e0e0e0;}
+.toolbar-btn.active{background:#f36600;color:#fff;}
+.toolbar-sep{width:1px;background:#1e1e2e;margin:4px 2px;}
+
+/* Zoom indicator */
+.zoom-indicator{position:absolute;bottom:16px;right:16px;font-size:11px;color:#555;font-family:monospace;z-index:30;background:#12121a;border:1px solid #1e1e2e;border-radius:6px;padding:4px 10px;}
+
+/* Buttons */
+.btn{padding:8px 16px;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;letter-spacing:0.5px;}
+.btn-primary{background:#f36600;color:#fff;}
+.btn-green{background:#25d366;color:#000;}
+.btn-red{background:#ff4757;color:#fff;}
+.btn-blue{background:#448aff;color:#fff;}
+.btn-gray{background:#222;color:#999;border:1px solid #333;}
+.btn:hover{opacity:0.85;}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:12px 24px;border-radius:8px;font-size:13px;font-weight:600;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.success{background:#25d366;color:#000;}
+.toast.error{background:#ff4757;color:#fff;}
+.toast.info{background:#448aff;color:#fff;}
+.toast.show{opacity:1;}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:#12121a;border:1px solid #2a2a3a;border-radius:12px;padding:24px;width:90%;max-width:600px;max-height:85vh;overflow-y:auto;}
+.modal h3{color:#f36600;font-size:18px;margin-bottom:16px;}
+.modal-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end;}
+
+/* Empty */
+.canvas-empty{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;z-index:6;pointer-events:none;}
+.canvas-empty .icon{font-size:56px;opacity:0.15;margin-bottom:12px;}
+.canvas-empty p{color:#333;font-size:14px;line-height:1.8;}
+.canvas-empty kbd{background:#1e1e2e;padding:2px 8px;border-radius:4px;font-size:12px;color:#666;}
+
+/* Responsive */
+@media(max-width:768px){
+  .sidebar{width:240px;min-width:240px;}
+  .flow-node{min-width:160px;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h1>FLOWS<span>WhatsApp Flow Builder</span></h1>
+  <div class="top-links">
+    <a href="whatsapp.html">WHATSAPP</a>
+    <a href="whatsapp-cloud.html">WA CLOUD</a>
+    <a href="index.html">DASHBOARD</a>
+  </div>
+</div>
+
+<!-- APP LAYOUT -->
+<div class="app-layout">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <div class="sidebar-tab active" onclick="showSidebarTab('nodes')">COMPONENTES</div>
+      <div class="sidebar-tab" onclick="showSidebarTab('props')">PROPRIEDADES</div>
+      <div class="sidebar-tab" onclick="showSidebarTab('flows')">MEUS FLOWS</div>
+    </div>
+
+    <!-- Panel: Nodes Palette -->
+    <div class="sidebar-panel active" id="panel-nodes">
+      <div class="node-palette-item" draggable="true" data-type="start">
+        <div class="icon">&#9654;</div>
+        <div class="name">Inicio</div>
+        <div class="desc">Ponto de entrada do fluxo</div>
+      </div>
+      <div class="node-palette-item" draggable="true" data-type="message">
+        <div class="icon">&#128172;</div>
+        <div class="name">Mensagem</div>
+        <div class="desc">Envia texto, imagem ou documento</div>
+      </div>
+      <div class="node-palette-item" draggable="true" data-type="question">
+        <div class="icon">&#10067;</div>
+        <div class="name">Pergunta</div>
+        <div class="desc">Solicita resposta aberta do usuario</div>
+      </div>
+      <div class="node-palette-item" draggable="true" data-type="options">
+        <div class="icon">&#128218;</div>
+        <div class="name">Menu de Opcoes</div>
+        <div class="desc">Botoes ou lista para o usuario escolher</div>
+      </div>
+      <div class="node-palette-item" draggable="true" data-type="condition">
+        <div class="icon">&#128256;</div>
+        <div class="name">Condicao</div>
+        <div class="desc">Redireciona baseado em regra</div>
+      </div>
+      <div class="node-palette-item" draggable="true" data-type="delay">
+        <div class="icon">&#9200;</div>
+        <div class="name">Aguardar</div>
+        <div class="desc">Delay antes do proximo passo</div>
+      </div>
+      <div class="node-palette-item" draggable="true" data-type="action">
+        <div class="icon">&#9889;</div>
+        <div class="name">Acao</div>
+        <div class="desc">Salvar dado, chamar API, notificar</div>
+      </div>
+      <div class="node-palette-item" draggable="true" data-type="api">
+        <div class="icon">&#128268;</div>
+        <div class="name">Webhook / API</div>
+        <div class="desc">Chamada HTTP para sistema externo</div>
+      </div>
+      <div class="node-palette-item" draggable="true" data-type="end">
+        <div class="icon">&#9724;</div>
+        <div class="name">Fim</div>
+        <div class="desc">Encerra o fluxo</div>
+      </div>
+    </div>
+
+    <!-- Panel: Properties -->
+    <div class="sidebar-panel" id="panel-props">
+      <div id="propsContent">
+        <div style="text-align:center;padding:40px 20px;color:#444;">
+          <div style="font-size:32px;opacity:0.3;margin-bottom:8px;">&#128065;</div>
+          <p style="font-size:13px;">Selecione um no para editar suas propriedades</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: My Flows -->
+    <div class="sidebar-panel" id="panel-flows">
+      <div style="margin-bottom:8px;">
+        <button class="btn btn-primary" style="width:100%;padding:10px;" onclick="newFlow()">+ NOVO FLOW</button>
+      </div>
+
+      <!-- Flows locais (builder) -->
+      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px;margin:10px 0 6px;">Flows Locais (Builder)</div>
+      <div id="savedFlowsList"></div>
+
+      <!-- Flows da API (Meta) -->
+      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px;display:flex;justify-content:space-between;align-items:center;">
+        <span>Flows na Meta API</span>
+        <span style="cursor:pointer;color:#f36600;" onclick="loadAPIFlows()" title="Atualizar">&#8635;</span>
+      </div>
+      <div id="apiFlowsList" style="font-size:12px;color:#444;">Clique &#8635; para carregar</div>
+
+      <!-- Respostas recentes -->
+      <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:1px;margin:14px 0 6px;display:flex;justify-content:space-between;align-items:center;">
+        <span>Respostas Recentes</span>
+        <span style="cursor:pointer;color:#f36600;" onclick="loadRecentResponses()" title="Atualizar">&#8635;</span>
+      </div>
+      <div id="recentResponses" style="font-size:12px;color:#444;">Clique &#8635; para carregar</div>
+
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid #1e1e2e;">
+        <button class="btn btn-green" style="width:100%;padding:10px;margin-bottom:6px;" onclick="exportFlow()">EXPORTAR JSON</button>
+        <button class="btn btn-blue" style="width:100%;padding:10px;margin-bottom:6px;" onclick="publishToAPI()">PUBLICAR NA API</button>
+        <label class="btn btn-gray" style="width:100%;padding:10px;display:block;text-align:center;cursor:pointer;">
+          IMPORTAR JSON
+          <input type="file" accept=".json" style="display:none" onchange="importFlow(event)">
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-area" id="canvasArea">
+    <div class="canvas-bg" id="canvasBg"></div>
+    <svg id="connectionsSVG"></svg>
+    <div id="nodesContainer"></div>
+
+    <div class="canvas-empty" id="canvasEmpty">
+      <div class="icon">&#9889;</div>
+      <p>Arraste componentes da barra lateral<br>ou clique duas vezes no canvas<br><br><kbd>Del</kbd> deletar | <kbd>Ctrl+S</kbd> salvar | <kbd>Ctrl+Z</kbd> desfazer</p>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="canvas-toolbar">
+      <button class="toolbar-btn" onclick="zoomIn()" title="Zoom +">&#128269;+</button>
+      <button class="toolbar-btn" onclick="zoomOut()" title="Zoom -">&#128269;-</button>
+      <button class="toolbar-btn" onclick="resetView()" title="Resetar vista">&#127968;</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" onclick="autoLayout()" title="Auto organizar">&#9776; Layout</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" onclick="undo()" title="Desfazer">&#8617; Desfazer</button>
+      <button class="toolbar-btn" onclick="clearAll()" title="Limpar tudo">&#128465; Limpar</button>
+      <div class="toolbar-sep"></div>
+      <button class="toolbar-btn" onclick="saveFlow()" title="Salvar">&#128190; Salvar</button>
+      <button class="toolbar-btn" onclick="openSendModal()" title="Enviar">&#128228; Enviar</button>
+    </div>
+
+    <div class="zoom-indicator" id="zoomLevel">100%</div>
+  </div>
+</div>
+
+<!-- MODAL: ENVIAR FLOW -->
+<div class="modal-overlay" id="sendModal">
+  <div class="modal">
+    <h3>Enviar Flow</h3>
+    <div class="prop-group">
+      <label>Telefone (com DDD)</label>
+      <input type="text" id="sendTo" placeholder="5511999999999">
+    </div>
+    <div class="prop-group">
+      <label>Mensagem</label>
+      <input type="text" id="sendBody" value="Responda nosso formulario!">
+    </div>
+    <div class="prop-group">
+      <label>Texto do Botao</label>
+      <input type="text" id="sendCTA" value="Abrir">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal('sendModal')">Cancelar</button>
+      <button class="btn btn-primary" onclick="sendFlowToContact()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: ENVIAR FLOW DA API -->
+<div class="modal-overlay" id="sendModalAPI">
+  <div class="modal">
+    <h3>Enviar Flow (API)</h3>
+    <div class="prop-group">
+      <label>Telefone (com DDD)</label>
+      <input type="text" id="sendToAPI" placeholder="5511999999999">
+    </div>
+    <div class="prop-group">
+      <label>Mensagem</label>
+      <input type="text" id="sendBodyAPI" value="Responda nosso formulario!">
+    </div>
+    <div class="prop-group">
+      <label>Texto do Botao</label>
+      <input type="text" id="sendCTAAPI" value="Abrir">
+    </div>
+    <input type="hidden" id="sendFlowIdAPI">
+    <div class="modal-actions">
+      <button class="btn btn-gray" onclick="closeModal('sendModalAPI')">Cancelar</button>
+      <button class="btn btn-primary" onclick="sendFlowAPI()">Enviar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ================================================================
+// STATE
+// ================================================================
+let nodes = [];
+let connections = [];
+let selectedNode = null;
+let nextId = 1;
+let zoom = 1;
+let panX = 0, panY = 0;
+let isDragging = false;
+let dragNode = null;
+let dragOffset = { x: 0, y: 0 };
+let isConnecting = false;
+let connectFrom = null;
+let connectFromPort = null;
+let tempLine = null;
+let isPanning = false;
+let panStart = { x: 0, y: 0 };
+let undoStack = [];
+let currentFlowName = 'Novo Flow';
+let currentFlowId = null;
+
+const NODE_DEFAULTS = {
+  start:     { icon: '\u25B6', label: 'Inicio',       color: '#25d366' },
+  message:   { icon: '\uD83D\uDCAC', label: 'Mensagem',    color: '#448aff' },
+  question:  { icon: '\u2753', label: 'Pergunta',     color: '#ffd740' },
+  options:   { icon: '\uD83D\uDCDA', label: 'Menu Opcoes', color: '#6c5ce7' },
+  condition: { icon: '\uD83D\uDD00', label: 'Condicao',    color: '#ff9800' },
+  delay:     { icon: '\u23F0', label: 'Aguardar',     color: '#00c3ff' },
+  action:    { icon: '\u26A1', label: 'Acao',          color: '#f36600' },
+  api:       { icon: '\uD83D\uDD0C', label: 'API/Webhook', color: '#ce93d8' },
+  end:       { icon: '\u25FC', label: 'Fim',           color: '#ff4757' },
+};
+
+// ================================================================
+// SIDEBAR TABS
+// ================================================================
+function showSidebarTab(name) {
+  document.querySelectorAll('.sidebar-tab').forEach((t, i) => {
+    t.classList.toggle('active', ['nodes', 'props', 'flows'][i] === name);
+  });
+  document.querySelectorAll('.sidebar-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  if (name === 'flows') loadSavedFlows();
+}
+
+// ================================================================
+// TOAST
+// ================================================================
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type + ' show';
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ================================================================
+// PUSH UNDO
+// ================================================================
+function pushUndo() {
+  undoStack.push(JSON.stringify({ nodes: nodes.map(n => ({ ...n })), connections: [...connections] }));
+  if (undoStack.length > 50) undoStack.shift();
+}
+function undo() {
+  if (!undoStack.length) return toast('Nada para desfazer', 'info');
+  const state = JSON.parse(undoStack.pop());
+  nodes = state.nodes;
+  connections = state.connections;
+  selectedNode = null;
+  renderAll();
+  toast('Desfeito', 'info');
+}
+
+// ================================================================
+// ADD NODE
+// ================================================================
+function addNode(type, x, y) {
+  pushUndo();
+  const def = NODE_DEFAULTS[type];
+  const node = {
+    id: 'node_' + (nextId++),
+    type,
+    x: x || 100 + Math.random() * 300,
+    y: y || 100 + Math.random() * 200,
+    label: def.label,
+    data: {},
+  };
+
+  // Defaults por tipo
+  if (type === 'message') node.data = { text: '', mediaType: 'none', mediaUrl: '' };
+  if (type === 'question') node.data = { text: 'Qual seu nome?', variable: 'nome' };
+  if (type === 'options') node.data = { text: 'Escolha uma opcao:', options: [{ id: 'opt1', label: 'Opcao 1' }, { id: 'opt2', label: 'Opcao 2' }] };
+  if (type === 'condition') node.data = { variable: '', operator: 'equals', value: '', trueLabel: 'Sim', falseLabel: 'Nao' };
+  if (type === 'delay') node.data = { seconds: 5 };
+  if (type === 'action') node.data = { actionType: 'save', variable: '', value: '' };
+  if (type === 'api') node.data = { method: 'POST', url: '', headers: '{}', body: '{}' };
+  if (type === 'end') node.data = { text: 'Obrigado! Ate logo.' };
+
+  nodes.push(node);
+  renderAll();
+  selectNode(node.id);
+  updateEmptyState();
+  return node;
+}
+
+// ================================================================
+// SELECT NODE
+// ================================================================
+function selectNode(id) {
+  selectedNode = id;
+  document.querySelectorAll('.flow-node').forEach(n => n.classList.toggle('selected', n.dataset.id === id));
+  renderProperties();
+  showSidebarTab('props');
+}
+
+function deselectAll() {
+  selectedNode = null;
+  document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('selected'));
+  renderProperties();
+}
+
+// ================================================================
+// DELETE NODE
+// ================================================================
+function deleteNode(id) {
+  pushUndo();
+  nodes = nodes.filter(n => n.id !== id);
+  connections = connections.filter(c => c.from !== id && c.to !== id);
+  if (selectedNode === id) { selectedNode = null; renderProperties(); }
+  renderAll();
+  updateEmptyState();
+}
+
+// ================================================================
+// RENDER ALL NODES
+// ================================================================
+function renderAll() {
+  renderNodes();
+  renderConnections();
+}
+
+function renderNodes() {
+  const container = document.getElementById('nodesContainer');
+  container.innerHTML = '';
+
+  nodes.forEach(node => {
+    const def = NODE_DEFAULTS[node.type];
+    const el = document.createElement('div');
+    el.className = `flow-node type-${node.type}${node.id === selectedNode ? ' selected' : ''}`;
+    el.dataset.id = node.id;
+    el.style.left = node.x + 'px';
+    el.style.top = node.y + 'px';
+    el.style.transform = `scale(${zoom})`;
+    el.style.transformOrigin = 'top left';
+
+    let bodyHTML = '';
+    if (node.type === 'message') bodyHTML = `<div class="preview-text">${node.data.text || '<i style="color:#444">Sem mensagem</i>'}</div>`;
+    else if (node.type === 'question') bodyHTML = `<div class="preview-text">${node.data.text || ''}</div><div style="color:#ffd740;font-size:10px;margin-top:4px;">Salva em: \${${node.data.variable || '...'}}</div>`;
+    else if (node.type === 'end') bodyHTML = `<div class="preview-text">${node.data.text || ''}</div>`;
+    else if (node.type === 'delay') bodyHTML = `<div style="color:#00c3ff;font-size:13px;font-weight:600;">${node.data.seconds || 0}s</div>`;
+    else if (node.type === 'condition') bodyHTML = `<div style="font-size:11px;color:#ff9800;">\${${node.data.variable || '?'}} ${node.data.operator} "${node.data.value}"</div>`;
+    else if (node.type === 'action') bodyHTML = `<div style="font-size:11px;color:#f36600;">${node.data.actionType}: ${node.data.variable || ''}</div>`;
+    else if (node.type === 'api') bodyHTML = `<div style="font-size:11px;color:#ce93d8;">${node.data.method} ${(node.data.url || '').slice(0, 30)}</div>`;
+
+    let optionsHTML = '';
+    if (node.type === 'options' && node.data.options) {
+      optionsHTML = '<div class="node-options-list">' + node.data.options.map((opt, i) =>
+        `<div class="node-option-item">
+          <span class="opt-label">${opt.label}</span>
+          <div class="port port-option" data-node="${node.id}" data-port="opt_${i}" data-index="${i}"></div>
+        </div>`
+      ).join('') + '</div>';
+    }
+
+    if (node.type === 'condition') {
+      optionsHTML = '<div class="node-options-list">' +
+        `<div class="node-option-item"><span class="opt-label" style="color:#25d366;">${node.data.trueLabel || 'Sim'}</span><div class="port port-option" data-node="${node.id}" data-port="true"></div></div>` +
+        `<div class="node-option-item"><span class="opt-label" style="color:#ff4757;">${node.data.falseLabel || 'Nao'}</span><div class="port port-option" data-node="${node.id}" data-port="false"></div></div>` +
+      '</div>';
+    }
+
+    el.innerHTML = `
+      ${node.type !== 'start' ? `<div class="port port-in" data-node="${node.id}" data-port="in"></div>` : ''}
+      <div class="node-header">
+        <span class="node-icon">${def.icon}</span>
+        <span class="node-title">${node.label}</span>
+        <button class="node-delete" onclick="event.stopPropagation();deleteNode('${node.id}')">&times;</button>
+      </div>
+      ${bodyHTML ? `<div class="node-body">${bodyHTML}</div>` : ''}
+      ${optionsHTML}
+      ${node.type !== 'end' && node.type !== 'options' && node.type !== 'condition' ? `<div class="port port-out" data-node="${node.id}" data-port="out"></div>` : ''}
+    `;
+
+    // Events
+    el.addEventListener('mousedown', e => onNodeMouseDown(e, node));
+    el.addEventListener('click', e => { e.stopPropagation(); selectNode(node.id); });
+
+    container.appendChild(el);
+  });
+
+  // Port events
+  document.querySelectorAll('.port').forEach(port => {
+    port.addEventListener('mousedown', e => onPortMouseDown(e, port));
+    port.addEventListener('mouseup', e => onPortMouseUp(e, port));
+  });
+}
+
+// ================================================================
+// NODE DRAGGING
+// ================================================================
+function onNodeMouseDown(e, node) {
+  if (e.target.closest('.port') || e.target.closest('.node-delete')) return;
+  isDragging = true;
+  dragNode = node;
+  const rect = e.target.closest('.flow-node').getBoundingClientRect();
+  dragOffset.x = e.clientX - rect.left;
+  dragOffset.y = e.clientY - rect.top;
+  e.target.closest('.flow-node').classList.add('dragging');
+  pushUndo();
+}
+
+document.addEventListener('mousemove', e => {
+  if (isDragging && dragNode) {
+    const area = document.getElementById('canvasArea').getBoundingClientRect();
+    dragNode.x = (e.clientX - area.left - dragOffset.x) / zoom;
+    dragNode.y = (e.clientY - area.top - dragOffset.y) / zoom;
+    const el = document.querySelector(`.flow-node[data-id="${dragNode.id}"]`);
+    if (el) { el.style.left = dragNode.x + 'px'; el.style.top = dragNode.y + 'px'; }
+    renderConnections();
+  }
+  if (isConnecting && connectFrom) {
+    drawTempLine(e);
+  }
+  if (isPanning) {
+    const dx = e.clientX - panStart.x;
+    const dy = e.clientY - panStart.y;
+    panStart = { x: e.clientX, y: e.clientY };
+    panX += dx; panY += dy;
+    document.getElementById('nodesContainer').style.transform = `translate(${panX}px,${panY}px)`;
+    renderConnections();
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  if (isDragging) {
+    document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('dragging'));
+    isDragging = false;
+    dragNode = null;
+  }
+  if (isConnecting) { endConnecting(); }
+  if (isPanning) { isPanning = false; document.getElementById('canvasArea').style.cursor = ''; }
+});
+
+// ================================================================
+// CONNECTIONS (PORT LOGIC)
+// ================================================================
+function onPortMouseDown(e, port) {
+  e.stopPropagation();
+  const nodeId = port.dataset.node;
+  const portType = port.dataset.port;
+  if (portType === 'in') return; // Can't drag from input
+  isConnecting = true;
+  connectFrom = nodeId;
+  connectFromPort = portType;
+  port.classList.add('active');
+}
+
+function onPortMouseUp(e, port) {
+  if (!isConnecting) return;
+  e.stopPropagation();
+  const toNode = port.dataset.node;
+  const toPort = port.dataset.port;
+  if (toPort !== 'in') return; // Must connect to input
+  if (connectFrom === toNode) return; // No self-connect
+
+  // Check duplicate
+  const dup = connections.find(c => c.from === connectFrom && c.fromPort === connectFromPort && c.to === toNode);
+  if (!dup) {
+    pushUndo();
+    connections.push({ from: connectFrom, fromPort: connectFromPort, to: toNode });
+    renderConnections();
+    toast('Conectado!', 'info');
+  }
+}
+
+function endConnecting() {
+  isConnecting = false;
+  connectFrom = null;
+  connectFromPort = null;
+  document.querySelectorAll('.port').forEach(p => p.classList.remove('active'));
+  const tmp = document.getElementById('tempLine');
+  if (tmp) tmp.remove();
+  renderConnections();
+}
+
+function drawTempLine(e) {
+  const svg = document.getElementById('connectionsSVG');
+  let tmp = document.getElementById('tempLine');
+  if (!tmp) { tmp = document.createElementNS('http://www.w3.org/2000/svg', 'line'); tmp.id = 'tempLine'; tmp.classList.add('temp-line'); svg.appendChild(tmp); }
+
+  const fromPort = document.querySelector(`.port[data-node="${connectFrom}"][data-port="${connectFromPort}"]`);
+  if (!fromPort) return;
+  const area = document.getElementById('canvasArea').getBoundingClientRect();
+  const fp = fromPort.getBoundingClientRect();
+
+  tmp.setAttribute('x1', fp.left + fp.width / 2 - area.left);
+  tmp.setAttribute('y1', fp.top + fp.height / 2 - area.top);
+  tmp.setAttribute('x2', e.clientX - area.left);
+  tmp.setAttribute('y2', e.clientY - area.top);
+}
+
+// ================================================================
+// RENDER CONNECTIONS (SVG)
+// ================================================================
+function renderConnections() {
+  const svg = document.getElementById('connectionsSVG');
+  // Keep temp line if exists
+  const temp = document.getElementById('tempLine');
+  svg.innerHTML = '';
+  if (temp) svg.appendChild(temp);
+
+  const area = document.getElementById('canvasArea').getBoundingClientRect();
+
+  connections.forEach((conn, idx) => {
+    const fromPort = document.querySelector(`.port[data-node="${conn.from}"][data-port="${conn.fromPort}"]`);
+    const toPort = document.querySelector(`.port[data-node="${conn.to}"][data-port="in"]`);
+    if (!fromPort || !toPort) return;
+
+    const f = fromPort.getBoundingClientRect();
+    const t = toPort.getBoundingClientRect();
+
+    const x1 = f.left + f.width / 2 - area.left;
+    const y1 = f.top + f.height / 2 - area.top;
+    const x2 = t.left + t.width / 2 - area.left;
+    const y2 = t.top + t.height / 2 - area.top;
+
+    const dy = Math.abs(y2 - y1);
+    const cp = Math.max(50, dy * 0.4);
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', `M${x1},${y1} C${x1},${y1 + cp} ${x2},${y2 - cp} ${x2},${y2}`);
+    path.style.cursor = 'pointer';
+    path.style.pointerEvents = 'stroke';
+    path.addEventListener('dblclick', () => { pushUndo(); connections.splice(idx, 1); renderConnections(); toast('Conexao removida', 'info'); });
+    svg.appendChild(path);
+  });
+}
+
+// ================================================================
+// PROPERTIES PANEL
+// ================================================================
+function renderProperties() {
+  const c = document.getElementById('propsContent');
+  if (!selectedNode) {
+    c.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#444;"><div style="font-size:32px;opacity:0.3;margin-bottom:8px;">&#128065;</div><p style="font-size:13px;">Selecione um no para editar</p></div>';
+    return;
+  }
+  const node = nodes.find(n => n.id === selectedNode);
+  if (!node) return;
+
+  const def = NODE_DEFAULTS[node.type];
+  let html = `<div class="prop-title">${def.icon} ${node.label}</div>`;
+
+  // Label
+  html += `<div class="prop-group"><label>Nome do No</label><input value="${esc(node.label)}" onchange="updateNodeProp('${node.id}','label',this.value)"></div>`;
+
+  // Type-specific
+  if (node.type === 'message') {
+    html += `<div class="prop-group"><label>Mensagem</label><textarea rows="4" onchange="updateNodeData('${node.id}','text',this.value)">${esc(node.data.text || '')}</textarea></div>`;
+    html += `<div class="prop-group"><label>Midia</label><select onchange="updateNodeData('${node.id}','mediaType',this.value)">
+      <option value="none" ${node.data.mediaType === 'none' ? 'selected' : ''}>Nenhuma</option>
+      <option value="image" ${node.data.mediaType === 'image' ? 'selected' : ''}>Imagem</option>
+      <option value="video" ${node.data.mediaType === 'video' ? 'selected' : ''}>Video</option>
+      <option value="document" ${node.data.mediaType === 'document' ? 'selected' : ''}>Documento</option>
+    </select></div>`;
+    if (node.data.mediaType !== 'none') {
+      html += `<div class="prop-group"><label>URL da Midia</label><input value="${esc(node.data.mediaUrl || '')}" onchange="updateNodeData('${node.id}','mediaUrl',this.value)"></div>`;
+    }
+  }
+
+  if (node.type === 'question') {
+    html += `<div class="prop-group"><label>Pergunta</label><textarea rows="3" onchange="updateNodeData('${node.id}','text',this.value)">${esc(node.data.text || '')}</textarea></div>`;
+    html += `<div class="prop-group"><label>Salvar resposta em variavel</label><input value="${esc(node.data.variable || '')}" placeholder="nome_variavel" onchange="updateNodeData('${node.id}','variable',this.value)"></div>`;
+  }
+
+  if (node.type === 'options') {
+    html += `<div class="prop-group"><label>Texto do Menu</label><textarea rows="2" onchange="updateNodeData('${node.id}','text',this.value)">${esc(node.data.text || '')}</textarea></div>`;
+    html += `<div class="prop-group"><label>Opcoes</label>`;
+    (node.data.options || []).forEach((opt, i) => {
+      html += `<div class="option-row">
+        <input value="${esc(opt.label)}" onchange="updateOption('${node.id}',${i},this.value)" placeholder="Opcao ${i + 1}">
+        <button class="btn-icon" onclick="removeOption('${node.id}',${i})">&times;</button>
+      </div>`;
+    });
+    html += `<button class="btn-add-option" onclick="addOption('${node.id}')">+ Adicionar Opcao</button></div>`;
+  }
+
+  if (node.type === 'condition') {
+    html += `<div class="prop-group"><label>Variavel</label><input value="${esc(node.data.variable || '')}" placeholder="ex: nome" onchange="updateNodeData('${node.id}','variable',this.value)"></div>`;
+    html += `<div class="prop-group"><label>Operador</label><select onchange="updateNodeData('${node.id}','operator',this.value)">
+      <option value="equals" ${node.data.operator === 'equals' ? 'selected' : ''}>Igual a</option>
+      <option value="contains" ${node.data.operator === 'contains' ? 'selected' : ''}>Contem</option>
+      <option value="not_equals" ${node.data.operator === 'not_equals' ? 'selected' : ''}>Diferente de</option>
+      <option value="greater" ${node.data.operator === 'greater' ? 'selected' : ''}>Maior que</option>
+      <option value="less" ${node.data.operator === 'less' ? 'selected' : ''}>Menor que</option>
+      <option value="exists" ${node.data.operator === 'exists' ? 'selected' : ''}>Existe</option>
+    </select></div>`;
+    html += `<div class="prop-group"><label>Valor</label><input value="${esc(node.data.value || '')}" onchange="updateNodeData('${node.id}','value',this.value)"></div>`;
+  }
+
+  if (node.type === 'delay') {
+    html += `<div class="prop-group"><label>Segundos</label><input type="number" min="1" max="86400" value="${node.data.seconds || 5}" onchange="updateNodeData('${node.id}','seconds',parseInt(this.value))"></div>`;
+  }
+
+  if (node.type === 'action') {
+    html += `<div class="prop-group"><label>Tipo de Acao</label><select onchange="updateNodeData('${node.id}','actionType',this.value)">
+      <option value="save" ${node.data.actionType === 'save' ? 'selected' : ''}>Salvar variavel</option>
+      <option value="notify" ${node.data.actionType === 'notify' ? 'selected' : ''}>Notificar admin</option>
+      <option value="tag" ${node.data.actionType === 'tag' ? 'selected' : ''}>Adicionar tag</option>
+      <option value="transfer" ${node.data.actionType === 'transfer' ? 'selected' : ''}>Transferir para humano</option>
+    </select></div>`;
+    html += `<div class="prop-group"><label>Variavel / Valor</label><input value="${esc(node.data.variable || '')}" onchange="updateNodeData('${node.id}','variable',this.value)"></div>`;
+  }
+
+  if (node.type === 'api') {
+    html += `<div class="prop-group"><label>Metodo</label><select onchange="updateNodeData('${node.id}','method',this.value)">
+      <option value="GET" ${node.data.method === 'GET' ? 'selected' : ''}>GET</option>
+      <option value="POST" ${node.data.method === 'POST' ? 'selected' : ''}>POST</option>
+      <option value="PUT" ${node.data.method === 'PUT' ? 'selected' : ''}>PUT</option>
+      <option value="DELETE" ${node.data.method === 'DELETE' ? 'selected' : ''}>DELETE</option>
+    </select></div>`;
+    html += `<div class="prop-group"><label>URL</label><input value="${esc(node.data.url || '')}" placeholder="https://..." onchange="updateNodeData('${node.id}','url',this.value)"></div>`;
+    html += `<div class="prop-group"><label>Headers (JSON)</label><textarea rows="2" onchange="updateNodeData('${node.id}','headers',this.value)">${esc(node.data.headers || '{}')}</textarea></div>`;
+    html += `<div class="prop-group"><label>Body (JSON)</label><textarea rows="3" onchange="updateNodeData('${node.id}','body',this.value)">${esc(node.data.body || '{}')}</textarea></div>`;
+  }
+
+  if (node.type === 'end') {
+    html += `<div class="prop-group"><label>Mensagem de encerramento</label><textarea rows="3" onchange="updateNodeData('${node.id}','text',this.value)">${esc(node.data.text || '')}</textarea></div>`;
+  }
+
+  c.innerHTML = html;
+}
+
+function esc(s) { return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;'); }
+
+function updateNodeProp(id, key, val) {
+  pushUndo();
+  const n = nodes.find(n => n.id === id);
+  if (n) { n[key] = val; renderAll(); }
+}
+
+function updateNodeData(id, key, val) {
+  pushUndo();
+  const n = nodes.find(n => n.id === id);
+  if (n) { n.data[key] = val; renderAll(); }
+}
+
+function addOption(id) {
+  pushUndo();
+  const n = nodes.find(n => n.id === id);
+  if (!n) return;
+  const idx = n.data.options.length;
+  n.data.options.push({ id: 'opt' + (idx + 1), label: 'Opcao ' + (idx + 1) });
+  renderAll();
+  selectNode(id);
+}
+
+function removeOption(id, idx) {
+  pushUndo();
+  const n = nodes.find(n => n.id === id);
+  if (!n) return;
+  n.data.options.splice(idx, 1);
+  // Remove connections from this option port
+  connections = connections.filter(c => !(c.from === id && c.fromPort === 'opt_' + idx));
+  renderAll();
+  selectNode(id);
+}
+
+function updateOption(id, idx, val) {
+  const n = nodes.find(n => n.id === id);
+  if (n && n.data.options[idx]) { n.data.options[idx].label = val; renderAll(); }
+}
+
+// ================================================================
+// CANVAS EVENTS
+// ================================================================
+const canvasArea = document.getElementById('canvasArea');
+
+// Double-click to add node
+canvasArea.addEventListener('dblclick', e => {
+  if (e.target.closest('.flow-node') || e.target.closest('.port')) return;
+  const area = canvasArea.getBoundingClientRect();
+  const x = (e.clientX - area.left - panX) / zoom;
+  const y = (e.clientY - area.top - panY) / zoom;
+  addNode('message', x, y);
+});
+
+// Click canvas = deselect
+canvasArea.addEventListener('click', e => {
+  if (!e.target.closest('.flow-node') && !e.target.closest('.port') && !e.target.closest('.canvas-toolbar')) {
+    deselectAll();
+  }
+});
+
+// Middle-click or space+drag pan
+canvasArea.addEventListener('mousedown', e => {
+  if (e.button === 1 || (e.button === 0 && e.altKey)) {
+    isPanning = true;
+    panStart = { x: e.clientX, y: e.clientY };
+    canvasArea.style.cursor = 'grabbing';
+    e.preventDefault();
+  }
+});
+
+// ================================================================
+// DRAG & DROP FROM PALETTE
+// ================================================================
+document.querySelectorAll('.node-palette-item').forEach(item => {
+  item.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('nodeType', item.dataset.type);
+    e.dataTransfer.effectAllowed = 'copy';
+  });
+});
+
+canvasArea.addEventListener('dragover', e => { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; });
+canvasArea.addEventListener('drop', e => {
+  e.preventDefault();
+  const type = e.dataTransfer.getData('nodeType');
+  if (!type) return;
+  const area = canvasArea.getBoundingClientRect();
+  const x = (e.clientX - area.left - panX) / zoom;
+  const y = (e.clientY - area.top - panY) / zoom;
+  addNode(type, x, y);
+});
+
+// ================================================================
+// KEYBOARD
+// ================================================================
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === 'Delete' || e.key === 'Backspace') {
+    if (selectedNode) deleteNode(selectedNode);
+  }
+  if (e.key === 'z' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); undo(); }
+  if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); saveFlow(); }
+  if (e.key === 'Escape') { deselectAll(); if (isConnecting) endConnecting(); }
+});
+
+// ================================================================
+// ZOOM
+// ================================================================
+canvasArea.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? -0.05 : 0.05;
+  zoom = Math.max(0.3, Math.min(2, zoom + delta));
+  document.getElementById('nodesContainer').style.transform = `translate(${panX}px,${panY}px)`;
+  renderAll();
+  document.getElementById('zoomLevel').textContent = Math.round(zoom * 100) + '%';
+}, { passive: false });
+
+function zoomIn() { zoom = Math.min(2, zoom + 0.1); renderAll(); document.getElementById('zoomLevel').textContent = Math.round(zoom * 100) + '%'; }
+function zoomOut() { zoom = Math.max(0.3, zoom - 0.1); renderAll(); document.getElementById('zoomLevel').textContent = Math.round(zoom * 100) + '%'; }
+function resetView() { zoom = 1; panX = 0; panY = 0; document.getElementById('nodesContainer').style.transform = ''; renderAll(); document.getElementById('zoomLevel').textContent = '100%'; }
+
+// ================================================================
+// AUTO LAYOUT
+// ================================================================
+function autoLayout() {
+  if (!nodes.length) return;
+  pushUndo();
+
+  // Simple top-down layout based on connection order
+  const visited = new Set();
+  const levels = {};
+  let maxLevel = 0;
+
+  function traverse(id, level) {
+    if (visited.has(id)) return;
+    visited.add(id);
+    if (!levels[level]) levels[level] = [];
+    levels[level].push(id);
+    maxLevel = Math.max(maxLevel, level);
+    connections.filter(c => c.from === id).forEach(c => traverse(c.to, level + 1));
+  }
+
+  // Start from start nodes or unconnected nodes
+  const startNodes = nodes.filter(n => n.type === 'start');
+  if (startNodes.length) startNodes.forEach(n => traverse(n.id, 0));
+  nodes.forEach(n => { if (!visited.has(n.id)) traverse(n.id, maxLevel + 1); });
+
+  // Position
+  Object.entries(levels).forEach(([level, ids]) => {
+    ids.forEach((id, col) => {
+      const n = nodes.find(n => n.id === id);
+      if (n) { n.x = 60 + col * 260; n.y = 60 + parseInt(level) * 180; }
+    });
+  });
+
+  renderAll();
+  toast('Layout organizado!', 'info');
+}
+
+// ================================================================
+// SAVE / LOAD / EXPORT
+// ================================================================
+function saveFlow() {
+  const data = { name: currentFlowName, id: currentFlowId || 'flow_' + Date.now(), nodes, connections, nextId, savedAt: new Date().toISOString() };
+  currentFlowId = data.id;
+  const saved = JSON.parse(localStorage.getItem('zaya_flows') || '{}');
+  saved[data.id] = data;
+  localStorage.setItem('zaya_flows', JSON.stringify(saved));
+  toast('Flow salvo!');
+}
+
+function loadSavedFlows() {
+  const saved = JSON.parse(localStorage.getItem('zaya_flows') || '{}');
+  const list = document.getElementById('savedFlowsList');
+  const entries = Object.values(saved).sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
+
+  if (!entries.length) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;color:#444;font-size:13px;">Nenhum flow salvo</div>';
+    return;
+  }
+
+  list.innerHTML = entries.map(f => `
+    <div style="padding:10px;background:#12121a;border:1px solid #1e1e2e;border-radius:8px;margin-bottom:6px;cursor:pointer;" onclick="loadFlow('${f.id}')">
+      <div style="font-weight:600;font-size:13px;">${f.name || 'Sem nome'}</div>
+      <div style="font-size:11px;color:#555;margin-top:2px;">${f.nodes?.length || 0} nos | ${new Date(f.savedAt).toLocaleString('pt-BR')}</div>
+      <div style="margin-top:6px;display:flex;gap:4px;">
+        <button class="btn btn-gray" style="padding:3px 8px;font-size:10px;" onclick="event.stopPropagation();renameFlow('${f.id}')">Renomear</button>
+        <button class="btn btn-red" style="padding:3px 8px;font-size:10px;" onclick="event.stopPropagation();deleteSavedFlow('${f.id}')">Deletar</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function loadFlow(id) {
+  const saved = JSON.parse(localStorage.getItem('zaya_flows') || '{}');
+  const f = saved[id];
+  if (!f) return;
+  nodes = f.nodes || [];
+  connections = f.connections || [];
+  nextId = f.nextId || nodes.length + 1;
+  currentFlowName = f.name;
+  currentFlowId = f.id;
+  selectedNode = null;
+  undoStack = [];
+  renderAll();
+  updateEmptyState();
+  showSidebarTab('nodes');
+  toast('Flow carregado: ' + f.name, 'info');
+}
+
+function newFlow() {
+  if (nodes.length && !confirm('Descartar flow atual?')) return;
+  nodes = []; connections = []; selectedNode = null; nextId = 1; undoStack = [];
+  currentFlowName = prompt('Nome do novo flow:', 'Novo Flow') || 'Novo Flow';
+  currentFlowId = null;
+  renderAll();
+  updateEmptyState();
+  showSidebarTab('nodes');
+}
+
+function renameFlow(id) {
+  const saved = JSON.parse(localStorage.getItem('zaya_flows') || '{}');
+  const f = saved[id];
+  if (!f) return;
+  const name = prompt('Novo nome:', f.name);
+  if (!name) return;
+  f.name = name;
+  if (currentFlowId === id) currentFlowName = name;
+  localStorage.setItem('zaya_flows', JSON.stringify(saved));
+  loadSavedFlows();
+}
+
+function deleteSavedFlow(id) {
+  if (!confirm('Deletar este flow salvo?')) return;
+  const saved = JSON.parse(localStorage.getItem('zaya_flows') || '{}');
+  delete saved[id];
+  localStorage.setItem('zaya_flows', JSON.stringify(saved));
+  loadSavedFlows();
+  toast('Flow deletado');
+}
+
+function exportFlow() {
+  const data = { name: currentFlowName, nodes, connections, exportedAt: new Date().toISOString() };
+
+  // Also generate WhatsApp Flow JSON
+  data.whatsappFlowJSON = generateWhatsAppFlowJSON();
+
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (currentFlowName || 'flow').replace(/\s+/g, '-').toLowerCase() + '.json';
+  a.click();
+  toast('Flow exportado!');
+}
+
+function importFlow(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      nodes = data.nodes || [];
+      connections = data.connections || [];
+      currentFlowName = data.name || 'Importado';
+      currentFlowId = null;
+      nextId = Math.max(...nodes.map(n => parseInt(n.id.split('_')[1]) || 0), 0) + 1;
+      renderAll();
+      updateEmptyState();
+      toast('Flow importado!');
+    } catch (err) { toast('Erro ao importar: ' + err.message, 'error'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function clearAll() {
+  if (!nodes.length) return;
+  if (!confirm('Limpar todos os nos e conexoes?')) return;
+  pushUndo();
+  nodes = []; connections = []; selectedNode = null;
+  renderAll();
+  updateEmptyState();
+}
+
+// ================================================================
+// GENERATE WHATSAPP FLOW JSON
+// ================================================================
+function generateWhatsAppFlowJSON() {
+  const screens = [];
+  const startNode = nodes.find(n => n.type === 'start');
+  if (!startNode) return { version: '6.3', screens: [] };
+
+  // Traverse from start
+  const visited = new Set();
+  function getNextNodes(id) {
+    return connections.filter(c => c.from === id).map(c => ({ ...c, toNode: nodes.find(n => n.id === c.to) })).filter(c => c.toNode);
+  }
+
+  function buildScreen(nodeId, screenId) {
+    if (visited.has(nodeId)) return;
+    visited.add(nodeId);
+    const node = nodes.find(n => n.id === nodeId);
+    if (!node || node.type === 'end') return;
+
+    const children = [];
+    const nextConns = getNextNodes(nodeId);
+
+    // Process this node and connected message/question/options nodes as one screen
+    const screenNodes = [node];
+    let current = node;
+
+    // Collect sequential message nodes into one screen
+    while (current.type === 'start' || current.type === 'message' || current.type === 'delay') {
+      const next = getNextNodes(current.id);
+      if (next.length === 1 && (next[0].toNode.type === 'message' || next[0].toNode.type === 'question' || next[0].toNode.type === 'options' || next[0].toNode.type === 'end')) {
+        if (!visited.has(next[0].to)) {
+          visited.add(next[0].to);
+          screenNodes.push(next[0].toNode);
+          current = next[0].toNode;
+          continue;
+        }
+      }
+      break;
+    }
+
+    screenNodes.forEach(sn => {
+      if (sn.type === 'message' && sn.data.text) {
+        children.push({ type: 'TextBody', text: sn.data.text });
+      }
+      if (sn.type === 'question') {
+        children.push({ type: 'TextBody', text: sn.data.text || 'Responda:' });
+        children.push({ type: 'TextInput', name: sn.data.variable || 'resposta', label: sn.data.text || 'Sua resposta', 'input-type': 'text', required: true });
+      }
+      if (sn.type === 'options') {
+        children.push({ type: 'TextBody', text: sn.data.text || 'Escolha:' });
+        children.push({
+          type: 'RadioButtonsGroup', name: 'escolha_' + screenId.toLowerCase(),
+          label: 'Selecione', required: true,
+          'data-source': (sn.data.options || []).map(o => ({ id: o.id, title: o.label })),
+        });
+      }
+      if (sn.type === 'end') {
+        children.push({ type: 'TextBody', text: sn.data.text || 'Fim do fluxo.' });
+      }
+    });
+
+    // Footer/CTA
+    const lastNode = screenNodes[screenNodes.length - 1];
+    const lastNext = getNextNodes(lastNode.id);
+
+    if (lastNode.type === 'end' || lastNext.length === 0) {
+      children.push({ type: 'Footer', label: 'Concluir', 'on-click-action': { name: 'complete', payload: {} } });
+    } else {
+      const nextScreenId = 'SCREEN_' + lastNext[0].to.replace('node_', '');
+      children.push({
+        type: 'Footer', label: 'Continuar',
+        'on-click-action': { name: 'navigate', next: { type: 'screen', name: nextScreenId } },
+      });
+    }
+
+    screens.push({
+      id: screenId,
+      title: node.label || 'Tela',
+      data: {},
+      layout: { type: 'SingleColumnLayout', children },
+    });
+
+    // Build next screens
+    const remaining = getNextNodes(lastNode.id);
+    remaining.forEach(c => {
+      if (!visited.has(c.to)) {
+        buildScreen(c.to, 'SCREEN_' + c.to.replace('node_', ''));
+      }
+    });
+  }
+
+  buildScreen(startNode.id, 'INIT');
+  return { version: '6.3', screens };
+}
+
+// ================================================================
+// PUBLISH TO API
+// ================================================================
+async function publishToAPI() {
+  if (!nodes.length) { toast('Crie um flow antes', 'error'); return; }
+  const name = prompt('Nome do flow para publicar:', currentFlowName);
+  if (!name) return;
+
+  try {
+    // 1. Create flow
+    toast('Criando flow na API...', 'info');
+    const r1 = await fetch('/api/flows', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    const d1 = await r1.json();
+    if (!d1.success) throw new Error(d1.error);
+
+    // 2. Upload JSON
+    const flowJSON = generateWhatsAppFlowJSON();
+    const r2 = await fetch('/api/flows/' + d1.flowId + '/json', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ json: flowJSON }),
+    });
+    const d2 = await r2.json();
+
+    if (d2.success) {
+      toast('Flow criado na API! ID: ' + d1.flowId);
+    } else {
+      toast('Flow criado, mas JSON teve erro: ' + d2.error, 'error');
+    }
+  } catch (e) {
+    toast('Erro: ' + e.message, 'error');
+  }
+}
+
+// ================================================================
+// SEND FLOW
+// ================================================================
+function openSendModal() {
+  if (!currentFlowId) { toast('Salve o flow antes de enviar', 'error'); return; }
+  openModal('sendModal');
+}
+
+async function sendFlowToContact() {
+  const to = document.getElementById('sendTo').value.trim().replace(/\D/g, '');
+  if (!to || to.length < 10) { toast('Telefone invalido', 'error'); return; }
+  try {
+    // Gera JSON e tenta enviar via API
+    const flowJSON = generateWhatsAppFlowJSON();
+    toast('Enviando...', 'info');
+
+    // Create a temp flow, upload JSON, publish, send
+    const r1 = await fetch('/api/flows', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: currentFlowName + ' (auto)' }),
+    });
+    const d1 = await r1.json();
+    if (!d1.success) throw new Error(d1.error);
+
+    await fetch('/api/flows/' + d1.flowId + '/json', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ json: flowJSON }),
+    });
+
+    await fetch('/api/flows/' + d1.flowId + '/publish', { method: 'POST' });
+
+    const r3 = await fetch('/api/flows/' + d1.flowId + '/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to,
+        bodyText: document.getElementById('sendBody').value || 'Responda nosso formulario!',
+        flowCTA: document.getElementById('sendCTA').value || 'Abrir',
+      }),
+    });
+    const d3 = await r3.json();
+    if (d3.success) { toast('Flow enviado!'); closeModal('sendModal'); }
+    else throw new Error(d3.error);
+  } catch (e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+// ================================================================
+// HELPERS
+// ================================================================
+function updateEmptyState() {
+  document.getElementById('canvasEmpty').style.display = nodes.length ? 'none' : '';
+}
+
+// ================================================================
+// API FLOWS (Meta)
+// ================================================================
+async function loadAPIFlows() {
+  const c = document.getElementById('apiFlowsList');
+  c.innerHTML = '<span style="color:#555;">Carregando...</span>';
+  try {
+    const r = await fetch('/api/flows');
+    const data = await r.json();
+    if (!data.success) { c.innerHTML = '<span style="color:#ff4757;">Erro: ' + data.error + '</span>'; return; }
+    const flows = data.flows || [];
+    if (!flows.length) { c.innerHTML = '<span style="color:#444;">Nenhum flow na API</span>'; return; }
+
+    c.innerHTML = flows.map(f => {
+      const statusColor = { DRAFT: '#ffc048', PUBLISHED: '#25d366', DEPRECATED: '#ff4757', THROTTLED: '#6c5ce7' }[f.status] || '#555';
+      return `<div style="padding:8px;background:#12121a;border:1px solid #1e1e2e;border-radius:6px;margin-bottom:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-weight:600;font-size:12px;">${f.name}</span>
+          <span style="font-size:9px;color:${statusColor};font-weight:700;">${f.status}</span>
+        </div>
+        <div style="font-size:10px;color:#444;margin-top:2px;">ID: ${f.id}</div>
+        <div style="display:flex;gap:4px;margin-top:6px;">
+          ${f.status === 'PUBLISHED' ? `
+            <button class="btn btn-primary" style="padding:3px 8px;font-size:10px;" onclick="openSendModalAPI('${f.id}')">Enviar</button>
+            <button class="btn btn-gray" style="padding:3px 8px;font-size:10px;" onclick="apiDeprecate('${f.id}')">Deprecar</button>
+          ` : ''}
+          ${f.status === 'DRAFT' ? `
+            <button class="btn btn-green" style="padding:3px 8px;font-size:10px;" onclick="apiPublish('${f.id}')">Publicar</button>
+            <button class="btn btn-red" style="padding:3px 8px;font-size:10px;" onclick="apiDelete('${f.id}','${f.name}')">Deletar</button>
+          ` : ''}
+          ${f.status === 'DEPRECATED' ? `
+            <button class="btn btn-red" style="padding:3px 8px;font-size:10px;" onclick="apiDelete('${f.id}','${f.name}')">Deletar</button>
+          ` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { c.innerHTML = '<span style="color:#ff4757;">Erro: ' + e.message + '</span>'; }
+}
+
+async function apiPublish(id) {
+  if (!confirm('Publicar este flow?')) return;
+  try {
+    const r = await fetch('/api/flows/' + id + '/publish', { method: 'POST' });
+    const d = await r.json();
+    if (d.success) { toast('Flow publicado!'); loadAPIFlows(); }
+    else toast('Erro: ' + d.error, 'error');
+  } catch (e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+async function apiDeprecate(id) {
+  if (!confirm('Deprecar este flow?')) return;
+  try {
+    const r = await fetch('/api/flows/' + id + '/deprecate', { method: 'POST' });
+    const d = await r.json();
+    if (d.success) { toast('Flow deprecado'); loadAPIFlows(); }
+    else toast('Erro: ' + d.error, 'error');
+  } catch (e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+async function apiDelete(id, name) {
+  if (!confirm('Deletar flow "' + name + '"?')) return;
+  try {
+    const r = await fetch('/api/flows/' + id, { method: 'DELETE' });
+    const d = await r.json();
+    if (d.success) { toast('Flow deletado'); loadAPIFlows(); }
+    else toast('Erro: ' + d.error, 'error');
+  } catch (e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+function openSendModalAPI(flowId) {
+  document.getElementById('sendFlowIdAPI').value = flowId;
+  openModal('sendModalAPI');
+}
+
+async function sendFlowAPI() {
+  const id = document.getElementById('sendFlowIdAPI').value;
+  const to = document.getElementById('sendToAPI').value.trim().replace(/\D/g, '');
+  if (!to || to.length < 10) { toast('Telefone invalido', 'error'); return; }
+  try {
+    const r = await fetch('/api/flows/' + id + '/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to,
+        bodyText: document.getElementById('sendBodyAPI').value || 'Responda nosso formulario!',
+        flowCTA: document.getElementById('sendCTAAPI').value || 'Abrir',
+      }),
+    });
+    const d = await r.json();
+    if (d.success) { toast('Flow enviado!'); closeModal('sendModalAPI'); }
+    else toast('Erro: ' + d.error, 'error');
+  } catch (e) { toast('Erro: ' + e.message, 'error'); }
+}
+
+// ================================================================
+// RECENT RESPONSES
+// ================================================================
+async function loadRecentResponses() {
+  const c = document.getElementById('recentResponses');
+  c.innerHTML = '<span style="color:#555;">Carregando...</span>';
+  try {
+    const r = await fetch('/api/flows/responses/all?limit=20');
+    const data = await r.json();
+    if (!data.success) { c.innerHTML = '<span style="color:#ff4757;">Erro: ' + data.error + '</span>'; return; }
+    if (!data.responses || !data.responses.length) { c.innerHTML = '<span style="color:#444;">Nenhuma resposta ainda</span>'; return; }
+
+    c.innerHTML = data.responses.reverse().slice(0, 10).map(r => {
+      const dataStr = Object.entries(r.data || {}).map(([k, v]) => `${k}: ${v}`).join(', ');
+      const time = new Date(r.receivedAt).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+      return `<div style="padding:6px 8px;background:#12121a;border:1px solid #1e1e2e;border-radius:5px;margin-bottom:3px;font-size:11px;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:#888;">${r.from}</span><span style="color:#444;">${time}</span></div>
+        <div style="color:#25d366;margin-top:2px;word-break:break-word;">${dataStr || '-'}</div>
+      </div>`;
+    }).join('');
+  } catch (e) { c.innerHTML = '<span style="color:#ff4757;">Erro: ' + e.message + '</span>'; }
+}
+
+// ================================================================
+// INIT
+// ================================================================
+updateEmptyState();
+loadSavedFlows();
+</script>
+</body>
+</html>
