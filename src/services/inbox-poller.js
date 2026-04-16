@@ -292,11 +292,15 @@ async function pollOnce() {
       .eq('status', 'pending')
       .not('event', 'ilike', '%received%');
 
+    // OWNER_ADMIN_PHONE: roteado pro Jarvis local (este poller ignora)
+    const ADMIN_PHONE = process.env.OWNER_ADMIN_PHONE || '5511936189388';
+
     const { data: messages, error } = await sb
       .from('wa_inbox')
       .select('*')
       .eq('status', 'pending')
       .ilike('event', '%received%')
+      .neq('phone', ADMIN_PHONE)
       .order('received_at', { ascending: true })
       .limit(5);
 
