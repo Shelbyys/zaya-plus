@@ -2,6 +2,7 @@ import express from 'express';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import crypto from 'crypto';
+import { checkPromos, startFlightMonitor } from './flight-monitor.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -304,10 +305,35 @@ app.get('/', (req, res) => {
 });
 
 // ================================================================
+// FLIGHT MONITOR — endpoints manuais
+// ================================================================
+app.get('/promos/check', async (req, res) => {
+  try {
+    const silent = req.query.silent === '1';
+    const r = await checkPromos({ silent });
+    res.json({ ok: true, ...r });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+app.get('/promos/recent', async (req, res) => {
+  if (!SB_URL || !SB_KEY) return res.status(503).json({ ok: false, error: 'supabase não configurado' });
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/promo_flights_seen?order=first_seen.desc&limit=20`, { headers: sbHeaders });
+    const data = await r.json();
+    res.json({ ok: true, count: data.length, promos: data });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e.message });
+  }
+});
+
+// ================================================================
 // START
 // ================================================================
 app.listen(PORT, () => {
   console.log(`Zaya Plus Server online em http://localhost:${PORT}`);
   if (!SB_KEY) console.warn('AVISO: SUPABASE_KEY nao configurada!');
   if (!ADMIN_PASSWORD) console.warn('AVISO: LICENSE_ADMIN_PASSWORD nao configurada!');
+  startFlightMonitor();
 });
